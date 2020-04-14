@@ -25,6 +25,8 @@ object Dependencies {
   lazy val http4sBlaze  = "org.http4s" %% "http4s-blaze-server" % http4sVersion
   lazy val http4sCirce  = "org.http4s" %% "http4s-circe"        % http4sVersion
 
+  lazy val squants = "org.typelevel"  %% "squants"  % "1.6.0"
+
   lazy val scalaTest      = "org.scalatest"  %% "scalatest"                     % "3.1.1"
   lazy val catsEffectTest = "com.codecommit" %% "cats-effect-testing-scalatest" % "0.4.0"
 }
