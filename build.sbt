@@ -14,6 +14,8 @@ lazy val root = (project in file("."))
       cats,
       catsEffect,
       fs2,
+      logback,
+      log4cats,
       circe,
       circeGeneric,
       circeParser,
