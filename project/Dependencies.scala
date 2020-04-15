@@ -4,6 +4,7 @@ object Dependencies {
   lazy val pureConfigVersion = "0.12.3"
   lazy val circeVersion      = "0.12.3"
   lazy val http4sVersion     = "0.21.3"
+  lazy val mockitoVersion    = "1.10.3"
 
   lazy val pureConfig     = "com.github.pureconfig" %% "pureconfig"             % pureConfigVersion
   lazy val pureConfigCats = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureConfigVersion
@@ -28,6 +29,8 @@ object Dependencies {
 
   lazy val squants = "org.typelevel" %% "squants" % "1.6.0"
 
-  lazy val scalaTest      = "org.scalatest"  %% "scalatest"                     % "3.1.1"
-  lazy val catsEffectTest = "com.codecommit" %% "cats-effect-testing-scalatest" % "0.4.0"
+  lazy val scalaTest        = "org.scalatest"  %% "scalatest"                     % "3.1.1"
+  lazy val catsEffectTest   = "com.codecommit" %% "cats-effect-testing-scalatest" % "0.4.0"
+  lazy val mockito          = "org.mockito"    %% "mockito-scala"                 % mockitoVersion
+  lazy val mockitoScalatest = "org.mockito"    %% "mockito-scala-scalatest"       % mockitoVersion
 }

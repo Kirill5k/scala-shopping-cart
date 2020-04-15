@@ -25,7 +25,9 @@ lazy val root = (project in file("."))
       http4sBlaze,
       http4sCirce,
       squants,
-      scalaTest      % Test,
-      catsEffectTest % Test
+      scalaTest        % Test,
+      catsEffectTest   % Test,
+      mockito          % Test,
+      mockitoScalatest % Test
     )
   )
