@@ -1,6 +1,7 @@
 package io.kirill.shoppingcart.cart
 
 import io.kirill.shoppingcart.item.ItemId
+import io.kirill.shoppingcart.user.UserId
 
 trait CartService[F[_]] {
   def add(userId: UserId, itemId: ItemId, quantity: Quantity): F[Unit]
