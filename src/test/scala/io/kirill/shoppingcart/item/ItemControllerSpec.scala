@@ -4,6 +4,7 @@ import cats.effect.{ContextShift, IO}
 import io.circe.Decoder
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.brand.BrandName
+import io.kirill.shoppingcart.common.json._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.implicits._
@@ -19,9 +20,6 @@ class ItemControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatc
   import ItemBuilder._
   import ItemController._
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.Implicits.global)
-  implicit val moneyDecoder: Decoder[Money] = Decoder[BigDecimal].map(GBP.apply)
-  implicit val iDec1: EntityDecoder[IO, Item] = jsonOf[IO, Item]
-  implicit val iDec2: EntityDecoder[IO, Seq[Item]] = jsonOf[IO, Seq[Item]]
 
   "An ItemController" should {
 
@@ -60,7 +58,7 @@ class ItemControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatc
       val request = Request[IO](uri = uri"/items?brand=")
       val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
-      verifyResponse[String](response, Status.BadRequest, Some("\"Brand must not be blank\""))
+      verifyResponse[String](response, Status.BadRequest, Some("Brand must not be blank"))
       verify(itemServiceMock, never).findBy(any[BrandName])
       verify(itemServiceMock, never).findAll
     }

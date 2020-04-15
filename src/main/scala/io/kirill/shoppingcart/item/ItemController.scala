@@ -6,12 +6,12 @@ import io.circe.generic.auto._
 import cats.{Defer, Monad}
 import cats.implicits._
 import io.kirill.shoppingcart.brand.BrandName
+import io.kirill.shoppingcart.common.json._
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.{HttpRoutes, ParseFailure, QueryParamDecoder}
 import org.http4s.dsl.Http4sDsl
-import org.http4s.dsl.impl.{OptionalValidatingQueryParamDecoderMatcher}
+import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
 import org.http4s.server.Router
-import squants.market.Money
 
 final class ItemController[F[_]: Defer: Monad](itemService: ItemService[F]) extends Http4sDsl[F] {
   import ItemController._
@@ -33,8 +33,6 @@ final class ItemController[F[_]: Defer: Monad](itemService: ItemService[F]) exte
 }
 
 object ItemController {
-  implicit val moneyEncoder: Encoder[Money] = Encoder[BigDecimal].contramap(_.amount)
-
   final case class BrandParam(value: String) extends AnyVal {
     def toDomain: BrandName = BrandName(value.toLowerCase.capitalize)
   }
