@@ -52,6 +52,18 @@ class ItemControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatc
       verifyResponse[Seq[Item]](response, Status.Ok, Some(items))
       verify(itemServiceMock).findBy(BrandName("Test-brand"))
     }
+
+    "return error when brand is blank" in {
+      val itemServiceMock = mock[ItemService[IO]]
+      val controller      = new ItemController[IO](itemServiceMock)
+
+      val request = Request[IO](uri = uri"/items?brand=")
+      val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+
+      verifyResponse[String](response, Status.BadRequest, Some("\"Brand must not be blank\""))
+      verify(itemServiceMock, never).findBy(any[BrandName])
+      verify(itemServiceMock, never).findAll
+    }
   }
 
   def verifyResponse[A](actual: IO[Response[IO]], expectedStatus: Status, expectedBody: Option[A] = None)(
