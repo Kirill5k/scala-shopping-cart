@@ -15,7 +15,7 @@ import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.{AuthMiddleware, Router}
 
-final class CartController[F[_]: Defer: Sync](cartService: CartService[F]) extends Http4sDsl[F] {
+final class CartController[F[_]: Sync](cartService: CartService[F]) extends Http4sDsl[F] {
   private val prefixPath = "/shopping-cart"
 
   private val httpRoutes: AuthedRoutes[CommonUser, F] =

@@ -12,6 +12,7 @@ final case class OrderId(value: UUID)   extends AnyVal
 
 final case class Order(
     id: OrderId,
+    userId: UserId,
     paymentId: PaymentId,
     items: Map[ItemId, Quantity],
     total: Money
