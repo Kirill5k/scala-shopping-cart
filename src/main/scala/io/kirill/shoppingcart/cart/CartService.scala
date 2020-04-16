@@ -1,8 +1,8 @@
 package io.kirill.shoppingcart.cart
 
 import cats.implicits._
+import io.kirill.shoppingcart.common.auth.UserId
 import io.kirill.shoppingcart.item.ItemId
-import io.kirill.shoppingcart.common.security.user.UserId
 
 trait CartService[F[_]] {
   def delete(userId: UserId): F[Unit]

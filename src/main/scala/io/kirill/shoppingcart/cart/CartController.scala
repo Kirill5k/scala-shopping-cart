@@ -7,7 +7,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.kirill.shoppingcart.cart.CartController.CartUpdateRequest
-import io.kirill.shoppingcart.common.security.user.CommonUser
+import io.kirill.shoppingcart.common.auth.CommonUser
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.item.ItemId
 import org.http4s.{AuthedRoutes, HttpRoutes}

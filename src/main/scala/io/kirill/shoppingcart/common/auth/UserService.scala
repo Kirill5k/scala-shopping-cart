@@ -1,6 +1,4 @@
-package io.kirill.shoppingcart.common.security
-
-import io.kirill.shoppingcart.common.security.user.{Password, User, UserId, UserName}
+package io.kirill.shoppingcart.common.auth
 
 trait UserService[F[_]] {
   def findBy(name: UserName): F[Option[User]]

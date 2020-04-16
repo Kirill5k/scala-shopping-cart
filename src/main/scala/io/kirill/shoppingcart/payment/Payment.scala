@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.payment
 
 import java.util.UUID
 
-import io.kirill.shoppingcart.common.security.user.UserId
+import io.kirill.shoppingcart.common.auth.User.UserId
 import squants.Money
 
 final case class CardName(value: String)       extends AnyVal

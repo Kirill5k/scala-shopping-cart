@@ -4,7 +4,7 @@ import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.cart.CartService
-import io.kirill.shoppingcart.common.security.user.CommonUser
+import io.kirill.shoppingcart.common.auth.CommonUser
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.order.OrderController.OrderCheckoutRequest
 import io.kirill.shoppingcart.payment.{Card, Payment, PaymentService}
@@ -39,6 +39,7 @@ final class OrderController[F[_]: Sync](
           cart      <- cartService.get(userId)
           paymentId <- paymentService.process(Payment(userId, cart.total, checkoutReq.card))
           orderId <- orderService.create(CreateOrder(userId, paymentId, cart))
+          _ <- cartService.delete(userId)
         } yield Created(orderId)
     }
 
