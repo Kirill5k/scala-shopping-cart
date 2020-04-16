@@ -9,8 +9,8 @@ object Dependencies {
   }
 
   object Libraries {
-    def pureConfig(artifact: String): ModuleID = "com.github.pureconfig" %% artifact % Versions.pureConfig
     def circe(artifact: String): ModuleID      = "io.circe"              %% artifact % Versions.circe
+    def pureConfig(artifact: String): ModuleID = "com.github.pureconfig" %% artifact % Versions.pureConfig
     def http4s(artifact: String): ModuleID     = "org.http4s"            %% artifact % Versions.http4s
     def mockito(artifact: String): ModuleID    = "org.mockito"           %% artifact % Versions.mockito
 
@@ -19,7 +19,7 @@ object Dependencies {
     val catsRetry  = "com.github.cb372" %% "cats-retry"  % "1.1.0"
     val fs2        = "co.fs2"           %% "fs2-core"    % "2.3.0"
 
-    val pureConfig     = pureConfig("pureconfig")
+    val pureConfigCore = pureConfig("pureconfig")
     val pureConfigCats = pureConfig("pureconfig-cats-effect")
 
     val circeCore    = circe("circe-core")
@@ -40,7 +40,7 @@ object Dependencies {
 
     val scalaTest        = "org.scalatest" %% "scalatest" % "3.1.1"
     val catsEffectTest   = "com.codecommit" %% "cats-effect-testing-scalatest" % "0.4.0"
-    val mockito          = mockito("mockito-scala")
+    val mockitoCore      = mockito("mockito-scala")
     val mockitoScalatest = mockito("mockito-scala-scalatest")
   }
 }

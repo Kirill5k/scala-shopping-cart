@@ -9,7 +9,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "scala-shopping-cart",
     libraryDependencies ++= Seq(
-      pureConfig,
+      pureConfigCore,
       pureConfigCats,
       cats,
       catsEffect,
@@ -28,7 +28,7 @@ lazy val root = (project in file("."))
       squants,
       scalaTest        % Test,
       catsEffectTest   % Test,
-      mockito          % Test,
+      mockitoCore      % Test,
       mockitoScalatest % Test
     )
   )
