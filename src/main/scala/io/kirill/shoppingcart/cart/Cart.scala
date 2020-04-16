@@ -1,7 +1,5 @@
 package io.kirill.shoppingcart.cart
 
-import java.util.UUID
-
 import io.kirill.shoppingcart.item.Item
 import squants.market.Money
 
