@@ -1,36 +1,46 @@
 import sbt._
 
 object Dependencies {
-  lazy val pureConfigVersion = "0.12.3"
-  lazy val circeVersion      = "0.12.3"
-  lazy val http4sVersion     = "0.21.3"
-  lazy val mockitoVersion    = "1.10.3"
+  object Versions {
+    val pureConfig = "0.12.3"
+    val circe      = "0.12.3"
+    val http4s     = "0.21.3"
+    val mockito    = "1.10.3"
+  }
 
-  lazy val pureConfig     = "com.github.pureconfig" %% "pureconfig"             % pureConfigVersion
-  lazy val pureConfigCats = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureConfigVersion
+  object Libraries {
+    def pureConfig(artifact: String): ModuleID = "com.github.pureconfig" %% artifact % Versions.pureConfig
+    def circe(artifact: String): ModuleID      = "io.circe"              %% artifact % Versions.circe
+    def http4s(artifact: String): ModuleID     = "org.http4s"            %% artifact % Versions.http4s
+    def mockito(artifact: String): ModuleID    = "org.mockito"           %% artifact % Versions.mockito
 
-  lazy val cats       = "org.typelevel"    %% "cats-core"   % "2.1.0"
-  lazy val catsEffect = "org.typelevel"    %% "cats-effect" % "2.1.2"
-  lazy val catsRetry  = "com.github.cb372" %% "cats-retry"  % "1.1.0"
-  lazy val fs2        = "co.fs2"           %% "fs2-core"    % "2.3.0"
+    val cats       = "org.typelevel"    %% "cats-core"   % "2.1.0"
+    val catsEffect = "org.typelevel"    %% "cats-effect" % "2.1.2"
+    val catsRetry  = "com.github.cb372" %% "cats-retry"  % "1.1.0"
+    val fs2        = "co.fs2"           %% "fs2-core"    % "2.3.0"
 
-  lazy val logback  = "ch.qos.logback"    % "logback-classic" % "1.2.3"
-  lazy val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % "1.0.1"
+    val pureConfig     = pureConfig("pureconfig")
+    val pureConfigCats = pureConfig("pureconfig-cats-effect")
 
-  lazy val circe        = "io.circe" %% "circe-core"    % circeVersion
-  lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
-  lazy val circeParser  = "io.circe" %% "circe-parser"  % circeVersion
+    val circeCore    = circe("circe-core")
+    val circeGeneric = circe("circe-generic")
+    val circeParser  = circe("circe-parser")
+    val circeRefined = circe("circe-refined")
 
-  lazy val http4s       = "org.http4s" %% "http4s-core"         % http4sVersion
-  lazy val http4sDsl    = "org.http4s" %% "http4s-dsl"          % http4sVersion
-  lazy val http4sServer = "org.http4s" %% "http4s-server"       % http4sVersion
-  lazy val http4sBlaze  = "org.http4s" %% "http4s-blaze-server" % http4sVersion
-  lazy val http4sCirce  = "org.http4s" %% "http4s-circe"        % http4sVersion
+    val http4sCore    = http4s("http4s-core")
+    val http4sDsl     = http4s("http4s-dsl")
+    val http4sServer  = http4s("http4s-blaze-server")
+    val http4sClient  = http4s("http4s-blaze-client")
+    val http4sCirce   = http4s("http4s-circe")
+    val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % "0.0.4"
 
-  lazy val squants = "org.typelevel" %% "squants" % "1.6.0"
+    val logback  = "ch.qos.logback"    % "logback-classic" % "1.2.3"
+    val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % "1.0.1"
+    val squants  = "org.typelevel"     %% "squants"        % "1.6.0"
 
-  lazy val scalaTest        = "org.scalatest"  %% "scalatest"                     % "3.1.1"
-  lazy val catsEffectTest   = "com.codecommit" %% "cats-effect-testing-scalatest" % "0.4.0"
-  lazy val mockito          = "org.mockito"    %% "mockito-scala"                 % mockitoVersion
-  lazy val mockitoScalatest = "org.mockito"    %% "mockito-scala-scalatest"       % mockitoVersion
+    val scalaTest        = "org.scalatest" %% "scalatest" % "3.1.1"
+    val catsEffectTest   = "com.codecommit" %% "cats-effect-testing-scalatest" % "0.4.0"
+    val mockito          = mockito("mockito-scala")
+    val mockitoScalatest = mockito("mockito-scala-scalatest")
+  }
 }

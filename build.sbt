@@ -1,4 +1,4 @@
-import Dependencies._
+import Dependencies.Libraries._
 
 ThisBuild / scalaVersion := "2.13.1"
 ThisBuild / version := "0.1.0"
@@ -14,16 +14,17 @@ lazy val root = (project in file("."))
       cats,
       catsEffect,
       fs2,
-      logback,
+      logback % Runtime,
       log4cats,
-      circe,
+      circeCore,
       circeGeneric,
       circeParser,
-      http4s,
+      http4sCore,
       http4sDsl,
       http4sServer,
-      http4sBlaze,
+      http4sClient,
       http4sCirce,
+      http4sJwtAuth,
       squants,
       scalaTest        % Test,
       catsEffectTest   % Test,
