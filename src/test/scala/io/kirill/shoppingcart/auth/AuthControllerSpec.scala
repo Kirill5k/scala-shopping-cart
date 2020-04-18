@@ -20,12 +20,7 @@ class AuthControllerSpec extends ControllerSpec {
   "An AuthController" should {
 
     def loginRequestJson(name: String = "boris", password: String = "password"): String =
-      s"""
-        |{
-        | "username": "$name",
-        | "password": "$password"
-        |}
-        |""".stripMargin
+      s"""{"username":\"$name\","password":"$password"}"""
 
     "login" in {
       val authServiceMock = mock[AuthService[IO]]
