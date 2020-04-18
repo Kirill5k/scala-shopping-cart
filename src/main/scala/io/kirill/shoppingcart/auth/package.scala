@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.common
+package io.kirill.shoppingcart
 
 import dev.profunktor.auth.jwt.JwtSymmetricAuth
 

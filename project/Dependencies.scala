@@ -6,6 +6,7 @@ object Dependencies {
     val circe      = "0.12.3"
     val http4s     = "0.21.3"
     val mockito    = "1.10.3"
+    val refined    = "0.9.13"
   }
 
   object Libraries {
@@ -13,6 +14,7 @@ object Dependencies {
     def pureConfig(artifact: String): ModuleID = "com.github.pureconfig" %% artifact % Versions.pureConfig
     def http4s(artifact: String): ModuleID     = "org.http4s"            %% artifact % Versions.http4s
     def mockito(artifact: String): ModuleID    = "org.mockito"           %% artifact % Versions.mockito
+    def refined(artifact: String): ModuleID    = "eu.timepit"            %% artifact % Versions.refined
 
     val cats       = "org.typelevel"    %% "cats-core"   % "2.1.0"
     val catsEffect = "org.typelevel"    %% "cats-effect" % "2.1.2"
@@ -33,6 +35,9 @@ object Dependencies {
     val http4sClient  = http4s("http4s-blaze-client")
     val http4sCirce   = http4s("http4s-circe")
     val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % "0.0.4"
+
+    val refinedCore = refined("refined")
+    val refinedCats = refined("refined-cats")
 
     val logback  = "ch.qos.logback"    % "logback-classic" % "1.2.3"
     val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % "1.0.1"

@@ -1,7 +1,7 @@
 package io.kirill.shoppingcart.cart
 
 import cats.implicits._
-import io.kirill.shoppingcart.common.auth.UserId
+import io.kirill.shoppingcart.auth.UserId
 import io.kirill.shoppingcart.item.ItemId
 
 trait CartService[F[_]] {

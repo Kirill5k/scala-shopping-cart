@@ -3,7 +3,7 @@ package io.kirill.shoppingcart.cart
 import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._
-import io.kirill.shoppingcart.common.auth.CommonUser
+import io.kirill.shoppingcart.auth.CommonUser
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.web.json._
 import io.kirill.shoppingcart.item.ItemId
