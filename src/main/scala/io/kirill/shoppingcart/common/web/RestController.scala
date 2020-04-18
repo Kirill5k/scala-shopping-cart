@@ -1,12 +1,15 @@
 package io.kirill.shoppingcart.common.web
 
+import cats.Monad
 import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._
+import io.kirill.shoppingcart.common.auth.CommonUser
 import io.kirill.shoppingcart.common.web.RestController.ErrorResponse
 import io.kirill.shoppingcart.common.errors._
-import org.http4s.{ParseFailure, Response, Status}
+import org.http4s.{HttpRoutes, ParseFailure, Response, Status}
 import org.http4s.dsl.Http4sDsl
+import org.http4s.server.{AuthMiddleware, Router}
 
 trait RestController[F[_]] extends Http4sDsl[F] {
   import json._

@@ -14,7 +14,7 @@ final case class Order(
     id: OrderId,
     userId: UserId,
     paymentId: PaymentId,
-    items: Map[ItemId, Quantity],
+    items: Seq[(ItemId, Quantity)],
     total: Money
 )
 

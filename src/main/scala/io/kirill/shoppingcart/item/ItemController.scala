@@ -4,14 +4,11 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.effect.Sync
 import io.circe._
 import io.circe.generic.auto._
-import cats.{Defer, Monad}
 import cats.implicits._
 import io.kirill.shoppingcart.brand.BrandName
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.web.json._
-//import org.http4s.circe.CirceEntityCodec._
 import org.http4s.{HttpRoutes, ParseFailure, QueryParamDecoder}
-import org.http4s.dsl.Http4sDsl
 import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
 import org.http4s.server.Router
 
@@ -30,9 +27,8 @@ final class ItemController[F[_]: Sync](itemService: ItemService[F]) extends Rest
     }
   }
 
-  val routes: HttpRoutes[F] = Router(
-    prefixPath -> httpRoutes
-  )
+  val routes: HttpRoutes[F] =
+    Router(prefixPath -> httpRoutes)
 }
 
 object ItemController {

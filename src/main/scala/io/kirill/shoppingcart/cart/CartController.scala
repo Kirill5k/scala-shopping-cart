@@ -29,7 +29,7 @@ final class CartController[F[_]: Sync](cartService: CartService[F]) extends Rest
         withErrorHandling {
           for {
             cart <- authedReq.req.as[CartUpdateRequest]
-            _    <- cartService.update(user.value.id, cart.items)
+            _    <- cartService.update(user.value.id, cart.items.toMap)
             res  <- Ok()
           } yield res
         }
@@ -40,5 +40,5 @@ final class CartController[F[_]: Sync](cartService: CartService[F]) extends Rest
 }
 
 object CartController {
-  final case class CartUpdateRequest(items: Map[ItemId, Quantity]) extends AnyVal
+  final case class CartUpdateRequest(items: Seq[(ItemId, Quantity)]) extends AnyVal
 }
