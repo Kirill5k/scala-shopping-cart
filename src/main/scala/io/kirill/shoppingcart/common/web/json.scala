@@ -1,10 +1,10 @@
-package io.kirill.shoppingcart.common
+package io.kirill.shoppingcart.common.web
 
 import cats.Applicative
 import cats.effect.Sync
 import io.circe.{Decoder, Encoder}
-import org.http4s.{EntityDecoder, EntityEncoder}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import org.http4s.{EntityDecoder, EntityEncoder}
 import squants.market.{GBP, Money}
 
 object json extends JsonCodecs {

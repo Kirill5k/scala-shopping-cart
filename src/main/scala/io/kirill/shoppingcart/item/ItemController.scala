@@ -1,30 +1,33 @@
 package io.kirill.shoppingcart.item
 
 import cats.data.Validated.{Invalid, Valid}
+import cats.effect.Sync
 import io.circe._
 import io.circe.generic.auto._
 import cats.{Defer, Monad}
 import cats.implicits._
 import io.kirill.shoppingcart.brand.BrandName
-import io.kirill.shoppingcart.common.json._
-import org.http4s.circe.CirceEntityCodec._
+import io.kirill.shoppingcart.common.web.RestController
+import io.kirill.shoppingcart.common.web.json._
+//import org.http4s.circe.CirceEntityCodec._
 import org.http4s.{HttpRoutes, ParseFailure, QueryParamDecoder}
 import org.http4s.dsl.Http4sDsl
 import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
 import org.http4s.server.Router
 
-final class ItemController[F[_]: Defer: Monad](itemService: ItemService[F]) extends Http4sDsl[F] {
+final class ItemController[F[_]: Sync](itemService: ItemService[F]) extends RestController[F] {
   import ItemController._
 
   private val prefixPath = "/items"
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
-    case GET -> Root :? ItemQueryParams(brand) =>
+    case GET -> Root :? ItemQueryParams(brand) => withErrorHandling {
       brand match {
         case Some(Invalid(errors)) => BadRequest(errors.map(_.details).mkString_(","))
         case Some(Valid(brand)) => Ok(itemService.findBy(brand.toDomain))
         case None => Ok(itemService.findAll)
       }
+    }
   }
 
   val routes: HttpRoutes[F] = Router(
