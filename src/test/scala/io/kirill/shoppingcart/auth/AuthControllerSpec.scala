@@ -2,6 +2,7 @@ package io.kirill.shoppingcart.auth
 
 import cats.effect.{ContextShift, IO}
 import io.circe.generic.auto._
+import io.circe.parser._
 import io.kirill.shoppingcart.ControllerSpec
 import io.kirill.shoppingcart.auth.AuthController.{AuthLoginRequest, AuthLoginResponse}
 import io.kirill.shoppingcart.common.web.json._
@@ -20,7 +21,7 @@ class AuthControllerSpec extends ControllerSpec {
   "An AuthController" should {
 
     def loginRequestJson(name: String = "boris", password: String = "password"): String =
-      s"""{"username":\"$name\","password":"$password"}"""
+      s"""{"username":"$name","password":"$password"}"""
 
     "login" in {
       val authServiceMock = mock[AuthService[IO]]
@@ -28,11 +29,17 @@ class AuthControllerSpec extends ControllerSpec {
 
       when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.pure(JwtToken("token")))
 
-      val request = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson())
+      val request = Request[IO](uri = uri"/auth/login", method = Method.POST, body = loginRequestJson())
       val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
       verifyResponse[AuthLoginResponse](response, Status.Ok, Some(AuthLoginResponse("token")))
       verify(authServiceMock).login(Username("boris"), Password("password"))
+    }
+
+    "decode json" in {
+      val json = decode[AuthLoginRequest](loginRequestJson())
+
+      json.toOption must be (Some(AuthLoginRequest("boris", "password")))
     }
   }
 }

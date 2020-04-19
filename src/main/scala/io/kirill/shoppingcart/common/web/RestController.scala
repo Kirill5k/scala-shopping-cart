@@ -2,9 +2,11 @@ package io.kirill.shoppingcart.common.web
 
 import cats.effect.Sync
 import cats.implicits._
+import io.circe._
 import io.circe.generic.auto._
+import io.circe.parser._
 import io.kirill.shoppingcart.common.errors._
-import org.http4s.{InvalidMessageBodyFailure, ParseFailure, Response}
+import org.http4s.{InvalidMessageBodyFailure, ParseFailure, Request, Response}
 import org.http4s.dsl.Http4sDsl
 
 trait RestController[F[_]] extends Http4sDsl[F] {
@@ -29,4 +31,12 @@ trait RestController[F[_]] extends Http4sDsl[F] {
 
 object RestController {
   final case class ErrorResponse(message: String)
+
+  implicit class RequestDecoder[F[_]: Sync](private val req: Request[F]) {
+    def decodeR[A: Decoder]: F[A] = {
+      req.as[String].flatMap{s =>
+        Sync[F].fromEither(decode[A](s))
+      }
+    }
+  }
 }
