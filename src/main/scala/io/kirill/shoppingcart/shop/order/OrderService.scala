@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.order
+package io.kirill.shoppingcart.shop.order
 
 import io.kirill.shoppingcart.auth.UserId
 

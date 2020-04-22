@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.category
+package io.kirill.shoppingcart.shop.category
 
 trait CategoryService[F[_]] {
   def findAll: F[Seq[Category]]

@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.payment
+package io.kirill.shoppingcart.shop.payment
 
 import java.util.UUID
 

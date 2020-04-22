@@ -1,6 +1,6 @@
-package io.kirill.shoppingcart.cart
+package io.kirill.shoppingcart.shop.cart
 
-import io.kirill.shoppingcart.item.Item
+import io.kirill.shoppingcart.shop.item.Item
 import squants.market.{GBP, Money}
 
 final case class Quantity(value: Int) extends AnyVal

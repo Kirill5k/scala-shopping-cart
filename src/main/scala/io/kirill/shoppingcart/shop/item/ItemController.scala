@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.item
+package io.kirill.shoppingcart.shop.item
 
 import cats.data.Validated.{Invalid, Valid}
 import cats.effect.Sync

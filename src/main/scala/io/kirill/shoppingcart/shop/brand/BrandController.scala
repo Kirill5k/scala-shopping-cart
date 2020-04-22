@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.brand
+package io.kirill.shoppingcart.shop.brand
 
 import cats.effect.Sync
 import io.circe.generic.auto._

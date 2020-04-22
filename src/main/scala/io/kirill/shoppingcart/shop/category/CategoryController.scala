@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.category
+package io.kirill.shoppingcart.shop.category
 
 import cats.effect.Sync
 import io.circe.generic.auto._

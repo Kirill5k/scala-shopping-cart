@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.payment
+package io.kirill.shoppingcart.shop.payment
 
 trait PaymentService[F[_]] {
   def process(payment: Payment): F[PaymentId]

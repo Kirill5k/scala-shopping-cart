@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.cart
+package io.kirill.shoppingcart.shop.cart
 
 import java.util.UUID
 
@@ -6,7 +6,7 @@ import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.kirill.shoppingcart.auth.UserId
-import io.kirill.shoppingcart.item.{ItemId, ItemService}
+import io.kirill.shoppingcart.shop.item.{ItemId, ItemService}
 import squants.market.GBP
 
 import scala.concurrent.duration.FiniteDuration

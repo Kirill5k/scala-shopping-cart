@@ -1,11 +1,11 @@
-package io.kirill.shoppingcart.order
+package io.kirill.shoppingcart.shop.order
 
 import java.util.UUID
 
-import io.kirill.shoppingcart.cart.{Cart, Quantity}
+import io.kirill.shoppingcart.shop.cart.{Cart, Quantity}
 import io.kirill.shoppingcart.auth.UserId
-import io.kirill.shoppingcart.item.ItemId
-import io.kirill.shoppingcart.payment.PaymentId
+import io.kirill.shoppingcart.shop.item.ItemId
+import io.kirill.shoppingcart.shop.payment.PaymentId
 import squants.market.Money
 
 final case class OrderId(value: UUID)   extends AnyVal

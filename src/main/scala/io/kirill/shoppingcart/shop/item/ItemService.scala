@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.item
+package io.kirill.shoppingcart.shop.item
 
 import io.kirill.shoppingcart.brand.BrandName
 
