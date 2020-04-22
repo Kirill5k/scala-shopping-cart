@@ -26,9 +26,12 @@ lazy val root = (project in file("."))
       http4sCirce,
       http4sJwtAuth,
       squants,
+      redis4catsCore,
+      redis4catsStream,
       scalaTest        % Test,
       catsEffectTest   % Test,
       mockitoCore      % Test,
-      mockitoScalatest % Test
+      mockitoScalatest % Test,
+      redisEmbedded    % Test
     )
   )

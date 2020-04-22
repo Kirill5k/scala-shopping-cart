@@ -7,6 +7,7 @@ object Dependencies {
     val http4s     = "0.21.3"
     val mockito    = "1.10.3"
     val refined    = "0.9.13"
+    val redis4cats = "0.9.6"
   }
 
   object Libraries {
@@ -15,6 +16,7 @@ object Dependencies {
     def http4s(artifact: String): ModuleID     = "org.http4s"            %% artifact % Versions.http4s
     def mockito(artifact: String): ModuleID    = "org.mockito"           %% artifact % Versions.mockito
     def refined(artifact: String): ModuleID    = "eu.timepit"            %% artifact % Versions.refined
+    def redis(artifact: String): ModuleID      = "dev.profunktor"        %% artifact % Versions.redis4cats
 
     val cats       = "org.typelevel"    %% "cats-core"   % "2.1.0"
     val catsEffect = "org.typelevel"    %% "cats-effect" % "2.1.2"
@@ -39,6 +41,9 @@ object Dependencies {
     val refinedCore = refined("refined")
     val refinedCats = refined("refined-cats")
 
+    val redis4catsCore   = redis("redis4cats-effects")
+    val redis4catsStream = redis("redis4cats-streams")
+
     val logback  = "ch.qos.logback"    % "logback-classic" % "1.2.3"
     val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % "1.0.1"
     val squants  = "org.typelevel"     %% "squants"        % "1.6.0"
@@ -47,5 +52,6 @@ object Dependencies {
     val catsEffectTest   = "com.codecommit" %% "cats-effect-testing-scalatest" % "0.4.0"
     val mockitoCore      = mockito("mockito-scala")
     val mockitoScalatest = mockito("mockito-scala-scalatest")
+    val redisEmbedded    = "com.github.sebruck" %% "scalatest-embedded-redis" % "0.4.0"
   }
 }
