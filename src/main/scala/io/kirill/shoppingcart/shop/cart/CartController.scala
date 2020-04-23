@@ -7,8 +7,8 @@ import io.kirill.shoppingcart.auth.CommonUser
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.web.json._
 import io.kirill.shoppingcart.shop.item.ItemId
-import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.server.{AuthMiddleware, Router}
+import org.http4s.{AuthedRoutes, HttpRoutes}
 
 final class CartController[F[_]: Sync](cartService: CartService[F]) extends RestController[F] {
   import CartController._
@@ -24,6 +24,14 @@ final class CartController[F[_]: Sync](cartService: CartService[F]) extends Rest
       case GET -> Root as user =>
         withErrorHandling {
           Ok(cartService.get(user.value.id))
+        }
+      case authedReq @ POST -> Root as user =>
+        withErrorHandling {
+          for {
+            cart <- authedReq.req.as[CartUpdateRequest]
+            _    <- cartService.add(user.value.id, cart.items.toMap)
+            res  <- Ok()
+          } yield res
         }
       case authedReq @ PUT -> Root as user =>
         withErrorHandling {

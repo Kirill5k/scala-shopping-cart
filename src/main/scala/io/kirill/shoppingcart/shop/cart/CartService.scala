@@ -17,12 +17,13 @@ trait CartService[F[_]] {
   def delete(userId: UserId): F[Unit]
   def get(userId: UserId): F[Cart]
   def removeItem(userId: UserId, itemId: ItemId): F[Unit]
+  def add(userId: UserId, items: Map[ItemId, Quantity]): F[Unit]
   def update(userId: UserId, items: Map[ItemId, Quantity]): F[Unit]
 }
 
 final class RedisCartService[F[_]: Sync] private (
     itemService: ItemService[F],
-    redis: RedisCommands[F, String, String],
+    redis: RedisCommands[F, String, Int],
     exp: ShoppingCartExpiration
 ) extends CartService[F] {
 
@@ -32,7 +33,7 @@ final class RedisCartService[F[_]: Sync] private (
   override def get(userId: UserId): F[Cart] =
     for {
       itemsMap <- redis.hGetAll(userId.value.toString)
-      itemIds = itemsMap.map { case (i, q) => (ItemId(UUID.fromString(i)), Quantity(q.toInt)) }
+      itemIds = itemsMap.map { case (i, q) => (ItemId(UUID.fromString(i)), Quantity(q)) }
       cartItems <- itemIds.map { case (i, q) => itemService.findById(i).map(CartItem(_, q)) }.toList.sequence
       total = GBP(cartItems.map(ci => ci.item.price.value * ci.quantity.value).sum)
     } yield Cart(cartItems, total)
@@ -40,11 +41,19 @@ final class RedisCartService[F[_]: Sync] private (
   override def removeItem(userId: UserId, itemId: ItemId): F[Unit] =
     redis.hDel(userId.value.toString, itemId.value.toString)
 
+  override def add(userId: UserId, items: Map[ItemId, Quantity]): F[Unit] =
+    processItems(userId, items) {
+      case (i, q) =>
+        val uid = userId.value.toString
+        val iid = i.value.toString
+        redis.hGet(uid, iid).flatMap(qOpt => redis.hSet(uid, iid, qOpt.fold(q.value)(_+q.value)))
+    }
+
   override def update(userId: UserId, items: Map[ItemId, Quantity]): F[Unit] =
-    items
-      .map {
-        case (i, q) => redis.hSet(userId.value.toString, i.value.toString, q.value.toString)
-      }
-      .toList
-      .sequence *> redis.expire(userId.value.toString, exp.value)
+    processItems(userId, items) {
+      case (i, q) => redis.hSet(userId.value.toString, i.value.toString, q.value)
+    }
+
+  private def processItems(userId: UserId, items: Map[ItemId, Quantity])(f: ((ItemId, Quantity)) => F[Unit]): F[Unit] =
+    items.map(f).toList.sequence *> redis.expire(userId.value.toString, exp.value)
 }
