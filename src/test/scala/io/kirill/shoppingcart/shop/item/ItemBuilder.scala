@@ -2,9 +2,9 @@ package io.kirill.shoppingcart.shop.item
 
 import java.util.UUID
 
-import io.kirill.shoppingcart.brand.{Brand, BrandId, BrandName}
+import io.kirill.shoppingcart.shop.brand.{Brand, BrandId, BrandName}
 import io.kirill.shoppingcart.shop.category.{Category, CategoryId, CategoryName}
-import squants.market.{Currency, GBP, Money}
+import squants.market.{GBP, Money}
 
 object ItemBuilder {
 

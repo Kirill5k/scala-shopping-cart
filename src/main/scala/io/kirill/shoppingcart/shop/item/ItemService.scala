@@ -1,6 +1,6 @@
 package io.kirill.shoppingcart.shop.item
 
-import io.kirill.shoppingcart.brand.BrandName
+import io.kirill.shoppingcart.shop.brand.BrandName
 
 trait ItemService[F[_]] {
   def findAll: F[Seq[Item]]

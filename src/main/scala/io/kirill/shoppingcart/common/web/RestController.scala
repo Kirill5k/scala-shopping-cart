@@ -30,13 +30,13 @@ trait RestController[F[_]] extends Http4sDsl[F] {
 }
 
 object RestController {
+  import io.kirill.shoppingcart.common.web.json._
+
   final case class ErrorResponse(message: String)
 
   implicit class RequestDecoder[F[_]: Sync](private val req: Request[F]) {
     def decodeR[A: Decoder]: F[A] = {
-      req.as[String].flatMap{s =>
-        Sync[F].fromEither(decode[A](s))
-      }
+      req.as[A]
     }
   }
 }

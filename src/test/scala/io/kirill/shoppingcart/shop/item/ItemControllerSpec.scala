@@ -4,7 +4,7 @@ import cats.effect.{ContextShift, IO}
 import io.circe.Decoder
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.ControllerSpec
-import io.kirill.shoppingcart.brand.BrandName
+import io.kirill.shoppingcart.shop.brand.BrandName
 import io.kirill.shoppingcart.common.web.json._
 import org.http4s._
 import org.http4s.circe._

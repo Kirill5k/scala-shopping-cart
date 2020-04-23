@@ -4,7 +4,7 @@ object Dependencies {
   object Versions {
     val cats       = "2.1.1"
     val pureConfig = "0.12.3"
-    val circe      = "0.12.3"
+    val circe      = "0.13.0"
     val http4s     = "0.21.3"
     val mockito    = "1.10.3"
     val refined    = "0.9.13"
@@ -36,6 +36,7 @@ object Dependencies {
     val circeGeneric = circe("circe-generic")
     val circeParser  = circe("circe-parser")
     val circeRefined = circe("circe-refined")
+    val circeLiteral = circe("circe-literal")
 
     val http4sCore    = http4s("http4s-core")
     val http4sDsl     = http4s("http4s-dsl")

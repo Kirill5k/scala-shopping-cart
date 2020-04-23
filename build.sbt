@@ -19,6 +19,7 @@ lazy val root = (project in file("."))
       circeCore,
       circeGeneric,
       circeParser,
+      circeLiteral,
       http4sCore,
       http4sDsl,
       http4sServer,

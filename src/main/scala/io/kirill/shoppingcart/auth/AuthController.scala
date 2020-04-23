@@ -3,7 +3,6 @@ package io.kirill.shoppingcart.auth
 import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._
-import io.circe.syntax._
 import io.kirill.shoppingcart.common.web.RestController
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.HttpRoutes
