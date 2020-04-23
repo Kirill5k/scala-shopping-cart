@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.shop.item
 
 import java.util.UUID
 
-import io.kirill.shoppingcart.brand.{Brand, BrandId}
+import io.kirill.shoppingcart.shop.brand.{Brand, BrandId}
 import io.kirill.shoppingcart.shop.category.{Category, CategoryId}
 import squants.market.Money
 

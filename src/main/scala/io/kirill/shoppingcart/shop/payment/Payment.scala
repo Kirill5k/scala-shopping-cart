@@ -7,7 +7,7 @@ import squants.Money
 
 final case class CardName(value: String)       extends AnyVal
 final case class CardNumber(value: Long)       extends AnyVal
-final case class CardExpiration(value: String) extends AnyVal
+final case class CardExpiration(value: Int) extends AnyVal
 final case class CardCvv(value: Int)           extends AnyVal
 
 final case class Card(
