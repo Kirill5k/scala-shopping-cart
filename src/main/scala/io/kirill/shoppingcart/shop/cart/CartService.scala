@@ -51,7 +51,10 @@ final class RedisCartService[F[_]: Sync] private (
 
   override def update(userId: UserId, items: Map[ItemId, Quantity]): F[Unit] =
     processItems(userId, items) {
-      case (i, q) => redis.hSet(userId.value.toString, i.value.toString, q.value)
+      case (i, q) =>
+        val uid = userId.value.toString
+        val iid = i.value.toString
+        redis.hExists(uid, iid).flatMap(e => if (e) redis.hSet(userId.value.toString, i.value.toString, q.value) else Sync[F].pure(()))
     }
 
   private def processItems(userId: UserId, items: Map[ItemId, Quantity])(f: ((ItemId, Quantity)) => F[Unit]): F[Unit] =
