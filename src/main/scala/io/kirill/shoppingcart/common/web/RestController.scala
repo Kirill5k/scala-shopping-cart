@@ -16,6 +16,8 @@ trait RestController[F[_]] extends Http4sDsl[F] {
 
   protected def withErrorHandling(response: => F[Response[F]])(implicit s: Sync[F]): F[Response[F]] =
     response.handleErrorWith {
+      case e @ InvalidUsernameOrPassword =>
+        Forbidden(ErrorResponse(e.getMessage))
       case error: ParseFailure =>
         BadRequest(ErrorResponse(error.details))
       case ItemNotFound(message) =>
