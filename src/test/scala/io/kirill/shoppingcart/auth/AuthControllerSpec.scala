@@ -34,65 +34,74 @@ class AuthControllerSpec extends ControllerSpec {
     def createUserRequestJson(name: String = "boris", password: String = "password"): Json =
       json"""{"username":$name,"password":$password}"""
 
-    "login" in {
-      val authServiceMock = mock[AuthService[IO]]
-      val controller      = new AuthController[IO](authServiceMock)
+    "login" should {
+      "return token on success" in {
+        val authServiceMock = mock[AuthService[IO]]
+        val controller      = new AuthController[IO](authServiceMock)
 
-      when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.pure(JwtToken("token")))
+        when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.pure(JwtToken("token")))
 
-      val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson())
-      val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson())
+        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
-      verifyResponse[AuthLoginResponse](response, Status.Ok, Some(AuthLoginResponse("token")))
-      verify(authServiceMock).login(Username("boris"), Password("password"))
+        verifyResponse[AuthLoginResponse](response, Status.Ok, Some(AuthLoginResponse("token")))
+        verify(authServiceMock).login(Username("boris"), Password("password"))
+      }
+
+      "return forbidden when password is incorrect" in {
+        val authServiceMock = mock[AuthService[IO]]
+        val controller      = new AuthController[IO](authServiceMock)
+
+        when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.raiseError(InvalidUsernameOrPassword))
+
+        val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson())
+        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+
+        verifyResponse[ErrorResponse](response, Status.Forbidden, Some(ErrorResponse("Username or password is incorrect")))
+        verify(authServiceMock).login(Username("boris"), Password("password"))
+      }
+
+      "return bad request when empty login or password" in {
+        val authServiceMock = mock[AuthService[IO]]
+        val controller      = new AuthController[IO](authServiceMock)
+
+        val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson("", ""))
+        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+
+        verifyResponse[ErrorResponse](
+          response,
+          Status.BadRequest,
+          Some(ErrorResponse("Predicate isEmpty() did not fail.: DownField(username)"))
+        )
+        verify(authServiceMock, never).login(any[Username], any[Password])
+      }
+
+      "return unprocessable entity when ivalid json" in {
+        val authServiceMock = mock[AuthService[IO]]
+        val controller      = new AuthController[IO](authServiceMock)
+
+        val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity("foo")
+        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+
+        verifyResponse[ErrorResponse](response, Status.UnprocessableEntity, Some(ErrorResponse("""Could not decode JSON: "foo"""")))
+        verify(authServiceMock, never).login(any[Username], any[Password])
+      }
+
     }
 
-    "return forbidden when password is incorrect" in {
-      val authServiceMock = mock[AuthService[IO]]
-      val controller      = new AuthController[IO](authServiceMock)
+    "create" should {
+      "register new user on success" in {
+        val authServiceMock = mock[AuthService[IO]]
+        val controller      = new AuthController[IO](authServiceMock)
 
-      when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.raiseError(InvalidUsernameOrPassword))
+        when(authServiceMock.create(any[Username], any[Password])).thenReturn(IO.pure(UserId(userId)))
 
-      val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson())
-      val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val request                    = Request[IO](uri = uri"/auth/create", method = Method.POST).withEntity(createUserRequestJson())
+        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
-      verifyResponse[ErrorResponse](response, Status.Forbidden, Some(ErrorResponse("Username or password is incorrect")))
-      verify(authServiceMock).login(Username("boris"), Password("password"))
-    }
-
-    "return bad request when empty login or password" in {
-      val authServiceMock = mock[AuthService[IO]]
-      val controller      = new AuthController[IO](authServiceMock)
-
-      val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson("", ""))
-      val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
-
-      verifyResponse[ErrorResponse](response, Status.BadRequest, Some(ErrorResponse("Predicate isEmpty() did not fail.: DownField(username)")))
-      verify(authServiceMock, never).login(any[Username], any[Password])
-    }
-
-    "return unprocessable entity when ivalid json" in {
-      val authServiceMock = mock[AuthService[IO]]
-      val controller      = new AuthController[IO](authServiceMock)
-
-      val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity("foo")
-      val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
-
-      verifyResponse[ErrorResponse](response, Status.UnprocessableEntity, Some(ErrorResponse("""Could not decode JSON: "foo"""")))
-      verify(authServiceMock, never).login(any[Username], any[Password])
-    }
-
-    "create" in {
-      val authServiceMock = mock[AuthService[IO]]
-      val controller      = new AuthController[IO](authServiceMock)
-
-      when(authServiceMock.create(any[Username], any[Password])).thenReturn(IO.pure(UserId(userId)))
-
-      val request                    = Request[IO](uri = uri"/auth/create", method = Method.POST).withEntity(createUserRequestJson())
-      val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
-
-      verifyResponse[AuthCreateUserResponse](response, Status.Ok, Some(AuthCreateUserResponse(userId)))
-      verify(authServiceMock).create(Username("boris"), Password("password"))
+        verifyResponse[AuthCreateUserResponse](response, Status.Ok, Some(AuthCreateUserResponse(userId)))
+        verify(authServiceMock).create(Username("boris"), Password("password"))
+      }
     }
   }
 }
