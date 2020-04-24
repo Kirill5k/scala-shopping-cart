@@ -1,11 +1,12 @@
 package io.kirill.shoppingcart.shop.category
 
+import java.util.UUID
+
 import cats.effect.Sync
+import cats.implicits._
 import io.circe.generic.auto._
-import cats.{Defer, Monad}
 import io.kirill.shoppingcart.common.web.RestController
-import org.http4s.circe.CirceEntityCodec._
-import org.http4s.circe.CirceEntityEncoder._
+import io.kirill.shoppingcart.common.web.json._
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
 

@@ -5,9 +5,9 @@ import cats.effect.Sync
 import io.circe._
 import io.circe.generic.auto._
 import cats.implicits._
-import io.kirill.shoppingcart.shop.brand.BrandName
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.web.json._
+import io.kirill.shoppingcart.shop.brand.BrandName
 import org.http4s.{HttpRoutes, ParseFailure, QueryParamDecoder}
 import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
 import org.http4s.server.Router

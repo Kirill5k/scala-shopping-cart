@@ -12,24 +12,24 @@ package object item {
   final case class ItemDescription(value: String) extends AnyVal
 
   final case class Item(
-                         id: ItemId,
-                         name: ItemName,
-                         description: ItemDescription,
-                         price: Money,
-                         brand: Brand,
-                         category: Category
-                       )
+      id: ItemId,
+      name: ItemName,
+      description: ItemDescription,
+      price: Money,
+      brand: Brand,
+      category: Category
+  )
 
   final case class CreateItem(
-                               name: ItemName,
-                               description: ItemDescription,
-                               price: Money,
-                               brandId: BrandId,
-                               categoryId: CategoryId
-                             )
+      name: ItemName,
+      description: ItemDescription,
+      price: Money,
+      brandId: BrandId,
+      categoryId: CategoryId
+  )
 
   final case class UpdateItem(
-                               id: ItemId,
-                               price: Money
-                             )
+      id: ItemId,
+      price: Money
+  )
 }
