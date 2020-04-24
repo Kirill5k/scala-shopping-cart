@@ -1,9 +1,11 @@
 package io.kirill.shoppingcart.shop.brand
 
 import cats.effect.Sync
+import io.circe._
+import io.circe.syntax._
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.common.web.RestController
-import org.http4s.circe.CirceEntityCodec._
+import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
 

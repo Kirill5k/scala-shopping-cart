@@ -9,7 +9,6 @@ import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.web.json._
 import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentService}
 import org.http4s.{AuthedRoutes, HttpRoutes}
-import org.http4s.circe._
 import org.http4s.server.{AuthMiddleware, Router}
 
 final class OrderController[F[_]: Sync](
