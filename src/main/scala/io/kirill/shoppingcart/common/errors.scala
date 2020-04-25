@@ -12,4 +12,8 @@ object errors {
   final case object InvalidUsernameOrPassword extends AppError {
     val message = "Username or password is incorrect"
   }
+
+  final case object AuthTokenNotPresent extends AppError {
+    val message = "Missing Authorization bearer token"
+  }
 }

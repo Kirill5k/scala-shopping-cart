@@ -9,10 +9,11 @@ import io.circe.generic.auto._
 import io.kirill.shoppingcart.common.web.RestController
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.{AuthedRoutes, HttpRoutes}
-import org.http4s.server.Router
+import org.http4s.server.{AuthMiddleware, Router}
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection._
 import io.circe.refined._
+import io.kirill.shoppingcart.common.errors.AuthTokenNotPresent
 
 final class AuthController[F[_]: Sync](authService: AuthService[F]) extends RestController[F]{
   import RestController._
@@ -20,7 +21,7 @@ final class AuthController[F[_]: Sync](authService: AuthService[F]) extends Rest
 
   private val prefixPath = "/auth"
 
-  private val loginRoute: HttpRoutes[F] = HttpRoutes.of[F] {
+  private val routes: HttpRoutes[F] = HttpRoutes.of[F] {
     case req @ POST -> Root / "create" => withErrorHandling {
       for {
         create <- req.decodeR[AuthCreateUserRequest]
@@ -37,16 +38,20 @@ final class AuthController[F[_]: Sync](authService: AuthService[F]) extends Rest
     }
   }
 
-  private val logoutRoute: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
+  private val authedRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
     case authedReq @ POST -> Root / "logout" as user => withErrorHandling {
-      AuthHeaders
-        .getBearerToken(authedReq.req)
-        .traverse_(t => authService.logout(user.value.name, t)) *> NoContent()
+      AuthHeaders.getBearerToken(authedReq.req) match {
+        case Some(token) => authService.logout(user.value.name, token) *> NoContent()
+        case None => Sync[F].raiseError(AuthTokenNotPresent)
+      }
     }
   }
 
-  val routes: HttpRoutes[F] =
-    Router(prefixPath -> loginRoute)
+  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] =
+    Router(
+      prefixPath -> authMiddleware(authedRoutes),
+      prefixPath -> routes
+    )
 }
 
 object AuthController {

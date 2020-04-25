@@ -34,6 +34,21 @@ class AuthControllerSpec extends ControllerSpec {
     def createUserRequestJson(name: String = "boris", password: String = "password"): Json =
       json"""{"username":$name,"password":$password}"""
 
+    "logout" should {
+      "return no content on success" in {
+        val authServiceMock = mock[AuthService[IO]]
+        val controller      = new AuthController[IO](authServiceMock)
+
+        when(authServiceMock.logout(any[Username], any[JwtToken])).thenReturn(IO.pure(()))
+
+        val request                    = Request[IO](uri = uri"/auth/logout", method = Method.POST).withHeaders(Header("Authorization", "Bearer token"))
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+
+        verifyResponse[AuthLoginResponse](response, Status.NoContent, None)
+        verify(authServiceMock).logout(Username("Boris"), JwtToken("token"))
+      }
+    }
+
     "login" should {
       "return token on success" in {
         val authServiceMock = mock[AuthService[IO]]
@@ -42,7 +57,7 @@ class AuthControllerSpec extends ControllerSpec {
         when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.pure(JwtToken("token")))
 
         val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson())
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[AuthLoginResponse](response, Status.Ok, Some(AuthLoginResponse("token")))
         verify(authServiceMock).login(Username("boris"), Password("password"))
@@ -55,7 +70,7 @@ class AuthControllerSpec extends ControllerSpec {
         when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.raiseError(InvalidUsernameOrPassword))
 
         val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson())
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.Forbidden, Some(ErrorResponse("Username or password is incorrect")))
         verify(authServiceMock).login(Username("boris"), Password("password"))
@@ -66,7 +81,7 @@ class AuthControllerSpec extends ControllerSpec {
         val controller      = new AuthController[IO](authServiceMock)
 
         val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson("", ""))
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](
           response,
@@ -81,7 +96,7 @@ class AuthControllerSpec extends ControllerSpec {
         val controller      = new AuthController[IO](authServiceMock)
 
         val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity("foo")
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.UnprocessableEntity, Some(ErrorResponse("""Could not decode JSON: "foo"""")))
         verify(authServiceMock, never).login(any[Username], any[Password])
@@ -97,7 +112,7 @@ class AuthControllerSpec extends ControllerSpec {
         when(authServiceMock.create(any[Username], any[Password])).thenReturn(IO.pure(UserId(userId)))
 
         val request                    = Request[IO](uri = uri"/auth/create", method = Method.POST).withEntity(createUserRequestJson())
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[AuthCreateUserResponse](response, Status.Ok, Some(AuthCreateUserResponse(userId)))
         verify(authServiceMock).create(Username("boris"), Password("password"))
