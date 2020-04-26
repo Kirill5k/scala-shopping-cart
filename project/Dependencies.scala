@@ -9,6 +9,7 @@ object Dependencies {
     val mockito    = "1.10.3"
     val refined    = "0.9.13"
     val redis4cats = "0.9.6"
+    val skunk      = "0.0.8"
 
     val scalaCheck    = "1.14.3"
     val scalaTest     = "3.1.1"
@@ -22,6 +23,7 @@ object Dependencies {
     def mockito(artifact: String): ModuleID    = "org.mockito"           %% artifact % Versions.mockito
     def refined(artifact: String): ModuleID    = "eu.timepit"            %% artifact % Versions.refined
     def redis(artifact: String): ModuleID      = "dev.profunktor"        %% artifact % Versions.redis4cats
+    def skunk(artifact: String): ModuleID      = "org.tpolecat"          %% artifact % Versions.skunk
 
     val catsCore    = "org.typelevel"    %% "cats-core"              % "2.1.1"
     val catsTestkit = "org.typelevel"    %% "cats-testkit-scalatest" % "1.0.1"
@@ -31,6 +33,9 @@ object Dependencies {
 
     val pureConfigCore = pureConfig("pureconfig")
     val pureConfigCats = pureConfig("pureconfig-cats-effect")
+
+    val skunkCore  = skunk("skunk-core")
+    val skunkCirce = skunk("skunk-circe")
 
     val circeCore    = circe("circe-core")
     val circeGeneric = circe("circe-generic")

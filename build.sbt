@@ -33,6 +33,8 @@ lazy val root = (project in file("."))
       redis4catsLogs,
       refinedCore,
       refinedCats,
+      skunkCore,
+      skunkCirce,
       scalaTest        % Test,
       scalaTestPlus    % Test,
       scalaCheck       % Test,
