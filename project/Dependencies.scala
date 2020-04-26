@@ -69,5 +69,6 @@ object Dependencies {
     val mockitoCore      = mockito("mockito-scala")
     val mockitoScalatest = mockito("mockito-scala-scalatest")
     val redisEmbedded    = "com.github.sebruck" %% "scalatest-embedded-redis" % "0.4.0"
+    val postgresEmbedded = "ru.yandex.qatools.embed" % "postgresql-embedded" % "2.10"
   }
 }
