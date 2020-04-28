@@ -11,19 +11,21 @@ object Dependencies {
     val redis4cats = "0.9.6"
     val skunk      = "0.0.8"
 
-    val scalaCheck    = "1.14.3"
-    val scalaTest     = "3.1.1"
-    val scalaTestPlus = "3.1.1.1"
+    val scalaCheck     = "1.14.3"
+    val scalaTest      = "3.1.1"
+    val scalaTestPlus  = "3.1.1.1"
+    val testContainers = "0.36.1"
   }
 
   object Libraries {
-    def circe(artifact: String): ModuleID      = "io.circe"              %% artifact % Versions.circe
-    def pureConfig(artifact: String): ModuleID = "com.github.pureconfig" %% artifact % Versions.pureConfig
-    def http4s(artifact: String): ModuleID     = "org.http4s"            %% artifact % Versions.http4s
-    def mockito(artifact: String): ModuleID    = "org.mockito"           %% artifact % Versions.mockito
-    def refined(artifact: String): ModuleID    = "eu.timepit"            %% artifact % Versions.refined
-    def redis(artifact: String): ModuleID      = "dev.profunktor"        %% artifact % Versions.redis4cats
-    def skunk(artifact: String): ModuleID      = "org.tpolecat"          %% artifact % Versions.skunk
+    def circe(artifact: String): ModuleID          = "io.circe"              %% artifact % Versions.circe
+    def pureConfig(artifact: String): ModuleID     = "com.github.pureconfig" %% artifact % Versions.pureConfig
+    def http4s(artifact: String): ModuleID         = "org.http4s"            %% artifact % Versions.http4s
+    def mockito(artifact: String): ModuleID        = "org.mockito"           %% artifact % Versions.mockito
+    def refined(artifact: String): ModuleID        = "eu.timepit"            %% artifact % Versions.refined
+    def redis(artifact: String): ModuleID          = "dev.profunktor"        %% artifact % Versions.redis4cats
+    def skunk(artifact: String): ModuleID          = "org.tpolecat"          %% artifact % Versions.skunk
+    def testContainers(artifact: String): ModuleID = "com.dimafeng"          %% artifact % Versions.testContainers
 
     val catsCore    = "org.typelevel"    %% "cats-core"              % "2.1.1"
     val catsTestkit = "org.typelevel"    %% "cats-testkit-scalatest" % "1.0.1"
@@ -69,6 +71,8 @@ object Dependencies {
     val mockitoCore      = mockito("mockito-scala")
     val mockitoScalatest = mockito("mockito-scala-scalatest")
     val redisEmbedded    = "com.github.sebruck" %% "scalatest-embedded-redis" % "0.4.0"
-    val postgresEmbedded = "ru.yandex.qatools.embed" % "postgresql-embedded" % "2.10"
+
+    val testContainersScalatest = testContainers("testcontainers-scala-scalatest")
+    val testContainersPostgres = testContainers("testcontainers-scala-postgresql")
   }
 }
