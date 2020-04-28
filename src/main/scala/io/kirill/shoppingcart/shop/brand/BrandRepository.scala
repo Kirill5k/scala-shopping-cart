@@ -42,6 +42,6 @@ object BrandRepository {
           INSERT INTO brands VALUES ($codec)
           """.command
 
-  def apply[F[_]: Sync](implicit sessionPool: Resource[F, Session[F]]): BrandRepository[F] =
-    new BrandRepository[F](sessionPool)
+  def make[F[_]: Sync](sessionPool: Resource[F, Session[F]]): F[BrandRepository[F]] =
+    Sync[F].delay(new BrandRepository[F](sessionPool))
 }

@@ -10,18 +10,30 @@ class BrandRepositorySpec extends PostgresRepositorySpec {
   "A BrandRepository" - {
 
     "create new brands and search them" in {
-      val repository = BrandRepository[IO]
+      val repository = BrandRepository.make[IO](session)
 
-      repository.create(BrandName("foo")) *> repository.findAll.asserting { brands =>
+      val allBrands = for {
+        r <- repository
+        _ <- r.create(BrandName("foo"))
+        brands <- r.findAll
+      } yield brands
+
+      allBrands.asserting { brands =>
         brands must have size 1
         brands.head.name must be (BrandName("foo"))
       }
     }
 
     "return error if brand with same name already exists" in {
-      val repository = BrandRepository[IO]
+      val repository = BrandRepository.make[IO](session)
 
-      repository.create(BrandName("b1")) *> repository.create(BrandName("b1")).assertThrows[SqlConstraintViolation]
+      val error = for {
+        r <- repository
+        _ <- r.create(BrandName("b1"))
+        e <- r.create(BrandName("b1"))
+      } yield e
+
+      error.assertThrows[SqlConstraintViolation]
     }
   }
 }
