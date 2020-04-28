@@ -19,9 +19,8 @@ package object order {
       total: Money
   )
 
-  final case class CreateOrder(
+  final case class OrderCheckout(
       userId: UserId,
-      paymentId: PaymentId,
       cart: Cart
   )
 }

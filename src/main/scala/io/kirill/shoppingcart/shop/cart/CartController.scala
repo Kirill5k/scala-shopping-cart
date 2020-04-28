@@ -1,5 +1,7 @@
 package io.kirill.shoppingcart.shop.cart
 
+import java.util.UUID
+
 import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._
@@ -29,7 +31,7 @@ final class CartController[F[_]: Sync](cartService: CartService[F]) extends Rest
         withErrorHandling {
           for {
             cart <- authedReq.req.as[CartUpdateRequest]
-            _    <- cartService.add(user.value.id, cart.items.toMap)
+            _    <- cartService.add(user.value.id, cart.toDomain)
             res  <- Ok()
           } yield res
         }
@@ -37,7 +39,7 @@ final class CartController[F[_]: Sync](cartService: CartService[F]) extends Rest
         withErrorHandling {
           for {
             cart <- authedReq.req.as[CartUpdateRequest]
-            _    <- cartService.update(user.value.id, cart.items.toMap)
+            _    <- cartService.update(user.value.id, cart.toDomain)
             res  <- Ok()
           } yield res
         }
@@ -48,5 +50,7 @@ final class CartController[F[_]: Sync](cartService: CartService[F]) extends Rest
 }
 
 object CartController {
-  final case class CartUpdateRequest(items: Seq[(ItemId, Quantity)]) extends AnyVal
+  final case class CartUpdateRequest(items: Map[UUID, Int]) extends AnyVal {
+    def toDomain: Cart = Cart(items.map(x => CartItem(ItemId(x._1), Quantity(x._2))).toList)
+  }
 }

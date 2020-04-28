@@ -33,14 +33,11 @@ final class OrderController[F[_]: Sync](
             case Some(order)                                  => Ok(order)
           }
         } yield res
-      case authedReq @ POST -> Root / "checkout" as user =>
+      case POST -> Root / "checkout" as user =>
         for {
-          checkoutReq <- authedReq.req.as[OrderCheckoutRequest]
-          userId = user.value.id
-          cart      <- cartService.get(userId)
-          paymentId <- paymentService.process(Payment(userId, cart.total, checkoutReq.card))
-          orderId   <- orderService.create(CreateOrder(userId, paymentId, cart))
-          _         <- cartService.delete(userId)
+          cart      <- cartService.get(user.value.id)
+          orderId   <- orderService.create(OrderCheckout(user.value.id, cart))
+          _         <- cartService.delete(user.value.id)
           res       <- Created(orderId)
         } yield res
     }
