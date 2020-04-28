@@ -1,0 +1,10 @@
+CREATE TABLE brands (
+    id UUID PRIMARY KEY,
+    name VARCHAR UNIQUE NOT NULL
+);
+
+CREATE TABLE categories (
+    id UUID PRIMARY KEY,
+    name VARCHAR UNIQUE NOT NULL
+);
+

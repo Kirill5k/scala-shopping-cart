@@ -72,6 +72,7 @@ object Dependencies {
     val mockitoScalatest = mockito("mockito-scala-scalatest")
     val redisEmbedded    = "com.github.sebruck" %% "scalatest-embedded-redis" % "0.4.0"
 
+    val postgresDriver = "postgresql" % "postgresql" % "9.1-901-1.jdbc4"
     val testContainersScalatest = testContainers("testcontainers-scala-scalatest")
     val testContainersPostgres = testContainers("testcontainers-scala-postgresql")
   }

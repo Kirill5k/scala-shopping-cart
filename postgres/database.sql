@@ -1,6 +1,6 @@
 DROP DATABASE IF EXISTS shop;
 CREATE DATABASE shop;
-\c four_finance;
+\c shop;
 
 CREATE TABLE brands (
     id UUID PRIMARY KEY,

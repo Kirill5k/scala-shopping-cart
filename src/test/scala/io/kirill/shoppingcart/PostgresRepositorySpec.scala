@@ -10,7 +10,10 @@ import natchez.Trace.Implicits.noop
 
 trait PostgresRepositorySpec extends AsyncFreeSpec with AsyncIOSpec with Matchers with ForAllTestContainer {
 
-  override val container = PostgreSQLContainer(databaseName = "store", username = "scala", password = "scala")
+  override val container =
+    PostgreSQLContainer(databaseName = "store", username = "scala", password = "scala").configure { c =>
+      c.withInitScript("database.sql")
+    }
 
   lazy val Array(host, port) =
     container.jdbcUrl.substring(18).split("/").head.split(":")

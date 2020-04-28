@@ -44,6 +44,7 @@ lazy val root = (project in file("."))
       mockitoScalatest % Test,
       redisEmbedded    % Test,
       testContainersScalatest % Test,
-      testContainersPostgres % Test
+      testContainersPostgres % Test,
+      postgresDriver % Test
     )
   )
