@@ -4,18 +4,19 @@ import java.util.UUID
 
 import cats.effect.{Resource, Sync}
 import cats.implicits._
+import io.kirill.shoppingcart.common.persistence.Repository
 import skunk._
 import skunk.implicits._
 import skunk.codec.all._
 
-final class BrandRepository[F[_]: Sync] private(sessionPool: Resource[F, Session[F]]) {
+final class BrandRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F] {
   import BrandRepository._
 
   def findAll: F[List[Brand]] =
-    sessionPool.use(_.execute(selectAll))
+    run(_.execute(selectAll))
 
   def create(name: BrandName): F[Brand] =
-    sessionPool.use { s =>
+    run { s =>
       s.prepare(insert).use { cmd =>
         for {
           b <- Sync[F].pure(Brand(BrandId(UUID.randomUUID()), name))
