@@ -18,10 +18,6 @@ import squants.market.GBP
 final class OrderRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F] {
   import OrderRepository._
 
-//  def findAll: F[List[Order]] =
-//    run(_.execute(selectAll))
-//
-
 }
 
 object OrderRepository {
@@ -31,6 +27,28 @@ object OrderRepository {
         Order(OrderId(oid), UserId(uid), PaymentId(pid), items, total)
     }
 
+  private val encoder: Encoder[Order] =
+    (uuid ~ uuid ~ uuid ~ jsonb[Seq[OrderItem]] ~ numeric).contramap { o =>
+      o.id.value ~ o.userId.value ~ o.paymentId.value ~ o.items ~ o.totalPrice.value
+    }
+
+  private val selectByUserId: Query[UUID, Order] =
+    sql"""
+         SELECT * FROM orders
+         WHERE user_id = $uuid
+         """.query(decoder)
+
+  private val selectById: Query[UUID, Order] =
+    sql"""
+         SELECT * FROM orders
+         WHERE id = $uuid
+         """.query(decoder)
+
+  private val insert: Command[Order] =
+    sql"""
+         INSERT INTO orders
+         VALUES ($encoder)
+         """.command
 
   def make[F[_]: Sync](sessionPool: Resource[F, Session[F]]): F[OrderRepository[F]] =
     Sync[F].delay(new OrderRepository[F](sessionPool))

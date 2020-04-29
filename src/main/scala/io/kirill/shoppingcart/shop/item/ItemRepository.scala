@@ -85,7 +85,7 @@ object ItemRepository {
          FROM items AS i
          INNER JOIN brands AS b ON i.brand_id = b.id
          INNER JOIN categories AS c ON i.category_id = c.id
-         WHERE i.id = ${uuid}
+         WHERE i.id = $uuid
          """.query(decoder)
 
   private val insert: Command[ItemId ~ CreateItem] =
