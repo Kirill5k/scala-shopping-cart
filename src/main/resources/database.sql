@@ -13,7 +13,7 @@ CREATE TABLE categories
     name VARCHAR UNIQUE NOT NULL
 );
 
-CREATE TABLE item
+CREATE TABLE items
 (
     id          UUID PRIMARY KEY,
     name        VARCHAR UNIQUE NOT NULL,

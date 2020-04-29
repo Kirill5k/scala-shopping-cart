@@ -28,7 +28,6 @@ final class ItemRepository[F[_]: Sync] private (val sessionPool: Resource[F, Ses
   def find(id: ItemId): F[Option[Item]] =
     run { session =>
       session.prepare(selectById).use { ps =>
-        //TODO: try without option
         ps.option(id.value)
       }
     }
@@ -65,7 +64,7 @@ object ItemRepository {
 
   private val selectAll: Query[Void, Item] =
     sql"""
-         SELECT i.id, i.name, i.description, i.price, b.id, b.name, b.id, b.bame
+         SELECT i.id, i.name, i.description, i.price, b.id, b.name, c.id, c.name
          FROM items AS i
          INNER JOIN brands AS b ON i.brand_id = b.id
          INNER JOIN categories AS c ON i.category_id = c.id
@@ -73,7 +72,7 @@ object ItemRepository {
 
   private val selectByBrand: Query[String, Item] =
     sql"""
-         SELECT i.id, i.name, i.description, i.price, b.id, b.name, b.id, b.bame
+         SELECT i.id, i.name, i.description, i.price, b.id, b.name, c.id, c.name
          FROM items AS i
          INNER JOIN brands AS b ON i.brand_id = b.id
          INNER JOIN categories AS c ON i.category_id = c.id
@@ -82,7 +81,7 @@ object ItemRepository {
 
   private val selectById: Query[UUID, Item] =
     sql"""
-         SELECT i.id, i.name, i.description, i.price, b.id, b.name, b.id, b.bame
+         SELECT i.id, i.name, i.description, i.price, b.id, b.name, c.id, c.name
          FROM items AS i
          INNER JOIN brands AS b ON i.brand_id = b.id
          INNER JOIN categories AS c ON i.category_id = c.id
