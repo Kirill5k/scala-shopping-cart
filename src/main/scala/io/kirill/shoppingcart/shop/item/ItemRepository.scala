@@ -6,7 +6,7 @@ import cats.effect.{Resource, Sync}
 import cats.implicits._
 import io.kirill.shoppingcart.common.persistence.Repository
 import io.kirill.shoppingcart.shop.brand.{Brand, BrandId, BrandName}
-import io.kirill.shoppingcart.shop.category.{Category, CategoryId, CategoryName}
+import io.kirill.shoppingcart.shop.category.{Category, CategoryId, CategoryName, CategoryRepository}
 import skunk._
 import skunk.implicits._
 import skunk.codec.all._
@@ -103,4 +103,7 @@ object ItemRepository {
          SET price = $numeric
          WHERE id = $uuid
          """.command.contramap(i => i.price.amount ~ i.id.value)
+
+  def make[F[_]: Sync](sessionPool: Resource[F, Session[F]]): F[ItemRepository[F]] =
+    Sync[F].delay(new ItemRepository[F](sessionPool))
 }
