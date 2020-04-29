@@ -4,7 +4,7 @@ import java.util.UUID
 
 import cats.effect.IO
 import io.kirill.shoppingcart.PostgresRepositorySpec
-import io.kirill.shoppingcart.common.errors.SqlConstraintViolation
+import io.kirill.shoppingcart.common.errors.{ForeignKeyViolation, SqlConstraintViolation}
 import io.kirill.shoppingcart.shop.brand.{BrandId, BrandName, BrandRepository}
 import io.kirill.shoppingcart.shop.category.{CategoryId, CategoryName, CategoryRepository}
 import squants.market.GBP
@@ -60,6 +60,51 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         val itemRepository = ItemRepository.make(session)
 
         itemRepository.flatMap(_.findBy(BrandName("foo"))).asserting(_ must be (Nil))
+      }
+    }
+
+    "findAll" - {
+      "return all items from repo" in {
+        val itemRepository = ItemRepository.make(session)
+
+        val result = for {
+          repo <- itemRepository
+          _ <- insertTestItem(repo)
+          items <- repo.findAll
+        } yield items
+
+        result.asserting { items =>
+          items must not be empty
+          items.map(_.brand.name) must contain only (BrandName("test-brand"))
+        }
+      }
+    }
+
+    "update" - {
+      "change item's price" in {
+        val itemRepository = ItemRepository.make(session)
+
+        val result = for {
+          repo <- itemRepository
+          id <- insertTestItem(repo)
+          _ <- repo.update(UpdateItem(id, GBP(BigDecimal(99.99))))
+          item <- repo.find(id)
+        } yield item.get
+
+        result.asserting { item =>
+          item.price must be (GBP(BigDecimal(99.99)))
+        }
+      }
+    }
+
+    "create" - {
+      "return error when brand does not exist" in {
+        val result = for {
+          repo <- ItemRepository.make(session)
+          iid <- repo.create(CreateItem(ItemName("item"), ItemDescription("description"), GBP(BigDecimal(10.99)), BrandId(UUID.randomUUID()), CategoryId(UUID.randomUUID())))
+        } yield iid
+
+        result.assertThrows[ForeignKeyViolation]
       }
     }
   }
