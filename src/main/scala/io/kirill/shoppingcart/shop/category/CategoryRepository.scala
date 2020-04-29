@@ -15,13 +15,11 @@ final class CategoryRepository[F[_]: Sync] private(val sessionPool: Resource[F, 
   def findAll: F[List[Category]] =
     run(_.execute(selectAll))
 
-  def create(name: CategoryName): F[Category] =
+  def create(name: CategoryName): F[CategoryId] =
     run { s =>
       s.prepare(insert).use { cmd =>
-        for {
-          b <- Sync[F].pure(Category(CategoryId(UUID.randomUUID()), name))
-          _ <- cmd.execute(b).void
-        } yield b
+        val id = CategoryId(UUID.randomUUID())
+        cmd.execute(Category(id, name)).map(_ => id)
       }
     }
 }

@@ -15,13 +15,11 @@ final class BrandRepository[F[_]: Sync] private(val sessionPool: Resource[F, Ses
   def findAll: F[List[Brand]] =
     run(_.execute(selectAll))
 
-  def create(name: BrandName): F[Brand] =
+  def create(name: BrandName): F[BrandId] =
     run { s =>
       s.prepare(insert).use { cmd =>
-        for {
-          b <- Sync[F].pure(Brand(BrandId(UUID.randomUUID()), name))
-          _ <- cmd.execute(b).void
-        } yield b
+        val brandId = BrandId(UUID.randomUUID())
+        cmd.execute(Brand(brandId, name)).map(_ => brandId)
       }
     }
 }
