@@ -3,7 +3,7 @@ package io.kirill.shoppingcart.shop.brand
 import cats.effect.Sync
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.common.web.RestController
-import io.kirill.shoppingcart.common.web.json._
+import io.kirill.shoppingcart.common.json._
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
 

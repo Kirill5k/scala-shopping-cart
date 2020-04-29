@@ -1,6 +1,13 @@
 DROP DATABASE IF EXISTS shop;
 CREATE DATABASE shop;
 
+CREATE TABLE users
+(
+    id       UUID PRIMARY KEY,
+    name     VARCHAR UNIQUE NOT NULL,
+    password VARCHAR        NOT NULL
+);
+
 CREATE TABLE brands
 (
     id   UUID PRIMARY KEY,
@@ -26,6 +33,18 @@ CREATE TABLE items
         ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT category_id_fkey FOREIGN KEY (category_id)
         REFERENCES categories (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE TABLE orders
+(
+    id          UUID PRIMARY KEY,
+    user_id     UUID        NOT NULL,
+    payment_id  UUID UNIQUE NOT NULL,
+    items       JSONB       NOT NULL,
+    total_price NUMERIC     NOT NULL,
+    CONSTRAINT user_id_fkey FOREIGN KEY (user_id)
+        REFERENCES users (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 

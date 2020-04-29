@@ -12,7 +12,7 @@ import org.http4s.dsl.Http4sDsl
 
 trait RestController[F[_]] extends Http4sDsl[F] {
   import RestController._
-  import json._
+  import io.kirill.shoppingcart.common.json._
 
   protected def withErrorHandling(response: => F[Response[F]])(implicit s: Sync[F]): F[Response[F]] =
     response.handleErrorWith {
@@ -37,7 +37,7 @@ trait RestController[F[_]] extends Http4sDsl[F] {
 }
 
 object RestController {
-  import io.kirill.shoppingcart.common.web.json._
+  import io.kirill.shoppingcart.common.json._
 
   final case class ErrorResponse(message: String)
 

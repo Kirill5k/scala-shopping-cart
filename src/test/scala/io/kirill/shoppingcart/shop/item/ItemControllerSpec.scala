@@ -5,7 +5,7 @@ import io.circe.Decoder
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.ControllerSpec
 import io.kirill.shoppingcart.shop.brand.BrandName
-import io.kirill.shoppingcart.common.web.json._
+import io.kirill.shoppingcart.common.json._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.implicits._

@@ -6,7 +6,7 @@ import io.circe.generic.auto._
 import io.kirill.shoppingcart.shop.cart.CartService
 import io.kirill.shoppingcart.auth.CommonUser
 import io.kirill.shoppingcart.common.web.RestController
-import io.kirill.shoppingcart.common.web.json._
+import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentService}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.server.{AuthMiddleware, Router}

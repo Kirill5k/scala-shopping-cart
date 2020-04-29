@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.common.web
+package io.kirill.shoppingcart.common
 
 import cats.Applicative
 import cats.effect.Sync
