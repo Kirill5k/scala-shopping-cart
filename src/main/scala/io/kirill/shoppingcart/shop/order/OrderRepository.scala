@@ -3,6 +3,7 @@ package io.kirill.shoppingcart.shop.order
 import java.util.UUID
 
 import cats.effect.{Resource, Sync}
+import cats.implicits._
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.auth.UserId
 import io.kirill.shoppingcart.common.json._
@@ -18,6 +19,27 @@ import squants.market.GBP
 final class OrderRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F] {
   import OrderRepository._
 
+  def findBy(userId: UserId): F[List[Order]] =
+    run { session =>
+      session.prepare(selectByUserId).use { ps =>
+        ps.stream(userId.value, 1024).compile.toList
+      }
+    }
+
+  def find(id: OrderId): F[Option[Order]] =
+    run { session =>
+      session.prepare(selectById).use { ps =>
+        ps.option(id.value)
+      }
+    }
+
+  def create(order: CreateOrder): F[OrderId] =
+    run { session =>
+      session.prepare(insert).use { cmd =>
+        val orderId = OrderId(UUID.randomUUID())
+        cmd.execute(orderId ~ order).map(_ => orderId)
+      }
+    }
 }
 
 object OrderRepository {
@@ -27,9 +49,9 @@ object OrderRepository {
         Order(OrderId(oid), UserId(uid), PaymentId(pid), items, total)
     }
 
-  private val encoder: Encoder[Order] =
-    (uuid ~ uuid ~ uuid ~ jsonb[Seq[OrderItem]] ~ numeric).contramap { o =>
-      o.id.value ~ o.userId.value ~ o.paymentId.value ~ o.items ~ o.totalPrice.value
+  private val encoder: Encoder[OrderId ~ CreateOrder] =
+    (uuid ~ uuid ~ uuid ~ jsonb[Seq[OrderItem]] ~ numeric).contramap { case id ~ o =>
+      id.value ~ o.userId.value ~ o.paymentId.value ~ o.items ~ o.totalPrice.value
     }
 
   private val selectByUserId: Query[UUID, Order] =
@@ -44,7 +66,7 @@ object OrderRepository {
          WHERE id = $uuid
          """.query(decoder)
 
-  private val insert: Command[Order] =
+  private val insert: Command[OrderId ~ CreateOrder] =
     sql"""
          INSERT INTO orders
          VALUES ($encoder)

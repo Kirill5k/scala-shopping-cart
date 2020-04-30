@@ -21,6 +21,13 @@ package object order {
       totalPrice: Money
   )
 
+  final case class CreateOrder(
+      userId: UserId,
+      paymentId: PaymentId,
+      items: Seq[OrderItem],
+      totalPrice: Money
+  )
+
   final case class OrderCheckout(
       userId: UserId,
       cart: Cart
