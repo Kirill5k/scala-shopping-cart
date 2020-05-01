@@ -6,31 +6,23 @@ import cats.effect.{Resource, Sync}
 import cats.implicits._
 import io.kirill.shoppingcart.common.persistence.Repository
 import io.kirill.shoppingcart.shop.brand.{Brand, BrandId, BrandName}
-import io.kirill.shoppingcart.shop.category.{Category, CategoryId, CategoryName, CategoryRepository}
+import io.kirill.shoppingcart.shop.category.{Category, CategoryId, CategoryName}
 import skunk._
 import skunk.implicits._
 import skunk.codec.all._
 import squants.market.GBP
 
-final class ItemRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F]]) extends Repository[F] {
+final class ItemRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F]]) extends Repository[F, Item] {
   import ItemRepository._
 
   def findAll: F[List[Item]] =
     run(_.execute(selectAll))
 
   def findBy(brand: BrandName): F[List[Item]] =
-    run { session =>
-      session.prepare(selectByBrand).use { ps =>
-        ps.stream(brand.value, 1024).compile.toList
-      }
-    }
+    findManyBy(selectByBrand, brand.value)
 
   def find(id: ItemId): F[Option[Item]] =
-    run { session =>
-      session.prepare(selectById).use { ps =>
-        ps.option(id.value)
-      }
-    }
+    findOneBy(selectById, id.value)
 
   def create(item: CreateItem): F[ItemId] =
     run { session =>

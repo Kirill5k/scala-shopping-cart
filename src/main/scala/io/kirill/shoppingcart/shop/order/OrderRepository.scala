@@ -5,7 +5,7 @@ import java.util.UUID
 import cats.effect.{Resource, Sync}
 import cats.implicits._
 import io.circe.generic.auto._
-import io.kirill.shoppingcart.auth.UserId
+import io.kirill.shoppingcart.auth.user.UserId
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.common.persistence.Repository
 import io.kirill.shoppingcart.shop.payment.PaymentId
@@ -16,22 +16,14 @@ import skunk.circe.codec.all._
 import squants.market.GBP
 
 
-final class OrderRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F] {
+final class OrderRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F, Order] {
   import OrderRepository._
 
   def findBy(userId: UserId): F[List[Order]] =
-    run { session =>
-      session.prepare(selectByUserId).use { ps =>
-        ps.stream(userId.value, 1024).compile.toList
-      }
-    }
+    findManyBy(selectByUserId, userId.value)
 
   def find(id: OrderId): F[Option[Order]] =
-    run { session =>
-      session.prepare(selectById).use { ps =>
-        ps.option(id.value)
-      }
-    }
+    findOneBy(selectById, id.value)
 
   def create(order: CreateOrder): F[OrderId] =
     run { session =>

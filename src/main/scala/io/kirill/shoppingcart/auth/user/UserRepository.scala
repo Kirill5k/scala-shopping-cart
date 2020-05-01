@@ -9,15 +9,11 @@ import skunk._
 import skunk.codec.all._
 import skunk.implicits._
 
-class UserRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F]]) extends Repository[F] {
+class UserRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F]]) extends Repository[F, User] {
   import UserRepository._
 
   def findByName(username: Username): F[Option[User]] =
-    run { session =>
-      session.prepare(selectByName).use { ps =>
-        ps.option(username.value)
-      }
-    }
+    findOneBy(selectByName, username.value)
 
   def create(username: Username, password: EncryptedPassword): F[UserId] =
     run { session =>

@@ -9,7 +9,7 @@ import skunk._
 import skunk.implicits._
 import skunk.codec.all._
 
-final class CategoryRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F] {
+final class CategoryRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F, Category] {
   import CategoryRepository._
 
   def findAll: F[List[Category]] =

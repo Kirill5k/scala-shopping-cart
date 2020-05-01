@@ -4,7 +4,7 @@ import java.util.UUID
 
 import cats.effect.IO
 import io.kirill.shoppingcart.PostgresRepositorySpec
-import io.kirill.shoppingcart.auth.UserId
+import io.kirill.shoppingcart.auth.user.UserId
 import io.kirill.shoppingcart.common.errors.ForeignKeyViolation
 import io.kirill.shoppingcart.shop.brand.{BrandId, BrandName, BrandRepository}
 import io.kirill.shoppingcart.shop.category.{CategoryId, CategoryName, CategoryRepository}
