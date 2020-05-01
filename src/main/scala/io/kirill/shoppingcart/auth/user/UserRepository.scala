@@ -1,14 +1,13 @@
-package io.kirill.shoppingcart.auth
+package io.kirill.shoppingcart.auth.user
 
 import java.util.UUID
 
 import cats.effect.{Resource, Sync}
 import cats.implicits._
 import io.kirill.shoppingcart.common.persistence.Repository
-import io.kirill.shoppingcart.shop.item.ItemRepository
 import skunk._
-import skunk.implicits._
 import skunk.codec.all._
+import skunk.implicits._
 
 class UserRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F]]) extends Repository[F] {
   import UserRepository._
@@ -48,6 +47,6 @@ object UserRepository {
          VALUES ($codec)
          """.command
 
-  def make[F[_]: Sync](sessionPool: Resource[F, Session[F]]): F[ItemRepository[F]] =
+  def make[F[_]: Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] =
     Sync[F].delay(new UserRepository[F](sessionPool))
 }

@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.shop
 
 import java.util.UUID
 
-import io.kirill.shoppingcart.auth.UserId
+import io.kirill.shoppingcart.auth.user.UserId
 import io.kirill.shoppingcart.shop.cart.{Cart, Quantity}
 import io.kirill.shoppingcart.shop.item.ItemId
 import io.kirill.shoppingcart.shop.payment.PaymentId

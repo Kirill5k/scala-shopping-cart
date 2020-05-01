@@ -13,6 +13,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.literal._
+import io.kirill.shoppingcart.auth.user.{Password, UserId, Username}
 import io.kirill.shoppingcart.common.errors.InvalidUsernameOrPassword
 import io.kirill.shoppingcart.common.web.RestController.ErrorResponse
 import org.http4s.circe._

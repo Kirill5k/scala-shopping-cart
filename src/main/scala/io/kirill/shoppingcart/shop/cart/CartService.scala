@@ -5,9 +5,8 @@ import java.util.UUID
 import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
-import io.kirill.shoppingcart.auth.UserId
-import io.kirill.shoppingcart.shop.item.{ItemId, ItemService}
-import squants.market.GBP
+import io.kirill.shoppingcart.auth.user.UserId
+import io.kirill.shoppingcart.shop.item.ItemId
 
 import scala.concurrent.duration.FiniteDuration
 

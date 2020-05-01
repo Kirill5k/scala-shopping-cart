@@ -5,7 +5,8 @@ import java.util.UUID
 import cats.data.Kleisli
 import cats.effect.IO
 import eu.timepit.refined.string.Uuid
-import io.kirill.shoppingcart.auth.{CommonUser, Password, User, UserId, Username}
+import io.kirill.shoppingcart.auth.CommonUser
+import io.kirill.shoppingcart.auth.user._
 import org.http4s.server.AuthMiddleware
 import org.http4s.{EntityDecoder, Response, Status}
 import org.mockito.ArgumentMatchersSugar
@@ -15,7 +16,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchersSugar with Matchers {
 
-  val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), Password("password")))
+  val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), EncryptedPassword("password")))
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] = AuthMiddleware(Kleisli.pure(authedUser))
 

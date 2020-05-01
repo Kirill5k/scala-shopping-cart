@@ -7,7 +7,7 @@ import eu.timepit.refined.api._
 import eu.timepit.refined.boolean.And
 import eu.timepit.refined.collection.Size
 import eu.timepit.refined.string.{ MatchesRegex, ValidInt }
-import io.kirill.shoppingcart.auth.UserId
+import io.kirill.shoppingcart.auth.user.UserId
 import squants.Money
 
 package object payment {

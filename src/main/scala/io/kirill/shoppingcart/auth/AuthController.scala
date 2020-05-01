@@ -13,6 +13,7 @@ import org.http4s.server.{AuthMiddleware, Router}
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection._
 import io.circe.refined._
+import io.kirill.shoppingcart.auth.user.{Password, Username}
 import io.kirill.shoppingcart.common.errors.AuthTokenNotPresent
 
 final class AuthController[F[_]: Sync](authService: AuthService[F]) extends RestController[F]{
