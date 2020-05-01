@@ -15,10 +15,10 @@ import squants.market.GBP
 final class ItemRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F]]) extends Repository[F, Item] {
   import ItemRepository._
 
-  def findAll: F[List[Item]] =
-    run(_.execute(selectAll))
+  def findAll: fs2.Stream[F, Item] =
+    fs2.Stream.evalSeq(run(_.execute(selectAll)))
 
-  def findBy(brand: BrandName): F[List[Item]] =
+  def findBy(brand: BrandName): fs2.Stream[F, Item] =
     findManyBy(selectByBrand, brand.value)
 
   def find(id: ItemId): F[Option[Item]] =

@@ -24,10 +24,10 @@ trait Repository[F[_], E] {
       }
     }
 
-  protected def findManyBy[A](command: Query[A, E], arg: A)(implicit S: Sync[F]): F[List[E]] =
-    run { session =>
-      session.prepare(command).use { ps =>
-        ps.stream(arg, 1024).compile.toList
-      }
-    }
+  protected def findManyBy[A](command: Query[A, E], arg: A)(implicit S: Sync[F]): fs2.Stream[F, E] =
+    for {
+      s <- fs2.Stream.resource(sessionPool)
+      ps <- fs2.Stream.resource(s.prepare(command))
+      x <- ps.stream(arg, 1024)
+    } yield x
 }

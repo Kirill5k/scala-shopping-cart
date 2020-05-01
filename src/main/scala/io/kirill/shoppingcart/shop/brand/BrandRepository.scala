@@ -12,8 +12,8 @@ import skunk.codec.all._
 final class BrandRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F, Brand] {
   import BrandRepository._
 
-  def findAll: F[List[Brand]] =
-    run(_.execute(selectAll))
+  def findAll: fs2.Stream[F, Brand] =
+    fs2.Stream.evalSeq(run(_.execute(selectAll)))
 
   def create(name: BrandName): F[BrandId] =
     run { s =>

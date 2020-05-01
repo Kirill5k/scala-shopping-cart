@@ -15,7 +15,7 @@ class BrandRepositorySpec extends PostgresRepositorySpec {
       val allBrands = for {
         r <- repository
         _ <- r.create(BrandName("foo"))
-        brands <- r.findAll
+        brands <- r.findAll.compile.toList
       } yield brands
 
       allBrands.asserting { brands =>

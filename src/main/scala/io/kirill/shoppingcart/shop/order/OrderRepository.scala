@@ -19,7 +19,7 @@ import squants.market.GBP
 final class OrderRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F, Order] {
   import OrderRepository._
 
-  def findBy(userId: UserId): F[List[Order]] =
+  def findBy(userId: UserId): fs2.Stream[F, Order] =
     findManyBy(selectByUserId, userId.value)
 
   def find(id: OrderId): F[Option[Order]] =

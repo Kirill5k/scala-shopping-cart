@@ -48,7 +48,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
           uid <- insertTestUser
           r <- OrderRepository.make(session)
           _ <- insertTestOrder(r)
-          orders <- r.findBy(uid)
+          orders <- r.findBy(uid).compile.toList
         } yield (orders, uid)
 
         result.asserting { case (orders, uid) =>
@@ -60,7 +60,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
       "return empty list if no matches" in {
         val orderRepository = OrderRepository.make(session)
 
-        orderRepository.flatMap(_.findBy(UserId(UUID.randomUUID()))).asserting(_ must be(Nil))
+        orderRepository.flatMap(_.findBy(UserId(UUID.randomUUID())).compile.toList).asserting(_ must be(Nil))
       }
     }
   }

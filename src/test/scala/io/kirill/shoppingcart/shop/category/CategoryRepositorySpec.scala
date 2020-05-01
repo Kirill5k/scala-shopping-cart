@@ -14,7 +14,7 @@ class CategoryRepositorySpec extends PostgresRepositorySpec {
       val allCategories = for {
         r <- repository
         _ <- r.create(CategoryName("foo"))
-        brands <- r.findAll
+        brands <- r.findAll.compile.toList
       } yield brands
 
       allCategories.asserting { brands =>

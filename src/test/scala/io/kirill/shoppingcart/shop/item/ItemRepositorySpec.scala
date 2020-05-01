@@ -47,7 +47,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         val result = for {
           repo <- itemRepository
           _ <- insertTestItem(repo)
-          items <- repo.findBy(BrandName("test-brand"))
+          items <- repo.findBy(BrandName("test-brand")).compile.toList
         } yield items
 
         result.asserting { items =>
@@ -59,7 +59,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
       "return empty list if no matches" in {
         val itemRepository = ItemRepository.make(session)
 
-        itemRepository.flatMap(_.findBy(BrandName("foo"))).asserting(_ must be (Nil))
+        itemRepository.flatMap(_.findBy(BrandName("foo")).compile.toList).asserting(_ must be (Nil))
       }
     }
 
@@ -70,7 +70,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         val result = for {
           repo <- itemRepository
           _ <- insertTestItem(repo)
-          items <- repo.findAll
+          items <- repo.findAll.compile.toList
         } yield items
 
         result.asserting { items =>
@@ -112,14 +112,14 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
   def insertTestBrand: IO[BrandId] =
     for {
       r <- BrandRepository.make(session)
-      bs <- r.findAll
+      bs <- r.findAll.compile.toList
       bid <- bs.find(_.name == BrandName("test-brand")).fold(r.create(BrandName("test-brand")))(b => IO.pure(b.id))
     } yield bid
 
   def insertTestCategory: IO[CategoryId] =
     for {
       r <- CategoryRepository.make(session)
-      bs <- r.findAll
+      bs <- r.findAll.compile.toList
       cid <- bs.find(_.name == CategoryName("test-category")).fold(r.create(CategoryName("test-category")))(b => IO.pure(b.id))
     } yield cid
 

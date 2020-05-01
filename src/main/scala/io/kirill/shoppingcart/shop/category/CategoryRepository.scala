@@ -12,8 +12,8 @@ import skunk.codec.all._
 final class CategoryRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F, Category] {
   import CategoryRepository._
 
-  def findAll: F[List[Category]] =
-    run(_.execute(selectAll))
+  def findAll: fs2.Stream[F, Category] =
+    fs2.Stream.evalSeq(run(_.execute(selectAll)))
 
   def create(name: CategoryName): F[CategoryId] =
     run { s =>
