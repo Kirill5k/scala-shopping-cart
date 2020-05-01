@@ -5,15 +5,15 @@ import cats.implicits._
 import io.kirill.shoppingcart.auth.user.{PasswordHash, Password}
 import com.github.t3hnar.bcrypt._
 
-trait PasswordEncrypter[F[_]] {
+trait PasswordEncryptor[F[_]] {
   def hash(password: Password): F[PasswordHash]
   def isValid(password: Password, passwordHash: PasswordHash): F[Boolean]
 }
 
-object PasswordEncrypter {
+object PasswordEncryptor {
 
-  def apply[F[_]: Sync](salt: Option[PasswordSalt] = None): PasswordEncrypter[F] =
-    new PasswordEncrypter[F] {
+  def apply[F[_]: Sync](salt: Option[PasswordSalt] = None): PasswordEncryptor[F] =
+    new PasswordEncryptor[F] {
       override def hash(password: Password): F[PasswordHash] =
         Sync[F].delay(salt.fold(password.value.bcrypt)(s => password.value.bcrypt(s.value))).map(PasswordHash)
 
