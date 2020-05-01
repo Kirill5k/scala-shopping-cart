@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.common.persistence
 
 import cats.effect.{Resource, Sync}
 import cats.implicits._
-import io.kirill.shoppingcart.common.errors.{ForeignKeyViolation, SqlConstraintViolation}
+import io.kirill.shoppingcart.common.errors.{ForeignKeyViolation, UniqueViolation}
 import skunk.{Query, Session, SqlState}
 
 trait Repository[F[_], E] {
@@ -13,7 +13,7 @@ trait Repository[F[_], E] {
       case SqlState.ForeignKeyViolation(ex) =>
         S.raiseError(ForeignKeyViolation(ex.detail.fold(ex.message)(m => m)))
       case SqlState.UniqueViolation(ex) =>
-        S.raiseError(SqlConstraintViolation(ex.detail.fold(ex.message)(m => m)))
+        S.raiseError(UniqueViolation(ex.detail.fold(ex.message)(m => m)))
     }
   }
 

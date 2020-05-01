@@ -16,7 +16,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchersSugar with Matchers {
 
-  val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), EncryptedPassword("password")))
+  val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), PasswordHash("password")))
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] = AuthMiddleware(Kleisli.pure(authedUser))
 

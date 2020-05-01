@@ -4,7 +4,7 @@ import java.util.UUID
 
 import cats.effect.IO
 import io.kirill.shoppingcart.PostgresRepositorySpec
-import io.kirill.shoppingcart.auth.user.{EncryptedPassword, UserId, UserRepository, Username}
+import io.kirill.shoppingcart.auth.user.{PasswordHash, UserId, UserRepository, Username}
 import io.kirill.shoppingcart.shop.cart.Quantity
 import io.kirill.shoppingcart.shop.item.ItemId
 import io.kirill.shoppingcart.shop.payment.PaymentId
@@ -69,7 +69,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
     for {
       r <- UserRepository.make(session)
       u <- r.findByName(Username("test-user"))
-      uid <- u.fold(r.create(Username("test-user"), EncryptedPassword("password")))(x => IO.pure(x.id))
+      uid <- u.fold(r.create(Username("test-user"), PasswordHash("password")))(x => IO.pure(x.id))
     } yield uid
 
   def insertTestOrder(repository: OrderRepository[IO]): IO[OrderId] =

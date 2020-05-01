@@ -51,6 +51,7 @@ object Dependencies {
     val http4sClient  = http4s("http4s-blaze-client")
     val http4sCirce   = http4s("http4s-circe")
     val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % "0.0.4"
+    val bcrypt        = "com.github.t3hnar" %% "scala-bcrypt" % "4.1"
 
     val refinedCore = refined("refined")
     val refinedCats = refined("refined-cats")
@@ -72,8 +73,8 @@ object Dependencies {
     val mockitoScalatest = mockito("mockito-scala-scalatest")
     val redisEmbedded    = "com.github.sebruck" %% "scalatest-embedded-redis" % "0.4.0"
 
-    val postgresDriver = "postgresql" % "postgresql" % "9.1-901-1.jdbc4"
+    val postgresDriver          = "postgresql" % "postgresql" % "9.1-901-1.jdbc4"
     val testContainersScalatest = testContainers("testcontainers-scala-scalatest")
-    val testContainersPostgres = testContainers("testcontainers-scala-postgresql")
+    val testContainersPostgres  = testContainers("testcontainers-scala-postgresql")
   }
 }

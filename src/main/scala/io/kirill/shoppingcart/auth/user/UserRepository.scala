@@ -15,7 +15,7 @@ class UserRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F
   def findByName(username: Username): F[Option[User]] =
     findOneBy(selectByName, username.value)
 
-  def create(username: Username, password: EncryptedPassword): F[UserId] =
+  def create(username: Username, password: PasswordHash): F[UserId] =
     run { session =>
       session.prepare(insert).use { cmd =>
         val userId = UserId(UUID.randomUUID())
@@ -28,7 +28,7 @@ object UserRepository {
 
   private val codec: Codec[User] =
     (uuid ~ varchar ~ varchar).imap {
-      case i ~ n ~ p => User(UserId(i), Username(n), EncryptedPassword(p))
+      case i ~ n ~ p => User(UserId(i), Username(n), PasswordHash(p))
     }(u => u.id.value ~ u.name.value ~ u.password.value)
 
   private val selectByName: Query[String, User] =

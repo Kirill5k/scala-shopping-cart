@@ -7,7 +7,7 @@ object errors {
   }
 
   final case class ForeignKeyViolation(message: String) extends AppError
-  final case class SqlConstraintViolation(message: String) extends AppError
+  final case class UniqueViolation(message: String) extends AppError
 
   final case class ItemNotFound(message: String) extends AppError
   final case class ProcessingError(message: String) extends AppError

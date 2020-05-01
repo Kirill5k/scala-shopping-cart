@@ -3,7 +3,7 @@ package io.kirill.shoppingcart.shop.brand
 import cats.effect.IO
 import cats.implicits._
 import io.kirill.shoppingcart.PostgresRepositorySpec
-import io.kirill.shoppingcart.common.errors.SqlConstraintViolation
+import io.kirill.shoppingcart.common.errors.UniqueViolation
 
 class BrandRepositorySpec extends PostgresRepositorySpec {
 
@@ -33,7 +33,7 @@ class BrandRepositorySpec extends PostgresRepositorySpec {
         e <- r.create(BrandName("b1"))
       } yield e
 
-      error.assertThrows[SqlConstraintViolation]
+      error.assertThrows[UniqueViolation]
     }
   }
 }

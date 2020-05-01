@@ -27,6 +27,7 @@ lazy val root = (project in file("."))
       http4sClient,
       http4sCirce,
       http4sJwtAuth,
+      bcrypt,
       squants,
       redis4catsCore,
       redis4catsStream,

@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.shop.category
 
 import cats.effect.IO
 import io.kirill.shoppingcart.PostgresRepositorySpec
-import io.kirill.shoppingcart.common.errors.SqlConstraintViolation
+import io.kirill.shoppingcart.common.errors.UniqueViolation
 
 class CategoryRepositorySpec extends PostgresRepositorySpec {
 
@@ -32,7 +32,7 @@ class CategoryRepositorySpec extends PostgresRepositorySpec {
         e <- r.create(CategoryName("b1"))
       } yield e
 
-      error.assertThrows[SqlConstraintViolation]
+      error.assertThrows[UniqueViolation]
     }
   }
 }
