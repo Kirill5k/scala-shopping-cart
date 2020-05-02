@@ -18,6 +18,7 @@ lazy val root = (project in file("."))
       log4cats,
       circeCore,
       circeGeneric,
+      circeGenericExtras,
       circeParser,
       circeLiteral,
       circeRefined,

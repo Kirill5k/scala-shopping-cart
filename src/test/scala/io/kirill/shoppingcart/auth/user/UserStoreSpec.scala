@@ -48,18 +48,18 @@ class UserStoreSpec extends CatsIOSpec with EmbeddedRedis {
     "return common user from cache if it exists" in {
       withRedisAsync() { port =>
         val result = for {
-          store <- commandsApi(port).use(r => UserStore.commonUserStore[IO](r))
+          store <- UserStore.commonUserStore[IO](commandsApi(port))
           user <- store.findUser(JwtToken("jwt-token"))(JwtClaim())
         } yield user
 
-        result.asserting(_ must be (Some(CommonUser(User(UserId(UUID.fromString("722ccbba-8c62-11ea-bc55-0242ac130003")), Username("Boris"), PasswordHash("password-had"))))))
+        result.asserting(_ must be (Some(CommonUser(User(UserId(UUID.fromString("722ccbba-8c62-11ea-bc55-0242ac130003")), Username("Boris"), PasswordHash("password-hash"))))))
       }
     }
 
     "return empty option if user not found" in {
       withRedisAsync() { port =>
         val result = for {
-          store <- commandsApi(port).use(r => UserStore.commonUserStore[IO](r))
+          store <- UserStore.commonUserStore[IO](commandsApi(port))
           user <- store.findUser(JwtToken("another-token"))(JwtClaim())
         } yield user
 
@@ -73,6 +73,6 @@ class UserStoreSpec extends CatsIOSpec with EmbeddedRedis {
       uri    <- Resource.liftF(RedisURI.make[IO](s"redis://localhost:$port"))
       client <- RedisClient[IO](uri)
       redis  <- Redis[IO, String, String](client, RedisCodec.Utf8)
-      _ <- Resource.liftF(redis.set("jwt-token", """{"id": "722ccbba-8c62-11ea-bc55-0242ac130003", "username": "Boris", "password": "password-had"}"""))
+      _ <- Resource.liftF(redis.set("jwt-token", """{"id": "722ccbba-8c62-11ea-bc55-0242ac130003", "name": "Boris", "password": "password-hash"}"""))
     } yield redis
 }
