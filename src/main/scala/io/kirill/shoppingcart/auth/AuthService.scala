@@ -4,7 +4,7 @@ import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
 import io.kirill.shoppingcart.auth.user.{Password, User, UserCacheStore, UserId, UserRepository, Username}
-import io.kirill.shoppingcart.common.errors.InvalidUsernameOrPassword
+import io.kirill.shoppingcart.common.errors.{InvalidUsernameOrPassword, UniqueViolation, UsernameInUse}
 import io.kirill.shoppingcart.config.AppConfig
 
 trait AuthService[F[_]] {
@@ -39,10 +39,12 @@ final class LiveAuthService[F[_]: Sync] private (
     userCacheStore.remove(token, username)
 
   override def create(username: Username, password: Password): F[JwtToken] =
-    for {
+    (for {
       hash  <- passwordEncryptor.hash(password)
       uid   <- userRepository.create(username, hash)
       token <- tokenGenerator.generate
       _     <- userCacheStore.put(token, User(uid, username, hash))
-    } yield token
+    } yield token).handleErrorWith {
+      case UniqueViolation(_) => UsernameInUse(username).raiseError[F, JwtToken]
+    }
 }
