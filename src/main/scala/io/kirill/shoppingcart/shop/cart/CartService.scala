@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.shop.cart
 
 import java.util.UUID
 
-import cats.effect.Sync
+import cats.effect.{Resource, Sync}
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.kirill.shoppingcart.auth.user.UserId
@@ -21,38 +21,42 @@ trait CartService[F[_]] {
 }
 
 final class RedisCartService[F[_]: Sync] private (
-    redis: RedisCommands[F, String, Int],
+    redis: Resource[F, RedisCommands[F, String, Int]],
     exp: ShoppingCartExpiration
 ) extends CartService[F] {
 
   override def delete(userId: UserId): F[Unit] =
-    redis.del(userId.value.toString)
+    redis.use(_.del(userId.value.toString))
 
   override def get(userId: UserId): F[Cart] =
-    for {
-      itemsMap <- redis.hGetAll(userId.value.toString)
-      cartItems = itemsMap.map { case (i, q) => CartItem(ItemId(UUID.fromString(i)), Quantity(q)) }
-    } yield Cart(cartItems.toList)
+    redis.use { r =>
+      for {
+        itemsMap <- r.hGetAll(userId.value.toString)
+        cartItems = itemsMap.map { case (i, q) => CartItem(ItemId(UUID.fromString(i)), Quantity(q)) }
+      } yield Cart(cartItems.toList)
+    }
 
   override def removeItem(userId: UserId, itemId: ItemId): F[Unit] =
-    redis.hDel(userId.value.toString, itemId.value.toString)
+    redis.use(_.hDel(userId.value.toString, itemId.value.toString))
 
   override def add(userId: UserId, cart: Cart): F[Unit] =
-    processItems(userId, cart.items) { ci =>
+    processItems(userId, cart.items) { case (r, ci) =>
         val uid = userId.value.toString
         val iid = ci.item.value.toString
         val q = ci.quantity
-        redis.hGet(uid, iid).flatMap(qOpt => redis.hSet(uid, iid, qOpt.fold(q.value)(_+q.value)))
+        r.hGet(uid, iid).flatMap(qOpt => r.hSet(uid, iid, qOpt.fold(q.value)(_+q.value)))
     }
 
   override def update(userId: UserId, cart: Cart): F[Unit] =
-    processItems(userId, cart.items) { ci =>
+    processItems(userId, cart.items) { case (r, ci) =>
       val uid = userId.value.toString
       val iid = ci.item.value.toString
       val q = ci.quantity
-        redis.hExists(uid, iid).flatMap(e => if (e) redis.hSet(userId.value.toString, iid, q.value) else Sync[F].pure(()))
+        r.hExists(uid, iid).flatMap(e => if (e) r.hSet(userId.value.toString, iid, q.value) else Sync[F].pure(()))
     }
 
-  private def processItems(userId: UserId, items: Seq[CartItem])(f: CartItem => F[Unit]): F[Unit] =
-    items.map(f).toList.sequence *> redis.expire(userId.value.toString, exp.value)
+  private def processItems(userId: UserId, items: Seq[CartItem])(f: (RedisCommands[F, String, Int], CartItem) => F[Unit]): F[Unit] =
+    redis.use { r =>
+      items.map(i => f(r, i)).toList.sequence *> r.expire(userId.value.toString, exp.value)
+    }
 }
