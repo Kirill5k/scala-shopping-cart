@@ -17,17 +17,10 @@ trait RedisSpec extends CatsIOSpec with EmbeddedRedis {
   implicit val ec = scala.concurrent.ExecutionContext.global
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
-  def stringCommands[K, V](port: Int): Resource[IO, RedisCommands[IO, String, String]] =
+  def stringCommands(port: Int): Resource[IO, RedisCommands[IO, String, String]] =
     for {
       uri    <- Resource.liftF(RedisURI.make[IO](s"redis://localhost:$port"))
       client <- RedisClient[IO](uri)
       redis  <- Redis[IO, String, String](client, RedisCodec.Utf8)
-    } yield redis
-
-  def intCommands[K, V](port: Int): Resource[IO, RedisCommands[IO, String, Int]] =
-    for {
-      uri    <- Resource.liftF(RedisURI.make[IO](s"redis://localhost:$port"))
-      client <- RedisClient[IO](uri)
-      redis  <- Redis[IO, String, Int](client, RedisCodec.)
     } yield redis
 }

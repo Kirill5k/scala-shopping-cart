@@ -18,7 +18,7 @@ trait CartService[F[_]] {
 }
 
 final private class RedisCartService[F[_]: Sync](
-    redis: Resource[F, RedisCommands[F, String, Int]]
+    redis: Resource[F, RedisCommands[F, String, String]]
 )(
     implicit config: AppConfig
 ) extends CartService[F] {
@@ -30,7 +30,7 @@ final private class RedisCartService[F[_]: Sync](
     redis.use { r =>
       for {
         itemsMap <- r.hGetAll(userId.value.toString)
-        cartItems = itemsMap.map { case (i, q) => CartItem(ItemId(UUID.fromString(i)), Quantity(q)) }
+        cartItems = itemsMap.map { case (i, q) => CartItem(ItemId(UUID.fromString(i)), Quantity(q.toInt)) }
       } yield Cart(cartItems.toList)
     }
 
@@ -42,8 +42,8 @@ final private class RedisCartService[F[_]: Sync](
       case (r, ci) =>
         val uid = userId.value.toString
         val iid = ci.item.value.toString
-        val q   = ci.quantity
-        r.hGet(uid, iid).flatMap(qOpt => r.hSet(uid, iid, qOpt.fold(q.value)(_ + q.value)))
+        val q   = ci.quantity.value
+        r.hGet(uid, iid).flatMap(qOpt => r.hSet(uid, iid, qOpt.fold(q.toString)(x => (x.toInt + q).toString)))
     }
 
   override def update(userId: UserId, cart: Cart): F[Unit] =
@@ -51,11 +51,11 @@ final private class RedisCartService[F[_]: Sync](
       case (r, ci) =>
         val uid = userId.value.toString
         val iid = ci.item.value.toString
-        val q   = ci.quantity
-        r.hExists(uid, iid).flatMap(e => if (e) r.hSet(userId.value.toString, iid, q.value) else Sync[F].pure(()))
+        val q   = ci.quantity.value.toString
+        r.hExists(uid, iid).flatMap(e => if (e) r.hSet(userId.value.toString, iid, q) else ().pure[F])
     }
 
-  private def processItems(userId: UserId, items: Seq[CartItem])(f: (RedisCommands[F, String, Int], CartItem) => F[Unit]): F[Unit] =
+  private def processItems(userId: UserId, items: Seq[CartItem])(f: (RedisCommands[F, String, String], CartItem) => F[Unit]): F[Unit] =
     redis.use { r =>
       items.map(i => f(r, i)).toList.sequence *> r.expire(userId.value.toString, config.shop.cartExpiration)
     }
@@ -64,7 +64,7 @@ final private class RedisCartService[F[_]: Sync](
 object CartService {
 
   def redisCartService[F[_]: Sync](
-      redis: Resource[F, RedisCommands[F, String, Int]]
+      redis: Resource[F, RedisCommands[F, String, String]]
   )(
       implicit config: AppConfig
   ): F[CartService[F]] = Sync[F].delay(new RedisCartService[F](redis))
