@@ -3,21 +3,24 @@ package io.kirill.shoppingcart
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{IO, Resource}
 import com.dimafeng.testcontainers.{ForAllTestContainer, PostgreSQLContainer}
-import natchez.Trace.Implicits.noop
-import org.scalatest.freespec.AsyncFreeSpec
-import org.scalatest.matchers.must.Matchers
-import skunk.Session
+import com.github.sebruck.EmbeddedRedis
+import dev.profunktor.redis4cats.algebra.RedisCommands
+import dev.profunktor.redis4cats.connection.{RedisClient, RedisURI}
+import dev.profunktor.redis4cats.domain.RedisCodec
+import dev.profunktor.redis4cats.interpreter.Redis
+import dev.profunktor.redis4cats.log4cats._
+import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
-trait RedisSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers with ForAllTestContainer {
 
-  override val container =
-    PostgreSQLContainer(databaseName = "store", username = "scala", password = "scala").configure { c =>
-      c.withInitScript("database.sql")
-    }
+trait RedisSpec extends CatsIOSpec with EmbeddedRedis {
+  implicit val ec = scala.concurrent.ExecutionContext.global
+  implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
-  lazy val Array(host, port) =
-    container.jdbcUrl.substring(18).split("/").head.split(":")
-
-  implicit lazy val session: Resource[IO, Session[IO]] =
-    Session.single[IO](host = host, port = port.toInt, user = "scala", password = Some("scala"), database = "store")
+  def commandsApi(port: Int): Resource[IO, RedisCommands[IO, String, String]] =
+    for {
+      uri    <- Resource.liftF(RedisURI.make[IO](s"redis://localhost:$port"))
+      client <- RedisClient[IO](uri)
+      redis  <- Redis[IO, String, String](client, RedisCodec.Utf8)
+    } yield redis
 }
