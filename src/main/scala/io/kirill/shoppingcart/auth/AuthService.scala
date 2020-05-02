@@ -1,7 +1,13 @@
 package io.kirill.shoppingcart.auth
 
+import cats.effect.Sync
+import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
-import io.kirill.shoppingcart.auth.user.{Password, UserId, Username}
+import dev.profunktor.redis4cats.algebra.RedisCommands
+import io.circe.parser._
+import io.kirill.shoppingcart.auth.user.{Password, User, UserId, Username}
+import io.kirill.shoppingcart.config.AppConfig
+import pdi.jwt.JwtClaim
 
 trait AuthService[F[_]] {
   def login(username: Username, password: Password): F[JwtToken]

@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 import cats.effect.IO
 import io.kirill.shoppingcart.CatsIOSpec
 import io.kirill.shoppingcart.auth.user.Password
-import io.kirill.shoppingcart.config.SecurityConfig
+import io.kirill.shoppingcart.config.AuthConfig
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -14,7 +14,7 @@ class PasswordEncryptorSpec extends CatsIOSpec {
   "A basic PasswordEncrypter" - {
 
     "hash and validate password with salt" in {
-      val config = SecurityConfig(
+      val config = AuthConfig(
         "secret-key",
         "claim",
         FiniteDuration(10, TimeUnit.DAYS),

@@ -4,10 +4,14 @@ import scala.concurrent.duration.FiniteDuration
 
 object config {
 
-  case class SecurityConfig(
+  final case class AuthConfig(
       jwtSecretKey: String,
       jwtClaim: String,
       tokenExpiration: FiniteDuration,
       passwordSalt: String
+  )
+
+  final case class AppConfig(
+      auth: AuthConfig
   )
 }

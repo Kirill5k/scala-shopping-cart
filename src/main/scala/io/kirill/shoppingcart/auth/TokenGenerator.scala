@@ -6,7 +6,7 @@ import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.jwt._
 import io.circe.syntax._
-import io.kirill.shoppingcart.config.SecurityConfig
+import io.kirill.shoppingcart.config.AuthConfig
 import pdi.jwt._
 
 trait TokenGenerator[F[_]] {
@@ -15,7 +15,7 @@ trait TokenGenerator[F[_]] {
 
 object TokenGenerator {
 
-  private def hs256TokenGenerator[F[_]: Sync](config: SecurityConfig)(implicit ev: java.time.Clock): TokenGenerator[F] =
+  private def hs256TokenGenerator[F[_]: Sync](config: AuthConfig)(implicit ev: java.time.Clock): TokenGenerator[F] =
     new TokenGenerator[F] {
       override def generate: F[JwtToken] =
         for {
@@ -26,6 +26,6 @@ object TokenGenerator {
         } yield jwt
     }
 
-  def apply[F[_]: Sync](config: SecurityConfig)(implicit ev: java.time.Clock): TokenGenerator[F] =
+  def apply[F[_]: Sync](config: AuthConfig)(implicit ev: java.time.Clock): TokenGenerator[F] =
     hs256TokenGenerator(config)
 }
