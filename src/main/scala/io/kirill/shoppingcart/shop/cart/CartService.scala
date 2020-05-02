@@ -60,3 +60,7 @@ final class RedisCartService[F[_]: Sync] private (
       items.map(i => f(r, i)).toList.sequence *> r.expire(userId.value.toString, exp.value)
     }
 }
+
+object CartService {
+
+}
