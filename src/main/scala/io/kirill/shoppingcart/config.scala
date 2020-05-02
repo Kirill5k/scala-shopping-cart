@@ -14,8 +14,13 @@ object config {
       passwordSalt: String
   )
 
+  final case class ShopConfig(
+      cartExpiration: FiniteDuration
+  )
+
   final case class AppConfig(
-      auth: AuthConfig
+      auth: AuthConfig,
+      shop: ShopConfig
   )
 
   object AppConfig {

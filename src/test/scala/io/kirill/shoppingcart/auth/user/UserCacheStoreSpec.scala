@@ -18,7 +18,7 @@ class UserCacheStoreSpec extends RedisSpec {
     "store user in cache" in {
       withRedisAsync() { port =>
         val result = for {
-          store <- UserStore.redisUserCacheStore[IO](commandsApi(port))
+          store <- UserStore.redisUserCacheStore[IO](stringCommands(port))
           _ <- store.put(JwtToken("token"), testUser)
           token <- store.findToken(testUser.name)
         } yield token
@@ -30,7 +30,7 @@ class UserCacheStoreSpec extends RedisSpec {
     "return user from cache if it exists" in {
       withRedisAsync() { port =>
         val result = for {
-          store <- UserStore.redisUserCacheStore[IO](commandsApi(port))
+          store <- UserStore.redisUserCacheStore[IO](stringCommands(port))
           _ <- store.put(JwtToken("token"), testUser)
           user <- store.findUser(JwtToken("token"))
         } yield user
@@ -42,7 +42,7 @@ class UserCacheStoreSpec extends RedisSpec {
     "return empty option if user not found" in {
       withRedisAsync() { port =>
         val result = for {
-          store <- UserStore.redisUserCacheStore[IO](commandsApi(port))
+          store <- UserStore.redisUserCacheStore[IO](stringCommands(port))
           user <- store.findUser(JwtToken("another-token"))
         } yield user
 
@@ -53,7 +53,7 @@ class UserCacheStoreSpec extends RedisSpec {
     "remove user and token from cache" in {
       withRedisAsync() { port =>
         val result = for {
-          store <- UserStore.redisUserCacheStore[IO](commandsApi(port))
+          store <- UserStore.redisUserCacheStore[IO](stringCommands(port))
           _ <- store.put(JwtToken("token"), testUser)
           _ <- store.remove(JwtToken("token"), testUser.name)
           t <- store.findToken(testUser.name)
