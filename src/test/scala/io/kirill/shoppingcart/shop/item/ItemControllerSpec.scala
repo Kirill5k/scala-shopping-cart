@@ -24,7 +24,7 @@ class ItemControllerSpec extends ControllerSpec {
       val controller      = new ItemController[IO](itemServiceMock)
 
       val items = List(item("item-1"), item("item-2"))
-      when(itemServiceMock.findAll).thenReturn(IO.pure(items))
+      when(itemServiceMock.findAll).thenReturn(fs2.Stream.emits(items).lift[IO])
 
       val request = Request[IO](uri = uri"/items")
       val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
@@ -38,7 +38,7 @@ class ItemControllerSpec extends ControllerSpec {
       val controller      = new ItemController[IO](itemServiceMock)
 
       val items = List(item("item-1"), item("item-2"))
-      when(itemServiceMock.findBy(any[BrandName])).thenReturn(IO.pure(items))
+      when(itemServiceMock.findBy(any[BrandName])).thenReturn(fs2.Stream.emits(items).lift[IO])
 
       val request = Request[IO](uri = uri"/items?brand=test-brand")
       val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
