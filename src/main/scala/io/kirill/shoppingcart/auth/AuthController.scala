@@ -26,8 +26,8 @@ final class AuthController[F[_]: Sync](authService: AuthService[F]) extends Rest
     case req @ POST -> Root / "create" => withErrorHandling {
       for {
         create <- req.decodeR[AuthCreateUserRequest]
-        userId <- authService.create(Username(create.username.value), Password(create.password.value))
-        res <- Ok(AuthCreateUserResponse(userId.value))
+        token <- authService.create(Username(create.username.value), Password(create.password.value))
+        res <- Ok(AuthLoginResponse(token.value))
       } yield res
     }
     case req @ POST -> Root / "login" => withErrorHandling {
@@ -42,7 +42,7 @@ final class AuthController[F[_]: Sync](authService: AuthService[F]) extends Rest
   private val authedRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
     case authedReq @ POST -> Root / "logout" as user => withErrorHandling {
       AuthHeaders.getBearerToken(authedReq.req) match {
-        case Some(token) => authService.logout(user.value.name, token) *> NoContent()
+        case Some(token) => authService.logout(token, user.value.name) *> NoContent()
         case None => Sync[F].raiseError(AuthTokenNotPresent)
       }
     }
