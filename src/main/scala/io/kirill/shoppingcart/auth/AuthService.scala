@@ -13,7 +13,7 @@ trait AuthService[F[_]] {
   def create(username: Username, password: Password): F[UserId]
 }
 
-final class LiveAuthService[F[_]: Sync] private (
+final private class LiveAuthService[F[_]: Sync](
     userRepository: UserRepository[F],
     userCacheStore: UserCacheStore[F],
     tokenGenerator: TokenGenerator[F],
@@ -40,9 +40,21 @@ final class LiveAuthService[F[_]: Sync] private (
 
   override def create(username: Username, password: Password): F[UserId] =
     (for {
-      hash  <- passwordEncryptor.hash(password)
-      uid   <- userRepository.create(username, hash)
+      hash <- passwordEncryptor.hash(password)
+      uid  <- userRepository.create(username, hash)
     } yield uid).handleErrorWith {
       case UniqueViolation(_) => UsernameInUse(username).raiseError[F, UserId]
     }
+}
+
+object AuthService {
+  def make[F[_]: Sync](
+      userRepository: UserRepository[F],
+      userCacheStore: UserCacheStore[F],
+      tokenGenerator: TokenGenerator[F],
+      passwordEncryptor: PasswordEncryptor[F]
+  )(
+      implicit config: AppConfig
+  ): F[AuthService[F]] =
+    Sync[F].delay(new LiveAuthService[F](userRepository, userCacheStore, tokenGenerator, passwordEncryptor))
 }
