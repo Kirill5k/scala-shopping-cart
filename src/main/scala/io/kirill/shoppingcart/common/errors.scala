@@ -22,7 +22,7 @@ object errors {
     val message = s"Username ${username.value} is already taken"
   }
 
-  final case object InvalidUsernameOrPassword extends AppError {
+  case object InvalidUsernameOrPassword extends AppError {
     val message = "Username or password is incorrect"
   }
 
