@@ -39,6 +39,7 @@ CREATE TABLE items
 CREATE TABLE orders
 (
     id          UUID PRIMARY KEY,
+    status      VARCHAR     NOT NULL,
     user_id     UUID        NOT NULL,
     payment_id  UUID UNIQUE NOT NULL,
     items       JSONB       NOT NULL,

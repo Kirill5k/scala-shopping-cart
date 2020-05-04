@@ -30,6 +30,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
         result.asserting { order =>
           order.items must be (orderItems)
           order.totalPrice must be (GBP(BigDecimal(25.54)))
+          order.status must be (OrderStatus.awaitingPayment)
         }
       }
 

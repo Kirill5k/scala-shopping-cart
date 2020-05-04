@@ -29,21 +29,21 @@ final class OrderRepository[F[_]: Sync] private(val sessionPool: Resource[F, Ses
     run { session =>
       session.prepare(insert).use { cmd =>
         val orderId = OrderId(UUID.randomUUID())
-        cmd.execute(orderId ~ order).map(_ => orderId)
+        cmd.execute(orderId ~ OrderStatus.awaitingPayment ~ order).map(_ => orderId)
       }
     }
 }
 
 object OrderRepository {
   private val decoder: Decoder[Order] =
-    (uuid ~ uuid ~ uuid ~ jsonb[Seq[OrderItem]] ~ numeric.map(GBP.apply)).map {
-      case oid ~ uid ~ pid ~ items ~ total =>
-        Order(OrderId(oid), UserId(uid), PaymentId(pid), items, total)
+    (uuid ~ varchar ~ uuid ~ uuid ~ jsonb[Seq[OrderItem]] ~ numeric.map(GBP.apply)).map {
+      case oid ~ status ~ uid ~ pid ~ items ~ total =>
+        Order(OrderId(oid), OrderStatus(status), UserId(uid), PaymentId(pid), items, total)
     }
 
-  private val encoder: Encoder[OrderId ~ CreateOrder] =
-    (uuid ~ uuid ~ uuid ~ jsonb[Seq[OrderItem]] ~ numeric).contramap { case id ~ o =>
-      id.value ~ o.userId.value ~ o.paymentId.value ~ o.items ~ o.totalPrice.value
+  private val encoder: Encoder[OrderId ~ OrderStatus ~ CreateOrder] =
+    (uuid ~ varchar ~ uuid ~ uuid ~ jsonb[Seq[OrderItem]] ~ numeric).contramap { case id ~ status ~ o =>
+      id.value ~ status.value ~ o.userId.value ~ o.paymentId.value ~ o.items ~ o.totalPrice.value
     }
 
   private val selectByUserId: Query[UUID, Order] =
@@ -58,7 +58,7 @@ object OrderRepository {
          WHERE id = $uuid
          """.query(decoder)
 
-  private val insert: Command[OrderId ~ CreateOrder] =
+  private val insert: Command[OrderId ~ OrderStatus ~ CreateOrder] =
     sql"""
          INSERT INTO orders
          VALUES ($encoder)

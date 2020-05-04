@@ -10,11 +10,17 @@ import squants.market.Money
 
 package object order {
   final case class OrderId(value: UUID) extends AnyVal
-
   final case class OrderItem(itemId: ItemId, price: Money, quantity: Quantity)
+
+  final case class OrderStatus(value: String) extends AnyVal
+  object OrderStatus {
+    val awaitingPayment = OrderStatus("order received. awaiting payment")
+    val processing = OrderStatus("payment received. awaiting payment")
+  }
 
   final case class Order(
       id: OrderId,
+      status: OrderStatus,
       userId: UserId,
       paymentId: PaymentId,
       items: Seq[OrderItem],

@@ -29,7 +29,7 @@ final class OrderController[F[_]: Sync](
         Ok(orderService.findBy(user.value.id))
       case GET -> Root / UUIDVar(orderId) as user =>
         for {
-          order <- orderService.get(OrderId(orderId))
+          order <- orderService.get(user.value.id, OrderId(orderId))
           res <- order match {
             case None                                         => NotFound()
             case Some(order) if order.userId != user.value.id => Forbidden()
