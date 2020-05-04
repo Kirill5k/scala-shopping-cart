@@ -22,14 +22,13 @@ package object order {
       id: OrderId,
       status: OrderStatus,
       userId: UserId,
-      paymentId: PaymentId,
+      paymentId: Option[PaymentId],
       items: Seq[OrderItem],
       totalPrice: Money
   )
 
   final case class CreateOrder(
       userId: UserId,
-      paymentId: PaymentId,
       items: Seq[OrderItem],
       totalPrice: Money
   )

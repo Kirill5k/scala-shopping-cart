@@ -41,7 +41,7 @@ CREATE TABLE orders
     id          UUID PRIMARY KEY,
     status      VARCHAR     NOT NULL,
     user_id     UUID        NOT NULL,
-    payment_id  UUID UNIQUE NOT NULL,
+    payment_id  UUID UNIQUE,
     items       JSONB       NOT NULL,
     total_price NUMERIC     NOT NULL,
     CONSTRAINT user_id_fkey FOREIGN KEY (user_id)

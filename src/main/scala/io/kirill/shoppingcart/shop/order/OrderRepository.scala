@@ -36,14 +36,14 @@ final class OrderRepository[F[_]: Sync] private(val sessionPool: Resource[F, Ses
 
 object OrderRepository {
   private val decoder: Decoder[Order] =
-    (uuid ~ varchar ~ uuid ~ uuid ~ jsonb[Seq[OrderItem]] ~ numeric.map(GBP.apply)).map {
+    (uuid ~ varchar ~ uuid ~ uuid.opt ~ jsonb[Seq[OrderItem]] ~ numeric.map(GBP.apply)).map {
       case oid ~ status ~ uid ~ pid ~ items ~ total =>
-        Order(OrderId(oid), OrderStatus(status), UserId(uid), PaymentId(pid), items, total)
+        Order(OrderId(oid), OrderStatus(status), UserId(uid), pid.map(PaymentId), items, total)
     }
 
   private val encoder: Encoder[OrderId ~ OrderStatus ~ CreateOrder] =
-    (uuid ~ varchar ~ uuid ~ uuid ~ jsonb[Seq[OrderItem]] ~ numeric).contramap { case id ~ status ~ o =>
-      id.value ~ status.value ~ o.userId.value ~ o.paymentId.value ~ o.items ~ o.totalPrice.value
+    (uuid ~ varchar ~ uuid ~ uuid.opt ~ jsonb[Seq[OrderItem]] ~ numeric).contramap { case id ~ status ~ o =>
+      id.value ~ status.value ~ o.userId.value ~ None ~ o.items ~ o.totalPrice.value
     }
 
   private val selectByUserId: Query[UUID, Order] =
