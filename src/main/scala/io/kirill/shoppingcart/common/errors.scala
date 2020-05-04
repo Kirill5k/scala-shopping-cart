@@ -10,24 +10,26 @@ object errors {
     override def getMessage: String = message
   }
 
-  final case class ForeignKeyViolation(message: String) extends AppError
-  final case class UniqueViolation(message: String) extends AppError
+  sealed trait BadRequestError extends AppError
+  sealed trait NotFoundError extends AppError
 
-  final case class ProcessingError(message: String) extends AppError
+  final case class ForeignKeyViolation(message: String) extends BadRequestError
+  final case class UniqueViolation(message: String) extends BadRequestError
+  final case class ProcessingError(message: String) extends BadRequestError
 
-  final case class ItemNotFound(itemId: ItemId) extends AppError {
+  final case class ItemNotFound(itemId: ItemId) extends NotFoundError {
     val message = s"Item with id ${itemId.value} does not exist"
   }
 
-  final case class OrderNotFound(orderId: OrderId) extends AppError {
+  final case class OrderNotFound(orderId: OrderId) extends NotFoundError {
     val message = s"Order with id ${orderId.value} does not exist"
   }
 
-  final case class UsernameInUse(username: Username) extends AppError {
+  final case class UsernameInUse(username: Username) extends BadRequestError {
     val message = s"Username ${username.value} is already taken"
   }
 
-  final case object EmptyCart extends AppError {
+  final case object EmptyCart extends BadRequestError {
     val message = "Unable to checkout empty cart"
   }
 

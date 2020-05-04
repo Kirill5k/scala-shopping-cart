@@ -16,18 +16,14 @@ trait RestController[F[_]] extends Http4sDsl[F] {
 
   protected def withErrorHandling(response: => F[Response[F]])(implicit s: Sync[F]): F[Response[F]] =
     response.handleErrorWith {
-      case e @ AuthTokenNotPresent =>
-        Unauthorized(Challenge(scheme = "Bearer", realm = e.getMessage))
-      case e @ UsernameInUse(_) =>
-        BadRequest(ErrorResponse(e.getMessage))
       case e @ InvalidUsernameOrPassword =>
         Forbidden(ErrorResponse(e.getMessage))
-      case error: ParseFailure =>
-        BadRequest(ErrorResponse(error.details))
-      case e @ ItemNotFound(_) =>
+      case e @ AuthTokenNotPresent =>
+        Unauthorized(Challenge(scheme = "Bearer", realm = e.getMessage))
+      case e: BadRequestError =>
+        BadRequest(ErrorResponse(e.getMessage))
+      case e: NotFoundError =>
         NotFound(ErrorResponse(e.getMessage))
-      case ProcessingError(message) =>
-        BadRequest(ErrorResponse(message))
       case InvalidMessageBodyFailure(details, cause) =>
         cause match {
           case Some(c) if c.getMessage.startsWith("Predicate") => BadRequest(ErrorResponse(c.getMessage))
