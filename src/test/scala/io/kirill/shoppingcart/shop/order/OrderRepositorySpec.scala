@@ -94,6 +94,6 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
   def insertTestOrder(repository: OrderRepository[IO]): IO[OrderId] =
     for {
       uid <- insertTestUser
-      oid <- repository.create(CreateOrder(uid, orderItems, GBP(BigDecimal(25.54))))
+      oid <- repository.create(OrderCheckout(uid, orderItems, GBP(BigDecimal(25.54))))
     } yield oid
 }

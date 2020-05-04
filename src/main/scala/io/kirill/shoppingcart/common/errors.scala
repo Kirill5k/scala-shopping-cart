@@ -27,7 +27,11 @@ object errors {
     val message = s"Username ${username.value} is already taken"
   }
 
-  case object InvalidUsernameOrPassword extends AppError {
+  final case object EmptyCart extends AppError {
+    val message = "Unable to checkout empty cart"
+  }
+
+  final case object InvalidUsernameOrPassword extends AppError {
     val message = "Username or password is incorrect"
   }
 

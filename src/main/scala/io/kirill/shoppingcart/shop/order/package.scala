@@ -27,16 +27,11 @@ package object order {
       totalPrice: Money
   )
 
-  final case class CreateOrder(
+  final case class OrderCheckout(
       userId: UserId,
       items: Seq[OrderItem],
       totalPrice: Money,
       status: OrderStatus = OrderStatus.awaitingPayment
-  )
-
-  final case class OrderCheckout(
-      userId: UserId,
-      cart: Cart
   )
 
   final case class OrderPayment(

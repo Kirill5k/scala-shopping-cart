@@ -24,7 +24,7 @@ final class OrderRepository[F[_]: Sync] private (val sessionPool: Resource[F, Se
   def find(id: OrderId): F[Option[Order]] =
     findOneBy(selectById, id.value)
 
-  def create(order: CreateOrder): F[OrderId] =
+  def create(order: OrderCheckout): F[OrderId] =
     run { session =>
       session.prepare(insert).use { cmd =>
         val orderId = OrderId(UUID.randomUUID())
@@ -43,7 +43,7 @@ object OrderRepository {
         Order(OrderId(oid), OrderStatus(status), UserId(uid), pid.map(PaymentId), items, total)
     }
 
-  private val encoder: Encoder[OrderId ~ CreateOrder] =
+  private val encoder: Encoder[OrderId ~ OrderCheckout] =
     (uuid ~ varchar ~ uuid ~ uuid.opt ~ jsonb[Seq[OrderItem]] ~ numeric).contramap {
       case id ~ o =>
         id.value ~ o.status.value ~ o.userId.value ~ None ~ o.items ~ o.totalPrice.value
@@ -61,7 +61,7 @@ object OrderRepository {
          WHERE id = $uuid
          """.query(decoder)
 
-  private val insert: Command[OrderId ~ CreateOrder] =
+  private val insert: Command[OrderId ~ OrderCheckout] =
     sql"""
          INSERT INTO orders
          VALUES ($encoder)
