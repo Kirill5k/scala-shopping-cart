@@ -14,6 +14,54 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
   val token = JwtToken("token")
 
   "An AuthService" - {
+    "create" - {
+      "return user id" in {
+        val (repo, cache, tokenGen, passEncr) = mocks
+        val result = for {
+          service <- AuthService.make(repo, cache, tokenGen, passEncr)
+          _ = when(passEncr.hash(any[Password])).thenReturn(IO.pure(user.password))
+          _ = when(repo.create(any[Username], any[PasswordHash])).thenReturn(IO.pure(user.id))
+          res <- service.create(user.name, Password("password"))
+        } yield res
+
+        result.unsafeToFuture().map { r =>
+          verify(repo).create(user.name, user.password)
+          verify(passEncr).hash(Password("password"))
+          r must be (user.id)
+        }
+      }
+
+      "return error if user with such name already exists" in {
+        val (repo, cache, tokenGen, passEncr) = mocks
+        val result = for {
+          service <- AuthService.make(repo, cache, tokenGen, passEncr)
+          _ = when(repo.create(any[Username], any[PasswordHash])).thenReturn(IO.raiseError(UniqueViolation("name already taken")))
+          _ = when(passEncr.hash(any[Password])).thenReturn(IO.pure(user.password))
+          res <- service.create(user.name, Password("password"))
+        } yield res
+
+        recoverToSucceededIf[UsernameInUse] {
+          result.unsafeToFuture()
+        }
+      }
+    }
+
+    "logout" - {
+      "clear cache" in {
+        val (repo, cache, tokenGen, passEncr) = mocks
+        val result = for {
+          service <- AuthService.make(repo, cache, tokenGen, passEncr)
+          _ = when(cache.remove(any[JwtToken], any[Username])).thenReturn(IO.pure(()))
+          res <- service.logout(token, user.name)
+        } yield res
+
+        result.unsafeToFuture().map { r =>
+          verify(cache).remove(token, user.name)
+          r must be (())
+        }
+      }
+    }
+
     "login" - {
       "generate new token and store it in cache" in {
         val (repo, cache, tokenGen, passEncr) = mocks
