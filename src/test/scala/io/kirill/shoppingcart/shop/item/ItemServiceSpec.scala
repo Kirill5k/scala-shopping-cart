@@ -1,12 +1,8 @@
 package io.kirill.shoppingcart.shop.item
 
 import cats.effect.IO
-import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.implicits._
-import io.kirill.shoppingcart.CatsIOSpec
 import io.kirill.shoppingcart.common.errors.ItemNotFound
 import io.kirill.shoppingcart.shop.brand.BrandName
-import org.mockito.MockitoScalaSession
 import org.mockito.scalatest.AsyncMockitoSugar
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.must.Matchers
