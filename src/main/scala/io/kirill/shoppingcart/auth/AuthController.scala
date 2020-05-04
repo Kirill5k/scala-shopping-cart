@@ -20,17 +20,17 @@ final class AuthController[F[_]: Sync](authService: AuthService[F]) extends Rest
   import RestController._
   import AuthController._
 
-  private val prefixPath = "/auth"
+  private val prefixPath = "/users"
 
   private val routes: HttpRoutes[F] = HttpRoutes.of[F] {
-    case req @ POST -> Root / "create" => withErrorHandling {
+    case req @ POST -> Root => withErrorHandling {
       for {
         create <- req.decodeR[AuthCreateUserRequest]
-        token <- authService.create(Username(create.username.value), Password(create.password.value))
-        res <- Ok(AuthLoginResponse(token.value))
+        uid <- authService.create(Username(create.username.value), Password(create.password.value))
+        res <- Created(AuthCreateUserResponse(uid.value))
       } yield res
     }
-    case req @ POST -> Root / "login" => withErrorHandling {
+    case req @ POST -> Root / "auth" / "login" => withErrorHandling {
       for {
         login <- req.decodeR[AuthLoginRequest]
         token <- authService.login(Username(login.username.value), Password(login.password.value))
@@ -40,7 +40,7 @@ final class AuthController[F[_]: Sync](authService: AuthService[F]) extends Rest
   }
 
   private val authedRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
-    case authedReq @ POST -> Root / "logout" as user => withErrorHandling {
+    case authedReq @ POST -> Root / "auth" / "logout" as user => withErrorHandling {
       AuthHeaders.getBearerToken(authedReq.req) match {
         case Some(token) => authService.logout(token, user.value.name) *> NoContent()
         case None => Sync[F].raiseError(AuthTokenNotPresent)

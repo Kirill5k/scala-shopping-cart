@@ -18,6 +18,8 @@ trait RestController[F[_]] extends Http4sDsl[F] {
     response.handleErrorWith {
       case e @ AuthTokenNotPresent =>
         Unauthorized(Challenge(scheme = "Bearer", realm = e.getMessage))
+      case e @ UsernameInUse(_) =>
+        BadRequest(ErrorResponse(e.getMessage))
       case e @ InvalidUsernameOrPassword =>
         Forbidden(ErrorResponse(e.getMessage))
       case error: ParseFailure =>

@@ -14,7 +14,7 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.literal._
 import io.kirill.shoppingcart.auth.user.{Password, UserId, Username}
-import io.kirill.shoppingcart.common.errors.InvalidUsernameOrPassword
+import io.kirill.shoppingcart.common.errors.{InvalidUsernameOrPassword, UsernameInUse}
 import io.kirill.shoppingcart.common.web.RestController.ErrorResponse
 import org.http4s.circe._
 import org.http4s._
@@ -42,7 +42,7 @@ class AuthControllerSpec extends ControllerSpec {
 
         when(authServiceMock.logout(any[JwtToken], any[Username])).thenReturn(IO.pure(()))
 
-        val request                    = Request[IO](uri = uri"/auth/logout", method = Method.POST).withHeaders(Header("Authorization", "Bearer token"))
+        val request                    = Request[IO](uri = uri"/users/auth/logout", method = Method.POST).withHeaders(Header("Authorization", "Bearer token"))
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[AuthLoginResponse](response, Status.NoContent, None)
@@ -57,7 +57,7 @@ class AuthControllerSpec extends ControllerSpec {
 
         when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.pure(JwtToken("token")))
 
-        val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson())
+        val request                    = Request[IO](uri = uri"/users/auth/login", method = Method.POST).withEntity(loginRequestJson())
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[AuthLoginResponse](response, Status.Ok, Some(AuthLoginResponse("token")))
@@ -70,7 +70,7 @@ class AuthControllerSpec extends ControllerSpec {
 
         when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.raiseError(InvalidUsernameOrPassword))
 
-        val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson())
+        val request                    = Request[IO](uri = uri"/users/auth/login", method = Method.POST).withEntity(loginRequestJson())
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.Forbidden, Some(ErrorResponse("Username or password is incorrect")))
@@ -81,7 +81,7 @@ class AuthControllerSpec extends ControllerSpec {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)
 
-        val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity(loginRequestJson("", ""))
+        val request                    = Request[IO](uri = uri"/users/auth/login", method = Method.POST).withEntity(loginRequestJson("", ""))
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](
@@ -96,7 +96,7 @@ class AuthControllerSpec extends ControllerSpec {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)
 
-        val request                    = Request[IO](uri = uri"/auth/login", method = Method.POST).withEntity("foo")
+        val request                    = Request[IO](uri = uri"/users/auth/login", method = Method.POST).withEntity("foo")
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.UnprocessableEntity, Some(ErrorResponse("""Could not decode JSON: "foo"""")))
@@ -110,12 +110,36 @@ class AuthControllerSpec extends ControllerSpec {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)
 
-        when(authServiceMock.create(any[Username], any[Password])).thenReturn(IO.pure(JwtToken("token")))
+        when(authServiceMock.create(any[Username], any[Password])).thenReturn(IO.pure(UserId(userId)))
 
-        val request                    = Request[IO](uri = uri"/auth/create", method = Method.POST).withEntity(createUserRequestJson())
+        val request                    = Request[IO](uri = uri"/users", method = Method.POST).withEntity(createUserRequestJson())
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        verifyResponse[AuthLoginResponse](response, Status.Ok, Some(AuthLoginResponse("token")))
+        verifyResponse[AuthCreateUserResponse](response, Status.Created, Some(AuthCreateUserResponse(userId)))
+        verify(authServiceMock).create(Username("boris"), Password("password"))
+      }
+
+      "return bad request when username is not provided" in {
+        val authServiceMock = mock[AuthService[IO]]
+        val controller      = new AuthController[IO](authServiceMock)
+
+        val request                    = Request[IO](uri = uri"/users", method = Method.POST).withEntity(createUserRequestJson(name = ""))
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+
+        verifyResponse[ErrorResponse](response, Status.BadRequest, Some(ErrorResponse("Predicate isEmpty() did not fail.: DownField(username)")))
+        verify(authServiceMock, never).create(any[Username], any[Password])
+      }
+
+      "return bad request when username is taken" in {
+        val authServiceMock = mock[AuthService[IO]]
+        val controller      = new AuthController[IO](authServiceMock)
+
+        when(authServiceMock.create(any[Username], any[Password])).thenReturn(IO.raiseError(UsernameInUse(Username("Boris"))))
+
+        val request                    = Request[IO](uri = uri"/users", method = Method.POST).withEntity(createUserRequestJson())
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+
+        verifyResponse[ErrorResponse](response, Status.BadRequest, Some(ErrorResponse("Username Boris is already taken")))
         verify(authServiceMock).create(Username("boris"), Password("password"))
       }
     }

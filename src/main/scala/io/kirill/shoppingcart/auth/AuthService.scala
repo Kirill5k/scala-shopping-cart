@@ -10,7 +10,7 @@ import io.kirill.shoppingcart.config.AppConfig
 trait AuthService[F[_]] {
   def login(username: Username, password: Password): F[JwtToken]
   def logout(token: JwtToken, username: Username): F[Unit]
-  def create(username: Username, password: Password): F[JwtToken]
+  def create(username: Username, password: Password): F[UserId]
 }
 
 final class LiveAuthService[F[_]: Sync] private (
@@ -38,13 +38,11 @@ final class LiveAuthService[F[_]: Sync] private (
   override def logout(token: JwtToken, username: Username): F[Unit] =
     userCacheStore.remove(token, username)
 
-  override def create(username: Username, password: Password): F[JwtToken] =
+  override def create(username: Username, password: Password): F[UserId] =
     (for {
       hash  <- passwordEncryptor.hash(password)
       uid   <- userRepository.create(username, hash)
-      token <- tokenGenerator.generate
-      _     <- userCacheStore.put(token, User(uid, username, hash))
-    } yield token).handleErrorWith {
-      case UniqueViolation(_) => UsernameInUse(username).raiseError[F, JwtToken]
+    } yield uid).handleErrorWith {
+      case UniqueViolation(_) => UsernameInUse(username).raiseError[F, UserId]
     }
 }
