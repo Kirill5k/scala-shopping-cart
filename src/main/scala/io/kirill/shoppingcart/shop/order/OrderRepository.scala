@@ -70,9 +70,9 @@ object OrderRepository {
   private val updatePayment: Command[OrderPayment] =
     sql"""
          UPDATE orders
-         SET payment_id = ${uuid.opt}, status = $varchar
+         SET payment_id = $uuid, status = $varchar
          WHERE id = $uuid
-         """.command.contramap(o => Some(o.paymentId.value) ~ o.status.value ~ o.id.value)
+         """.command.contramap(o => o.paymentId.value ~ o.status.value ~ o.id.value)
 
   def make[F[_]: Sync](sessionPool: Resource[F, Session[F]]): F[OrderRepository[F]] =
     Sync[F].delay(new OrderRepository[F](sessionPool))
