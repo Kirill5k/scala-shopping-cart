@@ -30,7 +30,8 @@ package object order {
   final case class CreateOrder(
       userId: UserId,
       items: Seq[OrderItem],
-      totalPrice: Money
+      totalPrice: Money,
+      status: OrderStatus = OrderStatus.awaitingPayment
   )
 
   final case class OrderCheckout(
@@ -39,7 +40,8 @@ package object order {
   )
 
   final case class OrderPayment(
-      orderId: OrderId,
-      paymentId: PaymentId
+      id: OrderId,
+      paymentId: PaymentId,
+      status: OrderStatus = OrderStatus.processing
   )
 }

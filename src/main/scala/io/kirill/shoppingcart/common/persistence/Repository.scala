@@ -3,7 +3,7 @@ package io.kirill.shoppingcart.common.persistence
 import cats.effect.{Resource, Sync}
 import cats.implicits._
 import io.kirill.shoppingcart.common.errors.{ForeignKeyViolation, UniqueViolation}
-import skunk.{Query, Session, SqlState}
+import skunk.{Command, Query, Session, SqlState}
 
 trait Repository[F[_], E] {
   protected def sessionPool: Resource[F, Session[F]]
@@ -30,4 +30,11 @@ trait Repository[F[_], E] {
       ps <- fs2.Stream.resource(s.prepare(command))
       x <- ps.stream(arg, 1024)
     } yield x
+
+  protected def runUpdateCommand[A](command: Command[A], arg: A)(implicit S: Sync[F]): F[Unit] =
+    run { session =>
+      session.prepare(command).use { cmd =>
+        cmd.execute(arg).void
+      }
+    }
 }

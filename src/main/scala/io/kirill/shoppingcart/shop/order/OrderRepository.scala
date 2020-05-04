@@ -15,8 +15,7 @@ import skunk.codec.all._
 import skunk.circe.codec.all._
 import squants.market.GBP
 
-
-final class OrderRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F, Order] {
+final class OrderRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F]]) extends Repository[F, Order] {
   import OrderRepository._
 
   def findBy(userId: UserId): fs2.Stream[F, Order] =
@@ -29,9 +28,12 @@ final class OrderRepository[F[_]: Sync] private(val sessionPool: Resource[F, Ses
     run { session =>
       session.prepare(insert).use { cmd =>
         val orderId = OrderId(UUID.randomUUID())
-        cmd.execute(orderId ~ OrderStatus.awaitingPayment ~ order).map(_ => orderId)
+        cmd.execute(orderId ~ order).map(_ => orderId)
       }
     }
+
+  def update(order: OrderPayment): F[Unit] =
+    runUpdateCommand(updatePayment, order)
 }
 
 object OrderRepository {
@@ -41,9 +43,10 @@ object OrderRepository {
         Order(OrderId(oid), OrderStatus(status), UserId(uid), pid.map(PaymentId), items, total)
     }
 
-  private val encoder: Encoder[OrderId ~ OrderStatus ~ CreateOrder] =
-    (uuid ~ varchar ~ uuid ~ uuid.opt ~ jsonb[Seq[OrderItem]] ~ numeric).contramap { case id ~ status ~ o =>
-      id.value ~ status.value ~ o.userId.value ~ None ~ o.items ~ o.totalPrice.value
+  private val encoder: Encoder[OrderId ~ CreateOrder] =
+    (uuid ~ varchar ~ uuid ~ uuid.opt ~ jsonb[Seq[OrderItem]] ~ numeric).contramap {
+      case id ~ o =>
+        id.value ~ o.status.value ~ o.userId.value ~ None ~ o.items ~ o.totalPrice.value
     }
 
   private val selectByUserId: Query[UUID, Order] =
@@ -58,15 +61,19 @@ object OrderRepository {
          WHERE id = $uuid
          """.query(decoder)
 
-  private val insert: Command[OrderId ~ OrderStatus ~ CreateOrder] =
+  private val insert: Command[OrderId ~ CreateOrder] =
     sql"""
          INSERT INTO orders
          VALUES ($encoder)
          """.command
 
+  private val updatePayment: Command[OrderPayment] =
+    sql"""
+         UPDATE orders
+         SET payment_id = ${uuid.opt}, status = $varchar
+         WHERE id = $uuid
+         """.command.contramap(o => Some(o.paymentId.value) ~ o.status.value ~ o.id.value)
+
   def make[F[_]: Sync](sessionPool: Resource[F, Session[F]]): F[OrderRepository[F]] =
     Sync[F].delay(new OrderRepository[F](sessionPool))
 }
-
-
-

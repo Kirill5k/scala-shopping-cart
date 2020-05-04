@@ -44,6 +44,23 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
       }
     }
 
+    "update" - {
+      "update payment id on the existing order" in {
+        val paymentId = PaymentId(UUID.randomUUID())
+        val result = for {
+          r <- OrderRepository.make(session)
+          oid <- insertTestOrder(r)
+          _ <- r.update(OrderPayment(oid, paymentId))
+          o <- r.find(oid)
+        } yield o.get
+
+        result.asserting { order =>
+          order.status must be (OrderStatus.processing)
+          order.paymentId must be (Some(paymentId))
+        }
+      }
+    }
+
     "findBy" - {
       "return orders placed by user" in {
         val result = for {

@@ -41,11 +41,7 @@ private final class PostgresItemRepository[F[_]: Sync] (val sessionPool: Resourc
     }
 
   def update(item: UpdateItem): F[Unit] =
-    run { session =>
-      session.prepare(updatePrice).use { cmd =>
-        cmd.execute(item).void
-      }
-    }
+    runUpdateCommand(updatePrice, item)
 }
 
 object ItemRepository {
