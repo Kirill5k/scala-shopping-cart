@@ -6,7 +6,7 @@ object Dependencies {
     val pureConfig = "0.12.3"
     val circe      = "0.13.0"
     val http4s     = "0.21.3"
-    val mockito    = "1.10.3"
+    val mockito    = "1.14.0"
     val refined    = "0.9.13"
     val redis4cats = "0.9.6"
     val skunk      = "0.0.8"

@@ -4,7 +4,7 @@ import java.util.UUID
 
 import cats.effect.IO
 import dev.profunktor.auth.jwt.JwtToken
-import io.kirill.shoppingcart.{CatsIOSpec, RedisSpec}
+import io.kirill.shoppingcart.{RedisSpec}
 
 
 class UserCacheStoreSpec extends RedisSpec {

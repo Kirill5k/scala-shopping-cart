@@ -22,8 +22,8 @@ trait RestController[F[_]] extends Http4sDsl[F] {
         Forbidden(ErrorResponse(e.getMessage))
       case error: ParseFailure =>
         BadRequest(ErrorResponse(error.details))
-      case ItemNotFound(message) =>
-        NotFound(ErrorResponse(message))
+      case e @ ItemNotFound(_) =>
+        NotFound(ErrorResponse(e.getMessage))
       case ProcessingError(message) =>
         BadRequest(ErrorResponse(message))
       case InvalidMessageBodyFailure(details, cause) =>

@@ -40,13 +40,13 @@ class AuthControllerSpec extends ControllerSpec {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)
 
-        when(authServiceMock.logout(any[Username], any[JwtToken])).thenReturn(IO.pure(()))
+        when(authServiceMock.logout(any[JwtToken], any[Username])).thenReturn(IO.pure(()))
 
         val request                    = Request[IO](uri = uri"/auth/logout", method = Method.POST).withHeaders(Header("Authorization", "Bearer token"))
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[AuthLoginResponse](response, Status.NoContent, None)
-        verify(authServiceMock).logout(Username("Boris"), JwtToken("token"))
+        verify(authServiceMock).logout(JwtToken("token"), Username("Boris"))
       }
     }
 
@@ -110,12 +110,12 @@ class AuthControllerSpec extends ControllerSpec {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)
 
-        when(authServiceMock.create(any[Username], any[Password])).thenReturn(IO.pure(UserId(userId)))
+        when(authServiceMock.create(any[Username], any[Password])).thenReturn(IO.pure(JwtToken("token")))
 
         val request                    = Request[IO](uri = uri"/auth/create", method = Method.POST).withEntity(createUserRequestJson())
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        verifyResponse[AuthCreateUserResponse](response, Status.Ok, Some(AuthCreateUserResponse(userId)))
+        verifyResponse[AuthLoginResponse](response, Status.Ok, Some(AuthLoginResponse("token")))
         verify(authServiceMock).create(Username("boris"), Password("password"))
       }
     }

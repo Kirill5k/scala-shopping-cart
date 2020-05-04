@@ -12,7 +12,15 @@ import skunk.implicits._
 import skunk.codec.all._
 import squants.market.GBP
 
-final class ItemRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F]]) extends Repository[F, Item] {
+trait ItemRepository[F[_]] extends Repository[F, Item] {
+  def findAll: fs2.Stream[F, Item]
+  def findBy(brand: BrandName): fs2.Stream[F, Item]
+  def find(id: ItemId): F[Option[Item]]
+  def create(item: CreateItem): F[ItemId]
+  def update(item: UpdateItem): F[Unit]
+}
+
+private final class PostgresItemRepository[F[_]: Sync] (val sessionPool: Resource[F, Session[F]]) extends ItemRepository[F] {
   import ItemRepository._
 
   def findAll: fs2.Stream[F, Item] =
@@ -41,7 +49,7 @@ final class ItemRepository[F[_]: Sync] private (val sessionPool: Resource[F, Ses
 }
 
 object ItemRepository {
-  private val decoder: Decoder[Item] =
+  private[item] val decoder: Decoder[Item] =
     (uuid ~ varchar ~ varchar ~ numeric ~ uuid ~ varchar ~ uuid ~ varchar).map {
       case i ~ n ~ d ~ p ~ bi ~ bn ~ ci ~ cn =>
         Item(
@@ -54,7 +62,7 @@ object ItemRepository {
         )
     }
 
-  private val selectAll: Query[Void, Item] =
+  private[item] val selectAll: Query[Void, Item] =
     sql"""
          SELECT i.id, i.name, i.description, i.price, b.id, b.name, c.id, c.name
          FROM items AS i
@@ -62,7 +70,7 @@ object ItemRepository {
          INNER JOIN categories AS c ON i.category_id = c.id
          """.query(decoder)
 
-  private val selectByBrand: Query[String, Item] =
+  private[item] val selectByBrand: Query[String, Item] =
     sql"""
          SELECT i.id, i.name, i.description, i.price, b.id, b.name, c.id, c.name
          FROM items AS i
@@ -71,7 +79,7 @@ object ItemRepository {
          WHERE b.name LIKE ${varchar}
          """.query(decoder)
 
-  private val selectById: Query[UUID, Item] =
+  private[item] val selectById: Query[UUID, Item] =
     sql"""
          SELECT i.id, i.name, i.description, i.price, b.id, b.name, c.id, c.name
          FROM items AS i
@@ -80,7 +88,7 @@ object ItemRepository {
          WHERE i.id = $uuid
          """.query(decoder)
 
-  private val insert: Command[ItemId ~ CreateItem] =
+  private[item] val insert: Command[ItemId ~ CreateItem] =
     sql"""
          INSERT INTO items
          VALUES ($uuid, $varchar, $varchar, $numeric, $uuid, $uuid)
@@ -88,7 +96,7 @@ object ItemRepository {
       case id ~ i => id.value ~ i.name.value ~ i.description.value ~ i.price.amount ~ i.brandId.value ~ i.categoryId.value
     }
 
-  private val updatePrice: Command[UpdateItem] =
+  private[item] val updatePrice: Command[UpdateItem] =
     sql"""
          UPDATE items
          SET price = $numeric
@@ -96,5 +104,5 @@ object ItemRepository {
          """.command.contramap(i => i.price.amount ~ i.id.value)
 
   def make[F[_]: Sync](sessionPool: Resource[F, Session[F]]): F[ItemRepository[F]] =
-    Sync[F].delay(new ItemRepository[F](sessionPool))
+    Sync[F].delay(new PostgresItemRepository[F](sessionPool))
 }
