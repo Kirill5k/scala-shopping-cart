@@ -6,8 +6,9 @@ import eu.timepit.refined._
 import eu.timepit.refined.api._
 import eu.timepit.refined.boolean.And
 import eu.timepit.refined.collection.Size
-import eu.timepit.refined.string.{ MatchesRegex, ValidInt }
+import eu.timepit.refined.string.{MatchesRegex, ValidInt}
 import io.kirill.shoppingcart.auth.user.UserId
+import io.kirill.shoppingcart.shop.order.Order
 import squants.Money
 
 package object payment {
@@ -33,8 +34,7 @@ package object payment {
   final case class PaymentId(value: UUID) extends AnyVal
 
   final case class Payment(
-      id: UserId,
-      total: Money,
+      order: Order,
       card: Card
   )
 }

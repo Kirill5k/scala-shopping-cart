@@ -32,4 +32,9 @@ package object order {
       userId: UserId,
       cart: Cart
   )
+
+  final case class OrderPayment(
+      orderId: OrderId,
+      paymentId: PaymentId
+  )
 }

@@ -2,6 +2,7 @@ package io.kirill.shoppingcart.common
 
 import io.kirill.shoppingcart.auth.user.Username
 import io.kirill.shoppingcart.shop.item.ItemId
+import io.kirill.shoppingcart.shop.order.OrderId
 
 object errors {
   sealed trait AppError extends Throwable {
@@ -16,6 +17,10 @@ object errors {
 
   final case class ItemNotFound(itemId: ItemId) extends AppError {
     val message = s"Item with id ${itemId.value} does not exist"
+  }
+
+  final case class OrderNotFound(orderId: OrderId) extends AppError {
+    val message = s"Order with id ${orderId.value} does not exist"
   }
 
   final case class UsernameInUse(username: Username) extends AppError {

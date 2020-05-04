@@ -5,8 +5,10 @@ import cats.implicits._
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.shop.cart.CartService
 import io.kirill.shoppingcart.auth.CommonUser
+import io.kirill.shoppingcart.common.errors.OrderNotFound
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.json._
+import io.kirill.shoppingcart.shop.item.ItemService
 import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentService}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.server.{AuthMiddleware, Router}
@@ -14,6 +16,7 @@ import org.http4s.server.{AuthMiddleware, Router}
 final class OrderController[F[_]: Sync](
     orderService: OrderService[F],
     cartService: CartService[F],
+    itemService: ItemService[F],
     paymentService: PaymentService[F]
 ) extends RestController[F] {
   import OrderController._
@@ -35,10 +38,20 @@ final class OrderController[F[_]: Sync](
         } yield res
       case POST -> Root / "checkout" as user =>
         for {
-          cart      <- cartService.get(user.value.id)
-          orderId   <- orderService.create(OrderCheckout(user.value.id, cart))
-          _         <- cartService.delete(user.value.id)
-          res       <- Created(orderId)
+          cart    <- cartService.get(user.value.id)
+          orderId <- orderService.create(OrderCheckout(user.value.id, cart))
+          _       <- cartService.delete(user.value.id)
+          res     <- Created(orderId)
+        } yield res
+      case authedReq @ POST -> Root / UUIDVar(orderId) / "payment" as user =>
+        for {
+          paymentReq <- authedReq.req.as[OrderPaymentRequest]
+          oid = OrderId(orderId)
+          orderOpt <- orderService.get(user.value.id, oid).ensure(OrderNotFound(oid))(_.isDefined)
+          order    <- orderOpt.fold(OrderNotFound(oid).raiseError[F, Order])(_.pure[F])
+          pid      <- paymentService.process(Payment(order, paymentReq.card))
+          _        <- orderService.update(OrderPayment(OrderId(orderId), pid))
+          res      <- NoContent()
         } yield res
     }
 
@@ -47,5 +60,5 @@ final class OrderController[F[_]: Sync](
 }
 
 object OrderController {
-  final case class OrderCheckoutRequest(card: Card)
+  final case class OrderPaymentRequest(card: Card)
 }
