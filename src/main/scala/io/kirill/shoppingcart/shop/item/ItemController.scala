@@ -18,6 +18,10 @@ final class ItemController[F[_]: Sync](itemService: ItemService[F]) extends Rest
   private val prefixPath = "/items"
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
+    case GET -> Root / UUIDVar(itemId) =>
+      withErrorHandling {
+        Ok(itemService.findById(ItemId(itemId)))
+      }
     case GET -> Root :? ItemQueryParams(brand) => withErrorHandling {
       brand match {
         case Some(Invalid(errors)) => BadRequest(errors.map(_.details).mkString_(","))
