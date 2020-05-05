@@ -1,5 +1,7 @@
 package io.kirill.shoppingcart.shop.order
 
+import java.util.UUID
+
 import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._
@@ -32,37 +34,28 @@ final class OrderController[F[_]: Sync](
         }
       case GET -> Root / UUIDVar(orderId) as user =>
         withErrorHandling {
-          for {
-            order <- orderService.get(user.value.id, OrderId(orderId))
-            res <- order match {
-              case None                                         => NotFound()
-              case Some(order) if order.userId != user.value.id => Forbidden()
-              case Some(order)                                  => Ok(order)
-            }
-          } yield res
+          Ok(orderService.get(user.value.id, OrderId(orderId)))
         }
       case POST -> Root / "checkout" as user =>
         withErrorHandling {
           for {
             cart  <- cartService.get(user.value.id).ensure(EmptyCart)(_.items.nonEmpty)
             items <- cart.items.map(ci => itemService.findById(ci.item).map((_, ci.quantity))).toList.sequence
-            orderItems = items.map { case (i, q) => OrderItem(i.id, i.price, q) }
+            orderItems = items.map { case (i, q)                       => OrderItem(i.id, i.price, q) }
             total      = items.foldLeft(GBP(0)) { case (total, (i, q)) => total + (i.price * q.value) }
             orderId <- orderService.create(OrderCheckout(user.value.id, orderItems, total))
             _       <- cartService.delete(user.value.id)
-            res     <- Created(orderId)
+            res     <- Created(OrderCheckoutResponse(orderId.value))
           } yield res
         }
       case authedReq @ POST -> Root / UUIDVar(orderId) / "payment" as user =>
         withErrorHandling {
           for {
             paymentReq <- authedReq.req.as[OrderPaymentRequest]
-            oid = OrderId(orderId)
-            orderOpt <- orderService.get(user.value.id, oid).ensure(OrderNotFound(oid))(_.isDefined)
-            order    <- orderOpt.fold(OrderNotFound(oid).raiseError[F, Order])(_.pure[F])
-            pid      <- paymentService.process(Payment(order, paymentReq.card))
-            _        <- orderService.update(OrderPayment(OrderId(orderId), pid))
-            res      <- NoContent()
+            order      <- orderService.get(user.value.id, OrderId(orderId))
+            pid        <- paymentService.process(Payment(order, paymentReq.card))
+            _          <- orderService.update(OrderPayment(order.id, pid))
+            res        <- NoContent()
           } yield res
         }
     }
@@ -73,4 +66,6 @@ final class OrderController[F[_]: Sync](
 
 object OrderController {
   final case class OrderPaymentRequest(card: Card)
+
+  final case class OrderCheckoutResponse(orderId: UUID)
 }
