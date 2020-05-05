@@ -40,4 +40,8 @@ object errors {
   final case object AuthTokenNotPresent extends AppError {
     val message = "Missing Authorization bearer token"
   }
+
+  final case object OrderDoesNotBelongToThisUser extends AppError {
+    val message = "Order does not belong to this user"
+  }
 }
