@@ -9,7 +9,14 @@ import skunk._
 import skunk.implicits._
 import skunk.codec.all._
 
-final class CategoryRepository[F[_]: Sync] private(val sessionPool: Resource[F, Session[F]]) extends Repository[F, Category] {
+trait CategoryRepository[F[_]] extends Repository[F, Category] {
+  def findAll: fs2.Stream[F, Category]
+  def create(name: CategoryName): F[CategoryId]
+}
+
+final private class PostgresCategoryRepository[F[_]: Sync](
+    val sessionPool: Resource[F, Session[F]]
+) extends CategoryRepository[F] {
   import CategoryRepository._
 
   def findAll: fs2.Stream[F, Category] =
@@ -25,22 +32,21 @@ final class CategoryRepository[F[_]: Sync] private(val sessionPool: Resource[F, 
 }
 
 object CategoryRepository {
-  private val codec: Codec[Category] =
+  private[category] val codec: Codec[Category] =
     (uuid ~ varchar).imap {
       case i ~ n => Category(CategoryId(i), CategoryName(n))
     }(b => (b.id.value, b.name.value))
 
-  private val selectAll: Query[Void, Category] =
+  private[category] val selectAll: Query[Void, Category] =
     sql"""
           SELECT * FROM categories
           """.query(codec)
 
-  private val insert: Command[Category] =
+  private[category] val insert: Command[Category] =
     sql"""
           INSERT INTO categories VALUES ($codec)
           """.command
 
   def make[F[_]: Sync](sessionPool: Resource[F, Session[F]]): F[CategoryRepository[F]] =
-    Sync[F].delay(new CategoryRepository[F](sessionPool))
+    Sync[F].delay(new PostgresCategoryRepository[F](sessionPool))
 }
-
