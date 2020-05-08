@@ -25,6 +25,10 @@ object errors {
     val message = s"Order with id ${orderId.value} does not exist"
   }
 
+  final case object OrderDoesNotBelongToThisUser extends AppError {
+    val message = "Order does not belong to this user"
+  }
+
   final case class UsernameInUse(username: Username) extends BadRequestError {
     val message = s"Username ${username.value} is already taken"
   }
@@ -39,9 +43,5 @@ object errors {
 
   final case object AuthTokenNotPresent extends AppError {
     val message = "Missing Authorization bearer token"
-  }
-
-  final case object OrderDoesNotBelongToThisUser extends AppError {
-    val message = "Order does not belong to this user"
   }
 }

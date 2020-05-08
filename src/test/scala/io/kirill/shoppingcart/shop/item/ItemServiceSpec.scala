@@ -61,7 +61,7 @@ class ItemServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
           item    <- service.findById(item1.id)
         } yield item
 
-        recoverToSucceededIf[ItemNotFound] { // Result type: Future[Assertion]
+        recoverToSucceededIf[ItemNotFound] {
           result.unsafeToFuture()
         }
       }
