@@ -6,7 +6,7 @@ import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.auth.CommonUser
-import io.kirill.shoppingcart.common.errors.{EmptyCart, OrderNotFound}
+import io.kirill.shoppingcart.common.errors.EmptyCart
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.shop.cart.CartService
@@ -14,7 +14,7 @@ import io.kirill.shoppingcart.shop.item.ItemService
 import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentService}
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
-import squants.market.GBP
+import squants.market.{GBP, Money}
 
 final class OrderController[F[_]: Sync](
     orderService: OrderService[F],
@@ -30,11 +30,11 @@ final class OrderController[F[_]: Sync](
     AuthedRoutes.of {
       case GET -> Root as user =>
         withErrorHandling {
-          Ok(orderService.findBy(user.value.id))
+          Ok(orderService.findBy(user.value.id).map(OrderResponse.from).compile.toList)
         }
       case GET -> Root / UUIDVar(orderId) as user =>
         withErrorHandling {
-          Ok(orderService.get(user.value.id, OrderId(orderId)))
+          Ok(orderService.get(user.value.id, OrderId(orderId)).map(OrderResponse.from))
         }
       case POST -> Root / "checkout" as user =>
         withErrorHandling {
@@ -68,4 +68,27 @@ object OrderController {
   final case class OrderPaymentRequest(card: Card)
 
   final case class OrderCheckoutResponse(orderId: UUID)
+
+  final case class OrderItemResponse(
+      itemId: UUID,
+      price: Money,
+      quantity: Int
+  )
+
+  final case class OrderResponse(
+      id: UUID,
+      status: String,
+      items: List[OrderItemResponse],
+      totalPrice: Money
+  )
+
+  object OrderResponse {
+    def from(order: Order): OrderResponse =
+      OrderResponse(
+        order.id.value,
+        order.status.value,
+        order.items.map(oi => OrderItemResponse(oi.itemId.value, oi.price, oi.quantity.value)).toList,
+        order.totalPrice
+      )
+  }
 }

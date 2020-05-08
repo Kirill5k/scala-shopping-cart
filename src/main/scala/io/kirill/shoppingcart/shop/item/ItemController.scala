@@ -25,8 +25,8 @@ final class ItemController[F[_]: Sync](itemService: ItemService[F]) extends Rest
     case GET -> Root :? ItemQueryParams(brand) => withErrorHandling {
       brand match {
         case Some(Invalid(errors)) => BadRequest(errors.map(_.details).mkString_(","))
-        case Some(Valid(brand)) => Ok(itemService.findBy(brand.toDomain))
-        case None => Ok(itemService.findAll)
+        case Some(Valid(brand)) => Ok(itemService.findBy(brand.toDomain).compile.toList)
+        case None => Ok(itemService.findAll.compile.toList)
       }
     }
   }

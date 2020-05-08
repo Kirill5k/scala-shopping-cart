@@ -16,15 +16,7 @@ import squants.market.GBP
 class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar {
 
   val userId = UserId(UUID.randomUUID())
-
-  val order1 = Order(
-    OrderId(UUID.randomUUID()),
-    OrderStatus.awaitingPayment,
-    userId,
-    Some(PaymentId(UUID.randomUUID())),
-    List(OrderItem(ItemId(UUID.randomUUID()), GBP(10), Quantity(2))),
-    GBP(20)
-  )
+  val order1 = OrderBuilder.order.copy(userId = userId)
 
   "An OrderService" - {
     "get" - {
