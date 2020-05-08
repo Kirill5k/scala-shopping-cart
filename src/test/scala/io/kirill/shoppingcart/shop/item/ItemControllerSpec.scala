@@ -36,7 +36,15 @@ class ItemControllerSpec extends ControllerSpec {
         val request = Request[IO](uri = uri"/items/607995e0-8e3a-11ea-bc55-0242ac130003")
         val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
-        verifyResponse[Item](response, Status.Ok, Some(testitem))
+        val expectedResponse = ItemResponse(
+          testitem.id.value,
+          testitem.name.value,
+          testitem.description.value,
+          testitem.price,
+          testitem.brand.name.value,
+          testitem.category.name.value
+        )
+        verifyResponse[ItemResponse](response, Status.Ok, Some(expectedResponse))
         verify(itemServiceMock).findById(testitem.id)
       }
 
@@ -58,13 +66,21 @@ class ItemControllerSpec extends ControllerSpec {
       val itemServiceMock = mock[ItemService[IO]]
       val controller      = new ItemController[IO](itemServiceMock)
 
-      val items = List(item("item-1"), item("item-2"))
-      when(itemServiceMock.findAll).thenReturn(fs2.Stream.emits(items).lift[IO])
+      val testitem = item("item-1")
+      when(itemServiceMock.findAll).thenReturn(fs2.Stream.emits(List(testitem)).lift[IO])
 
       val request = Request[IO](uri = uri"/items")
       val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
-      verifyResponse[Seq[Item]](response, Status.Ok, Some(items))
+      val expectedResponse = ItemResponse(
+        testitem.id.value,
+        testitem.name.value,
+        testitem.description.value,
+        testitem.price,
+        testitem.brand.name.value,
+        testitem.category.name.value
+      )
+      verifyResponse[List[ItemResponse]](response, Status.Ok, Some(List(expectedResponse)))
       verify(itemServiceMock).findAll
     }
 
@@ -72,13 +88,21 @@ class ItemControllerSpec extends ControllerSpec {
       val itemServiceMock = mock[ItemService[IO]]
       val controller      = new ItemController[IO](itemServiceMock)
 
-      val items = List(item("item-1"), item("item-2"))
-      when(itemServiceMock.findBy(any[BrandName])).thenReturn(fs2.Stream.emits(items).lift[IO])
+      val testitem = item("item-1")
+      when(itemServiceMock.findBy(any[BrandName])).thenReturn(fs2.Stream.emits(List(testitem)).lift[IO])
 
       val request = Request[IO](uri = uri"/items?brand=test-brand")
       val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
-      verifyResponse[Seq[Item]](response, Status.Ok, Some(items))
+      val expectedResponse = ItemResponse(
+        testitem.id.value,
+        testitem.name.value,
+        testitem.description.value,
+        testitem.price,
+        testitem.brand.name.value,
+        testitem.category.name.value
+      )
+      verifyResponse[List[ItemResponse]](response, Status.Ok, Some(List(expectedResponse)))
       verify(itemServiceMock).findBy(BrandName("Test-brand"))
     }
 
