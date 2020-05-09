@@ -5,6 +5,7 @@ import java.util.UUID
 import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._
+import io.circe.refined._
 import io.kirill.shoppingcart.auth.CommonUser
 import io.kirill.shoppingcart.common.errors.EmptyCart
 import io.kirill.shoppingcart.common.json._
@@ -14,6 +15,7 @@ import io.kirill.shoppingcart.shop.item.ItemService
 import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentService}
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
+import org.http4s.circe._
 import squants.market.{GBP, Money}
 
 final class OrderController[F[_]: Sync](
@@ -22,6 +24,7 @@ final class OrderController[F[_]: Sync](
     itemService: ItemService[F],
     paymentService: PaymentService[F]
 ) extends RestController[F] {
+  import RestController._
   import OrderController._
 
   private val prefixPath = "/orders"
@@ -51,7 +54,7 @@ final class OrderController[F[_]: Sync](
       case authedReq @ POST -> Root / UUIDVar(orderId) / "payment" as user =>
         withErrorHandling {
           for {
-            paymentReq <- authedReq.req.as[OrderPaymentRequest]
+            paymentReq <- authedReq.req.decodeR[OrderPaymentRequest]
             order      <- orderService.get(user.value.id, OrderId(orderId))
             pid        <- paymentService.process(Payment(order, paymentReq.card))
             _          <- orderService.update(OrderPayment(order.id, pid))
@@ -65,6 +68,7 @@ final class OrderController[F[_]: Sync](
 }
 
 object OrderController {
+
   final case class OrderPaymentRequest(card: Card)
 
   final case class OrderCheckoutResponse(orderId: UUID)

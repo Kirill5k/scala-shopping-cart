@@ -6,6 +6,7 @@ import dev.profunktor.auth.jwt.JwtToken
 import io.circe.generic.extras.defaults._
 import io.circe.generic.extras.semiauto._
 import io.circe.{Decoder, Encoder}
+import io.circe.refined._
 import io.kirill.shoppingcart.auth.user.{Password, PasswordHash, UserId, Username}
 import io.kirill.shoppingcart.shop.brand.BrandName
 import io.kirill.shoppingcart.shop.cart.Quantity

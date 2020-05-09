@@ -37,7 +37,6 @@ trait RestController[F[_]] extends Http4sDsl[F] {
 }
 
 object RestController {
-  import io.kirill.shoppingcart.common.json._
 
   final case class ErrorResponse(message: String)
 

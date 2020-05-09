@@ -1,14 +1,13 @@
 package io.kirill.shoppingcart.auth
 
-import java.util.UUID
 
 import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.AuthHeaders
 import dev.profunktor.auth.jwt.JwtToken
 import io.circe.generic.auto._
+import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.common.web.RestController
-import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.server.{AuthMiddleware, Router}
 import eu.timepit.refined.api.Refined

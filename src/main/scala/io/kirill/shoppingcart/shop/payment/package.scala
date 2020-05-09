@@ -7,28 +7,21 @@ import eu.timepit.refined.api._
 import eu.timepit.refined.boolean.And
 import eu.timepit.refined.collection.Size
 import eu.timepit.refined.string.{MatchesRegex, ValidInt}
-import io.kirill.shoppingcart.auth.user.UserId
 import io.kirill.shoppingcart.shop.order.Order
-import squants.Money
 
 package object payment {
   type Rgx = W.`"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"`.T
 
-  type CardNamePred       = String Refined MatchesRegex[Rgx]
-  type CardNumberPred     = Long Refined Size[16]
-  type CardExpirationPred = String Refined (Size[4] And ValidInt)
-  type CardCVVPred        = Int Refined Size[3]
-
-  final case class CardName(value: String)    extends AnyVal
-  final case class CardNumber(value: Long)    extends AnyVal
-  final case class CardExpiration(value: Int) extends AnyVal
-  final case class CardCvv(value: Int)        extends AnyVal
+  type Name       = String Refined MatchesRegex[Rgx]
+  type Number     = Long Refined Size[16]
+  type Expiration = String Refined (Size[4] And ValidInt)
+  type CVV        = Int Refined Size[3]
 
   final case class Card(
-      name: CardName,
-      number: CardNumber,
-      expiration: CardExpiration,
-      cvv: CardCvv
+      name: Name,
+      number: Number,
+      expiration: Expiration,
+      cvv: CVV
   )
 
   final case class PaymentId(value: UUID) extends AnyVal
