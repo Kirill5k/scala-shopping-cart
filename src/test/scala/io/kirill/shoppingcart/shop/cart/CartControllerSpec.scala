@@ -60,7 +60,7 @@ class CartControllerSpec extends ControllerSpec {
 
         when(cartService.add(any[UserId], any[Cart])).thenReturn(IO.pure(()))
 
-        val request = Request[IO](uri = uri"/shopping-cart", method = Method.POST).withEntity(cart)
+        val request = Request[IO](uri = uri"/shopping-cart", method = Method.POST).withEntity(shoppingCartReq)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[Cart](response, Status.Ok, None)
