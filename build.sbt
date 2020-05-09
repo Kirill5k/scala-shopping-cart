@@ -7,7 +7,28 @@ ThisBuild / organizationName := "kirill"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "scala-shopping-cart",
+    name := "shopping-cart"
+  )
+  .aggregate(core)
+
+lazy val dockerSettings = Seq(
+  packageName in Docker := "shopping-cart",
+  version in Docker := sys.env.getOrElse("APP_VERSION", version.value),
+  dockerBaseImage := "openjdk:11.0.4-jre-slim",
+  dockerExposedPorts ++= Seq(8080),
+  dockerUpdateLatest := true,
+  makeBatScripts := Seq()
+)
+
+lazy val core = (project in file("modules/core"))
+  .enablePlugins(DockerPlugin, AshScriptPlugin)
+  .settings(dockerSettings)
+  .settings(
+    name := "shopping-cart-core",
+    scalacOptions += "-Ymacro-annotations",
+    scalafmtOnCompile := true,
+    resolvers += Resolver.sonatypeRepo("snapshots"),
+    Defaults.itSettings,
     libraryDependencies ++= Seq(
       pureConfigCore,
       pureConfigCats,
