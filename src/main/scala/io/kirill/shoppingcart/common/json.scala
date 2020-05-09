@@ -2,17 +2,38 @@ package io.kirill.shoppingcart.common
 
 import cats.Applicative
 import cats.effect.Sync
+import io.circe.generic.extras.defaults._
+import io.circe.generic.extras.semiauto._
 import io.circe.{Decoder, Encoder}
+import io.kirill.shoppingcart.auth.user.{PasswordHash, UserId, Username}
+import io.kirill.shoppingcart.shop.cart.Quantity
+import io.kirill.shoppingcart.shop.item.ItemId
+import io.kirill.shoppingcart.shop.order.{OrderId, OrderStatus}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import org.http4s.{EntityDecoder, EntityEncoder}
 import squants.market.{GBP, Money}
 
 object json extends JsonCodecs {
   implicit def deriveEntityEncoder[F[_]: Applicative, A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
-  implicit def deriveEntityDecoder[F[_]: Sync, A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
+  implicit def deriveEntityDecoder[F[_]: Sync, A: Decoder]: EntityDecoder[F, A]        = jsonOf[F, A]
 }
 
 trait JsonCodecs {
   implicit val moneyEncoder: Encoder[Money] = Encoder[BigDecimal].contramap(_.amount)
   implicit val moneyDecoder: Decoder[Money] = Decoder[BigDecimal].map(GBP.apply)
+
+  implicit val oidEncoder: Encoder[OrderId]         = deriveUnwrappedEncoder
+  implicit val ostatusEncoder: Encoder[OrderStatus] = deriveUnwrappedEncoder
+
+  implicit val iidEncoder: Encoder[ItemId] = deriveUnwrappedEncoder
+
+  implicit val quantityEncoder: Encoder[Quantity] = deriveUnwrappedEncoder
+
+  implicit val uidDecoder: Decoder[UserId]                = deriveUnwrappedDecoder
+  implicit val unameDecoder: Decoder[Username]            = deriveUnwrappedDecoder
+  implicit val passwordHashDecoder: Decoder[PasswordHash] = deriveUnwrappedDecoder
+
+  implicit val uidEncoder: Encoder[UserId]                = deriveUnwrappedEncoder
+  implicit val unameEncoder: Encoder[Username]            = deriveUnwrappedEncoder
+  implicit val passwordHashEncoder: Encoder[PasswordHash] = deriveUnwrappedEncoder
 }

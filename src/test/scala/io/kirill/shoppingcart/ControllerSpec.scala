@@ -4,9 +4,12 @@ import java.util.UUID
 
 import cats.data.Kleisli
 import cats.effect.IO
-import eu.timepit.refined.string.Uuid
+import io.circe._
+import io.circe.syntax._
+import io.circe.generic.auto._
 import io.kirill.shoppingcart.auth.CommonUser
 import io.kirill.shoppingcart.auth.user._
+import io.kirill.shoppingcart.common.json._
 import org.http4s.server.AuthMiddleware
 import org.http4s.{EntityDecoder, Response, Status}
 import org.mockito.ArgumentMatchersSugar
@@ -20,14 +23,14 @@ trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchers
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] = AuthMiddleware(Kleisli.pure(authedUser))
 
-  def verifyResponse[A](actual: IO[Response[IO]], expectedStatus: Status, expectedBody: Option[A] = None)(
+  def verifyResponse[A: Encoder](actual: IO[Response[IO]], expectedStatus: Status, expectedBody: Option[A] = None)(
     implicit ev: EntityDecoder[IO, A]
   ): Unit = {
     val actualResp = actual.unsafeRunSync
 
     actualResp.status must be(expectedStatus)
     expectedBody match {
-      case Some(expected) => actualResp.as[A].unsafeRunSync must be(expected)
+      case Some(expected) => actualResp.as[Json].unsafeRunSync must be(expected.asJson)
       case None           => actualResp.body.compile.toVector.unsafeRunSync mustBe empty
     }
   }

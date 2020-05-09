@@ -69,25 +69,19 @@ object OrderController {
 
   final case class OrderCheckoutResponse(orderId: UUID)
 
-  final case class OrderItemResponse(
-      itemId: UUID,
-      price: Money,
-      quantity: Int
-  )
-
   final case class OrderResponse(
-      id: UUID,
-      status: String,
-      items: List[OrderItemResponse],
+      id: OrderId,
+      status: OrderStatus,
+      items: List[OrderItem],
       totalPrice: Money
   )
 
   object OrderResponse {
     def from(order: Order): OrderResponse =
       OrderResponse(
-        order.id.value,
-        order.status.value,
-        order.items.map(oi => OrderItemResponse(oi.itemId.value, oi.price, oi.quantity.value)).toList,
+        order.id,
+        order.status,
+        order.items.toList,
         order.totalPrice
       )
   }

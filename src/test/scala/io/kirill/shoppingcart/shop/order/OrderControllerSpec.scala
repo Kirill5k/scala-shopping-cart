@@ -12,7 +12,7 @@ import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.common.web.RestController.ErrorResponse
 import io.kirill.shoppingcart.shop.cart.{Cart, CartItem, CartService, Quantity}
 import io.kirill.shoppingcart.shop.item.{ItemBuilder, ItemId, ItemService}
-import io.kirill.shoppingcart.shop.order.OrderController.{OrderCheckoutResponse, OrderItemResponse, OrderResponse}
+import io.kirill.shoppingcart.shop.order.OrderController.{OrderCheckoutResponse, OrderResponse}
 import io.kirill.shoppingcart.shop.payment.PaymentService
 import org.http4s._
 import org.http4s.circe._
@@ -43,12 +43,11 @@ class OrderControllerSpec extends ControllerSpec {
         val request                    = Request[IO](uri = uri"/orders", method = Method.GET)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        val oi = order1.items.head
         val expectedResponse = List(
           OrderResponse(
-            order1.id.value,
-            order1.status.value,
-            List(OrderItemResponse(oi.itemId.value, oi.price, oi.quantity.value)),
+            order1.id,
+            order1.status,
+            order1.items.toList,
             order1.totalPrice
           )
         )
@@ -67,12 +66,11 @@ class OrderControllerSpec extends ControllerSpec {
         val request                    = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        val oi = order1.items.head
         val expectedResponse =
           OrderResponse(
-            order1.id.value,
-            order1.status.value,
-            List(OrderItemResponse(oi.itemId.value, oi.price, oi.quantity.value)),
+            order1.id,
+            order1.status,
+            order1.items.toList,
             order1.totalPrice
           )
         verifyResponse[OrderResponse](response, Status.Ok, Some(expectedResponse))

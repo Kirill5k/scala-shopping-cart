@@ -4,11 +4,10 @@ import cats.effect.{Resource, Sync}
 import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
 import dev.profunktor.redis4cats.algebra.RedisCommands
-import io.circe.{Decoder, Encoder}
 import io.circe.generic.auto._
-import io.circe.generic.extras.semiauto._
 import io.circe.parser.decode
 import io.circe.syntax._
+import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.config.AppConfig
 
 sealed trait UserCacheStore[F[_]] {
@@ -23,14 +22,6 @@ final private class RedisUserCacheStore[F[_]: Sync](
 )(
     implicit config: AppConfig
 ) extends UserCacheStore[F] {
-
-  implicit val uidDecoder: Decoder[UserId]                = deriveUnwrappedDecoder
-  implicit val unameDecoder: Decoder[Username]            = deriveUnwrappedDecoder
-  implicit val passwordHashDecoder: Decoder[PasswordHash] = deriveUnwrappedDecoder
-
-  implicit val uidEncoder: Encoder[UserId]                = deriveUnwrappedEncoder
-  implicit val unameEncoder: Encoder[Username]            = deriveUnwrappedEncoder
-  implicit val passwordHashEncoder: Encoder[PasswordHash] = deriveUnwrappedEncoder
 
   override def findUser(token: JwtToken): F[Option[User]] =
     redis.use { r =>
