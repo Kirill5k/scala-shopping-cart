@@ -5,6 +5,7 @@ import java.util.UUID
 import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.AuthHeaders
+import dev.profunktor.auth.jwt.JwtToken
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.common.web.RestController
 import org.http4s.circe.CirceEntityEncoder._
@@ -13,7 +14,7 @@ import org.http4s.server.{AuthMiddleware, Router}
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection._
 import io.circe.refined._
-import io.kirill.shoppingcart.auth.user.{Password, Username}
+import io.kirill.shoppingcart.auth.user.{Password, UserId, Username}
 import io.kirill.shoppingcart.common.errors.AuthTokenNotPresent
 
 final class AuthController[F[_]: Sync](authService: AuthService[F]) extends RestController[F]{
@@ -27,14 +28,14 @@ final class AuthController[F[_]: Sync](authService: AuthService[F]) extends Rest
       for {
         create <- req.decodeR[AuthCreateUserRequest]
         uid <- authService.create(Username(create.username.value), Password(create.password.value))
-        res <- Created(AuthCreateUserResponse(uid.value))
+        res <- Created(AuthCreateUserResponse(uid))
       } yield res
     }
     case req @ POST -> Root / "auth" / "login" => withErrorHandling {
       for {
         login <- req.decodeR[AuthLoginRequest]
         token <- authService.login(Username(login.username.value), Password(login.password.value))
-        res <- Ok(AuthLoginResponse(token.value))
+        res <- Ok(AuthLoginResponse(token))
       } yield res
     }
   }
@@ -60,9 +61,9 @@ object AuthController {
 
   final case class AuthCreateUserRequest(username: NonEmptyString, password: NonEmptyString)
 
-  final case class AuthCreateUserResponse(id: UUID)
+  final case class AuthCreateUserResponse(id: UserId)
 
   final case class AuthLoginRequest(username: NonEmptyString, password: NonEmptyString)
 
-  final case class AuthLoginResponse(token: String)
+  final case class AuthLoginResponse(token: JwtToken)
 }

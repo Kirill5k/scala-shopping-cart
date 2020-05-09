@@ -60,7 +60,7 @@ class AuthControllerSpec extends ControllerSpec {
         val request                    = Request[IO](uri = uri"/users/auth/login", method = Method.POST).withEntity(loginRequestJson())
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        verifyResponse[AuthLoginResponse](response, Status.Ok, Some(AuthLoginResponse("token")))
+        verifyResponse[AuthLoginResponse](response, Status.Ok, Some(AuthLoginResponse(JwtToken("token"))))
         verify(authServiceMock).login(Username("boris"), Password("password"))
       }
 
@@ -115,7 +115,7 @@ class AuthControllerSpec extends ControllerSpec {
         val request                    = Request[IO](uri = uri"/users", method = Method.POST).withEntity(createUserRequestJson())
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        verifyResponse[AuthCreateUserResponse](response, Status.Created, Some(AuthCreateUserResponse(userId)))
+        verifyResponse[AuthCreateUserResponse](response, Status.Created, Some(AuthCreateUserResponse(UserId(userId))))
         verify(authServiceMock).create(Username("boris"), Password("password"))
       }
 

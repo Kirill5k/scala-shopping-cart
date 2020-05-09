@@ -10,6 +10,7 @@ import cats.implicits._
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.shop.brand.BrandName
+import io.kirill.shoppingcart.shop.category.CategoryName
 import org.http4s.{HttpRoutes, ParseFailure, QueryParamDecoder}
 import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
 import org.http4s.server.Router
@@ -51,23 +52,23 @@ object ItemController {
   object ItemQueryParams extends OptionalValidatingQueryParamDecoderMatcher[BrandParam]("brand")
 
   final case class ItemResponse(
-      id: UUID,
-      name: String,
-      description: String,
+      id: ItemId,
+      name: ItemName,
+      description: ItemDescription,
       price: Money,
-      brand: String,
-      category: String
+      brand: BrandName,
+      category: CategoryName
   )
 
   object ItemResponse {
     def from(item: Item): ItemResponse =
       ItemResponse(
-        item.id.value,
-        item.name.value,
-        item.description.value,
+        item.id,
+        item.name,
+        item.description,
         item.price,
-        item.brand.name.value,
-        item.category.name.value
+        item.brand.name,
+        item.category.name
       )
   }
 }

@@ -2,12 +2,15 @@ package io.kirill.shoppingcart.common
 
 import cats.Applicative
 import cats.effect.Sync
+import dev.profunktor.auth.jwt.JwtToken
 import io.circe.generic.extras.defaults._
 import io.circe.generic.extras.semiauto._
 import io.circe.{Decoder, Encoder}
-import io.kirill.shoppingcart.auth.user.{PasswordHash, UserId, Username}
+import io.kirill.shoppingcart.auth.user.{Password, PasswordHash, UserId, Username}
+import io.kirill.shoppingcart.shop.brand.BrandName
 import io.kirill.shoppingcart.shop.cart.Quantity
-import io.kirill.shoppingcart.shop.item.ItemId
+import io.kirill.shoppingcart.shop.category.CategoryName
+import io.kirill.shoppingcart.shop.item.{ItemDescription, ItemId, ItemName}
 import io.kirill.shoppingcart.shop.order.{OrderId, OrderStatus}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import org.http4s.{EntityDecoder, EntityEncoder}
@@ -25,7 +28,11 @@ trait JsonCodecs {
   implicit val oidEncoder: Encoder[OrderId]         = deriveUnwrappedEncoder
   implicit val ostatusEncoder: Encoder[OrderStatus] = deriveUnwrappedEncoder
 
-  implicit val iidEncoder: Encoder[ItemId] = deriveUnwrappedEncoder
+  implicit val iidEncoder: Encoder[ItemId]                   = deriveUnwrappedEncoder
+  implicit val inameEncoder: Encoder[ItemName]               = deriveUnwrappedEncoder
+  implicit val idescriptionEncoder: Encoder[ItemDescription] = deriveUnwrappedEncoder
+  implicit val bnamedEncoder: Encoder[BrandName]             = deriveUnwrappedEncoder
+  implicit val cnameEncoder: Encoder[CategoryName]           = deriveUnwrappedEncoder
 
   implicit val quantityEncoder: Encoder[Quantity] = deriveUnwrappedEncoder
 
@@ -33,6 +40,7 @@ trait JsonCodecs {
   implicit val unameDecoder: Decoder[Username]            = deriveUnwrappedDecoder
   implicit val passwordHashDecoder: Decoder[PasswordHash] = deriveUnwrappedDecoder
 
+  implicit val tokenEncoder: Encoder[JwtToken]            = deriveUnwrappedEncoder
   implicit val uidEncoder: Encoder[UserId]                = deriveUnwrappedEncoder
   implicit val unameEncoder: Encoder[Username]            = deriveUnwrappedEncoder
   implicit val passwordHashEncoder: Encoder[PasswordHash] = deriveUnwrappedEncoder

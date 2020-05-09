@@ -37,12 +37,12 @@ class ItemControllerSpec extends ControllerSpec {
         val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
         val expectedResponse = ItemResponse(
-          testitem.id.value,
-          testitem.name.value,
-          testitem.description.value,
+          testitem.id,
+          testitem.name,
+          testitem.description,
           testitem.price,
-          testitem.brand.name.value,
-          testitem.category.name.value
+          testitem.brand.name,
+          testitem.category.name
         )
         verifyResponse[ItemResponse](response, Status.Ok, Some(expectedResponse))
         verify(itemServiceMock).findById(testitem.id)
@@ -73,12 +73,12 @@ class ItemControllerSpec extends ControllerSpec {
       val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
       val expectedResponse = ItemResponse(
-        testitem.id.value,
-        testitem.name.value,
-        testitem.description.value,
+        testitem.id,
+        testitem.name,
+        testitem.description,
         testitem.price,
-        testitem.brand.name.value,
-        testitem.category.name.value
+        testitem.brand.name,
+        testitem.category.name
       )
       verifyResponse[List[ItemResponse]](response, Status.Ok, Some(List(expectedResponse)))
       verify(itemServiceMock).findAll
@@ -95,12 +95,12 @@ class ItemControllerSpec extends ControllerSpec {
       val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
       val expectedResponse = ItemResponse(
-        testitem.id.value,
-        testitem.name.value,
-        testitem.description.value,
+        testitem.id,
+        testitem.name,
+        testitem.description,
         testitem.price,
-        testitem.brand.name.value,
-        testitem.category.name.value
+        testitem.brand.name,
+        testitem.category.name
       )
       verifyResponse[List[ItemResponse]](response, Status.Ok, Some(List(expectedResponse)))
       verify(itemServiceMock).findBy(BrandName("Test-brand"))
