@@ -60,8 +60,7 @@ class CartControllerSpec extends ControllerSpec {
 
         when(cartService.add(any[UserId], any[Cart])).thenReturn(IO.pure(()))
 
-        val request                    = Request[IO](uri = uri"/shopping-cart", method = Method.POST)
-          .withEntity(shoppingCartReq)
+        val request = Request[IO](uri = uri"/shopping-cart", method = Method.POST).withEntity(cart)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[Cart](response, Status.Ok, None)
@@ -76,8 +75,7 @@ class CartControllerSpec extends ControllerSpec {
 
         when(cartService.update(any[UserId], any[Cart])).thenReturn(IO.pure(()))
 
-        val request                    = Request[IO](uri = uri"/shopping-cart", method = Method.PUT)
-          .withEntity(shoppingCartReq)
+        val request = Request[IO](uri = uri"/shopping-cart", method = Method.PUT).withEntity(shoppingCartReq)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[Cart](response, Status.Ok, None)
@@ -86,7 +84,7 @@ class CartControllerSpec extends ControllerSpec {
     }
   }
 
-  def shoppingCartReq: Json = json"""{"items": [{"itemId": "607995e0-8e3a-11ea-bc55-0242ac130003", "quantity": 4}]}"""
+  def shoppingCartReq: Json = json"""{"items":[{"itemId":"607995e0-8e3a-11ea-bc55-0242ac130003","quantity":4}]}"""
 
   def mockService: CartService[IO] = mock[CartService[IO]]
 

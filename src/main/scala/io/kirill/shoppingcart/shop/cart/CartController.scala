@@ -1,7 +1,5 @@
 package io.kirill.shoppingcart.shop.cart
 
-import java.util.UUID
-
 import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._

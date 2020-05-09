@@ -29,15 +29,15 @@ trait JsonCodecs {
   implicit val oidEncoder: Encoder[OrderId]         = deriveUnwrappedEncoder
   implicit val ostatusEncoder: Encoder[OrderStatus] = deriveUnwrappedEncoder
 
-  implicit val iidEncoder: Encoder[ItemId]                   = deriveUnwrappedEncoder
+  implicit val iidEncoder: Encoder[ItemId] = deriveUnwrappedEncoder
+  implicit val iidDecoder: Decoder[ItemId] = deriveUnwrappedDecoder
+
   implicit val inameEncoder: Encoder[ItemName]               = deriveUnwrappedEncoder
   implicit val idescriptionEncoder: Encoder[ItemDescription] = deriveUnwrappedEncoder
   implicit val bnamedEncoder: Encoder[BrandName]             = deriveUnwrappedEncoder
   implicit val cnameEncoder: Encoder[CategoryName]           = deriveUnwrappedEncoder
 
   implicit val quantityEncoder: Encoder[Quantity] = deriveUnwrappedEncoder
-
-  implicit val iidDecoder: Decoder[ItemId]        = deriveUnwrappedDecoder
   implicit val quantityDecoder: Decoder[Quantity] = deriveUnwrappedDecoder
 
   implicit val uidDecoder: Decoder[UserId]                = deriveUnwrappedDecoder
