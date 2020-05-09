@@ -28,7 +28,7 @@ trait RestController[F[_]] extends Http4sDsl[F] {
         NotFound(ErrorResponse(e.getMessage))
       case InvalidMessageBodyFailure(details, cause) =>
         cause match {
-          case Some(c) if c.getMessage.startsWith("Predicate") => BadRequest(ErrorResponse(c.getMessage))
+          case Some(c) => BadRequest(ErrorResponse(c.getMessage))
           case _ => UnprocessableEntity(ErrorResponse(details))
         }
       case error =>

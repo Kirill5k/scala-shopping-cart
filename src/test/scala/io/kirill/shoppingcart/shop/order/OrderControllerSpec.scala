@@ -5,6 +5,7 @@ import java.util.UUID
 import cats.effect.{ContextShift, IO}
 import io.circe._
 import io.circe.generic.auto._
+import io.circe.literal._
 import io.kirill.shoppingcart.ControllerSpec
 import io.kirill.shoppingcart.auth.user.UserId
 import io.kirill.shoppingcart.common.errors.{ItemNotFound, OrderDoesNotBelongToThisUser, OrderNotFound}
@@ -29,7 +30,7 @@ class OrderControllerSpec extends ControllerSpec {
   val item2   = ItemBuilder.item("item-2", GBP(5.99))
 
   val order1Id = OrderId(UUID.fromString("666665e0-8e3a-11ea-bc55-0242ac130003"))
-  val order1 = OrderBuilder.order.copy(id = order1Id)
+  val order1   = OrderBuilder.order.copy(id = order1Id)
 
   "An OrderController" should {
 
@@ -86,7 +87,11 @@ class OrderControllerSpec extends ControllerSpec {
         val request                    = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        verifyResponse[ErrorResponse](response, Status.NotFound, Some(ErrorResponse("Order with id 666665e0-8e3a-11ea-bc55-0242ac130003 does not exist")))
+        verifyResponse[ErrorResponse](
+          response,
+          Status.NotFound,
+          Some(ErrorResponse("Order with id 666665e0-8e3a-11ea-bc55-0242ac130003 does not exist"))
+        )
         verify(os).get(authedUser.value.id, order1Id)
       }
 
@@ -167,7 +172,62 @@ class OrderControllerSpec extends ControllerSpec {
         verify(cs).get(authedUser.value.id)
       }
     }
+
+    "/orders/{id}/payment" should {
+
+      "return bad request when name has unexpected format" in {
+        val (os, cs, is, ps) = mocks
+        val controller       = new OrderController[IO](os, cs, is, ps)
+
+        val request = Request[IO](uri = uri"/orders/d09c402a-8615-11ea-bc55-0242ac130003/payment", method = Method.POST)
+          .withEntity(paymentReqJson(name = "123"))
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+
+        val expectedResponse = ErrorResponse("""Predicate failed: "123".matches("^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$").: DownField(name),DownField(card)""")
+        verifyResponse[ErrorResponse](response, Status.BadRequest, Some(expectedResponse))
+      }
+
+      "return bad request when expiration has unexpected format" in {
+        val (os, cs, is, ps) = mocks
+        val controller       = new OrderController[IO](os, cs, is, ps)
+
+        val request = Request[IO](uri = uri"/orders/d09c402a-8615-11ea-bc55-0242ac130003/payment", method = Method.POST)
+          .withEntity(paymentReqJson(expiration = "5a"))
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+
+        val expectedResponse = ErrorResponse("""Predicate failed: "5a".matches("^[0-9]{4}$").: DownField(expiration),DownField(card)""")
+        verifyResponse[ErrorResponse](response, Status.BadRequest, Some(expectedResponse))
+      }
+
+      "return bad request when cvv has unexpected format" in {
+        val (os, cs, is, ps) = mocks
+        val controller       = new OrderController[IO](os, cs, is, ps)
+
+        val request = Request[IO](uri = uri"/orders/d09c402a-8615-11ea-bc55-0242ac130003/payment", method = Method.POST)
+          .withEntity(paymentReqJson(cvv = 9999))
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+
+        val expectedResponse = ErrorResponse("""Right predicate of ((9999 > 0) && !(9999 > 999)) failed: Predicate (9999 > 999) did not fail.: DownField(cvv),DownField(card)""")
+        verifyResponse[ErrorResponse](response, Status.BadRequest, Some(expectedResponse))
+      }
+    }
   }
+
+  def paymentReqJson(
+      name: String = "Boris",
+      number: Long = 1234123412341234L,
+      expiration: String = "1221",
+      cvv: Int = 123
+  ): Json =
+    json"""
+      {"card": {
+          "name": $name,
+          "number": $number,
+          "expiration": $expiration,
+          "cvv": $cvv
+        }
+      }
+      """
 
   def mocks: (OrderService[IO], CartService[IO], ItemService[IO], PaymentService[IO]) =
     (mock[OrderService[IO]], mock[CartService[IO]], mock[ItemService[IO]], mock[PaymentService[IO]])
