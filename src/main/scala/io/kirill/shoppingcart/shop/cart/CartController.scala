@@ -13,8 +13,6 @@ import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 
 final class CartController[F[_]: Sync](cartService: CartService[F]) extends RestController[F] {
-  import CartController._
-
   private val prefixPath = "/shopping-cart"
 
   private val httpRoutes: AuthedRoutes[CommonUser, F] =
@@ -30,16 +28,16 @@ final class CartController[F[_]: Sync](cartService: CartService[F]) extends Rest
       case authedReq @ POST -> Root as user =>
         withErrorHandling {
           for {
-            cart <- authedReq.req.as[CartUpdateRequest]
-            _    <- cartService.add(user.value.id, cart.toDomain)
+            cart <- authedReq.req.as[Cart]
+            _    <- cartService.add(user.value.id, cart)
             res  <- Ok()
           } yield res
         }
       case authedReq @ PUT -> Root as user =>
         withErrorHandling {
           for {
-            cart <- authedReq.req.as[CartUpdateRequest]
-            _    <- cartService.update(user.value.id, cart.toDomain)
+            cart <- authedReq.req.as[Cart]
+            _    <- cartService.update(user.value.id, cart)
             res  <- Ok()
           } yield res
         }
@@ -50,7 +48,4 @@ final class CartController[F[_]: Sync](cartService: CartService[F]) extends Rest
 }
 
 object CartController {
-  final case class CartUpdateRequest(items: Map[UUID, Int]) extends AnyVal {
-    def toDomain: Cart = Cart(items.map(x => CartItem(ItemId(x._1), Quantity(x._2))).toList)
-  }
 }

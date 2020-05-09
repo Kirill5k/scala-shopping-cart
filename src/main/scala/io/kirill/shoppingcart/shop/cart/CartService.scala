@@ -41,7 +41,7 @@ final private class RedisCartService[F[_]: Sync](
     processItems(userId, cart.items) {
       case (r, ci) =>
         val uid = userId.value.toString
-        val iid = ci.item.value.toString
+        val iid = ci.itemId.value.toString
         val q   = ci.quantity.value
         r.hGet(uid, iid).flatMap(qOpt => r.hSet(uid, iid, qOpt.fold(q.toString)(x => (x.toInt + q).toString)))
     }
@@ -50,7 +50,7 @@ final private class RedisCartService[F[_]: Sync](
     processItems(userId, cart.items) {
       case (r, ci) =>
         val uid = userId.value.toString
-        val iid = ci.item.value.toString
+        val iid = ci.itemId.value.toString
         val q   = ci.quantity.value.toString
         r.hExists(uid, iid).flatMap(e => if (e) r.hSet(userId.value.toString, iid, q) else ().pure[F])
     }

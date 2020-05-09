@@ -37,6 +37,9 @@ trait JsonCodecs {
 
   implicit val quantityEncoder: Encoder[Quantity] = deriveUnwrappedEncoder
 
+  implicit val iidDecoder: Decoder[ItemId]        = deriveUnwrappedDecoder
+  implicit val quantityDecoder: Decoder[Quantity] = deriveUnwrappedDecoder
+
   implicit val uidDecoder: Decoder[UserId]                = deriveUnwrappedDecoder
   implicit val unameDecoder: Decoder[Username]            = deriveUnwrappedDecoder
   implicit val passwordHashDecoder: Decoder[PasswordHash] = deriveUnwrappedDecoder

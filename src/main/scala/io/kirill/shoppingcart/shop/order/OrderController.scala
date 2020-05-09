@@ -43,7 +43,7 @@ final class OrderController[F[_]: Sync](
         withErrorHandling {
           for {
             cart  <- cartService.get(user.value.id).ensure(EmptyCart)(_.items.nonEmpty)
-            items <- cart.items.map(ci => itemService.findById(ci.item).map((_, ci.quantity))).toList.sequence
+            items <- cart.items.map(ci => itemService.findById(ci.itemId).map((_, ci.quantity))).toList.sequence
             orderItems = items.map { case (i, q)                       => OrderItem(i.id, i.price, q) }
             total      = items.foldLeft(GBP(0)) { case (total, (i, q)) => total + (i.price * q.value) }
             orderId <- orderService.create(OrderCheckout(user.value.id, orderItems, total))
