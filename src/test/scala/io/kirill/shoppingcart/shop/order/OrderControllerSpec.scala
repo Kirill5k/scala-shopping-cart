@@ -14,7 +14,8 @@ import io.kirill.shoppingcart.common.web.RestController.ErrorResponse
 import io.kirill.shoppingcart.shop.cart.{Cart, CartItem, CartService, Quantity}
 import io.kirill.shoppingcart.shop.item.{ItemBuilder, ItemId, ItemService}
 import io.kirill.shoppingcart.shop.order.OrderController.{OrderCheckoutResponse, OrderResponse}
-import io.kirill.shoppingcart.shop.payment.PaymentService
+import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentId, PaymentService}
+import eu.timepit.refined.auto._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.implicits._
@@ -24,6 +25,8 @@ import scala.concurrent.ExecutionContext
 
 class OrderControllerSpec extends ControllerSpec {
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.Implicits.global)
+
+  val paymentId = PaymentId(UUID.randomUUID())
 
   val item1Id = ItemId(UUID.fromString("607995e0-8e3a-11ea-bc55-0242ac130003"))
   val item1   = ItemBuilder.item("item-1", GBP(14.99)).copy(id = item1Id)
@@ -174,6 +177,56 @@ class OrderControllerSpec extends ControllerSpec {
     }
 
     "/orders/{id}/payment" should {
+
+      "process payment and update order" in {
+        val (os, cs, is, ps) = mocks
+        val controller       = new OrderController[IO](os, cs, is, ps)
+
+        when(os.get(any[UserId], any[OrderId])).thenReturn(IO.pure(order1))
+        when(ps.process(any[Payment])).thenReturn(IO.pure(paymentId))
+        when(os.update(any[OrderPayment])).thenReturn(IO.pure(()))
+
+        val request = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003/payment", method = Method.POST)
+          .withEntity(paymentReqJson())
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+
+        verifyResponse[ErrorResponse](response, Status.NoContent)
+        verify(os).get(authedUser.value.id, order1Id)
+        verify(ps).process(Payment(order1, Card("Boris", 1234123412341234L, "1221", 123)))
+        verify(os).update(OrderPayment(order1Id, paymentId))
+      }
+
+      "return 404 when order not found" in {
+        val (os, cs, is, ps) = mocks
+        val controller       = new OrderController[IO](os, cs, is, ps)
+
+        when(os.get(any[UserId], any[OrderId])).thenReturn(IO.raiseError(OrderNotFound(order1Id)))
+
+        val request = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003/payment", method = Method.POST)
+          .withEntity(paymentReqJson())
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+
+        verifyResponse[ErrorResponse](
+          response,
+          Status.NotFound,
+          Some(ErrorResponse("Order with id 666665e0-8e3a-11ea-bc55-0242ac130003 does not exist"))
+        )
+        verify(os).get(authedUser.value.id, order1Id)
+      }
+
+      "return 403 when order does not belong to user" in {
+        val (os, cs, is, ps) = mocks
+        val controller       = new OrderController[IO](os, cs, is, ps)
+
+        when(os.get(any[UserId], any[OrderId])).thenReturn(IO.raiseError(OrderDoesNotBelongToThisUser))
+
+        val request = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003/payment", method = Method.POST)
+          .withEntity(paymentReqJson())
+        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+
+        verifyResponse[ErrorResponse](response, Status.Forbidden, Some(ErrorResponse("Order does not belong to this user")))
+        verify(os).get(authedUser.value.id, order1Id)
+      }
 
       "return bad request when name has unexpected format" in {
         val (os, cs, is, ps) = mocks
