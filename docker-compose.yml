@@ -1,0 +1,30 @@
+version: '3.3'
+
+services:
+  postgres:
+    restart: always
+    image: postgres:12.0-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - DEBUG=false
+      - POSTGRES_DB=shop
+    volumes:
+      - ./modules/core/src/main/resources/database.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    restart: always
+    image: redis:5.0.0
+    ports:
+      - "6379:6379"
+    environment:
+      - DEBUG=false
+
+  shop:
+    image: shopping-cart:latest
+    environment:
+      REDIS_HOST: "redis"
+    restart: always
+    depends_on:
+      - postgres
+      - redis
