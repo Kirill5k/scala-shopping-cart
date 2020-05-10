@@ -7,6 +7,20 @@ import pureconfig.module.catseffect.syntax._
 
 object config {
 
+  final case class RedisConfig(
+      host: String,
+      port: Int
+  )
+
+  final case class PostgresConfig(
+      host: String,
+      port: Int,
+      user: String,
+      password: String,
+      database: String,
+      maxConnections: Int
+  )
+
   final case class AuthConfig(
       jwtSecretKey: String,
       jwtClaim: String,
@@ -20,7 +34,9 @@ object config {
 
   final case class AppConfig(
       auth: AuthConfig,
-      shop: ShopConfig
+      shop: ShopConfig,
+      redis: RedisConfig,
+      postgres: PostgresConfig
   )
 
   object AppConfig {
