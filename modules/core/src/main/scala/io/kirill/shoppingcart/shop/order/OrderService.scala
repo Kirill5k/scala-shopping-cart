@@ -19,7 +19,7 @@ final private class LiveOrderService[F[_]: Sync](
   override def get(userId: UserId, orderId: OrderId): F[Order] =
     orderRepository.find(orderId).flatMap {
       case None => OrderNotFound(orderId).raiseError[F, Order]
-      case Some(o) if o.userId != userId => OrderDoesNotBelongToThisUser.raiseError[F, Order]
+      case Some(o) if o.userId != userId => OrderDoesNotBelongToThisUser(o.id, userId).raiseError[F, Order]
       case Some(o) => o.pure[F]
     }
 

@@ -24,14 +24,14 @@ final private class LiveAuthService[F[_]: Sync](
 
   override def login(username: Username, password: Password): F[JwtToken] =
     userRepository.findByName(username).flatMap {
-      case None => InvalidUsernameOrPassword.raiseError[F, JwtToken]
+      case None => InvalidUsernameOrPassword(username).raiseError[F, JwtToken]
       case Some(u) =>
         for {
           isValidPassword <- passwordEncryptor.isValid(password, u.password)
           token <- if (isValidPassword) userCacheStore.findToken(username).flatMap {
             case Some(t) => t.pure[F]
             case None    => tokenGenerator.generate.flatMap(t => userCacheStore.put(t, u) *> t.pure[F])
-          } else InvalidUsernameOrPassword.raiseError[F, JwtToken]
+          } else InvalidUsernameOrPassword(username).raiseError[F, JwtToken]
         } yield token
     }
 

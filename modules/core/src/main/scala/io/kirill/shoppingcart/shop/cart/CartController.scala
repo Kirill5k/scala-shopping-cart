@@ -2,6 +2,7 @@ package io.kirill.shoppingcart.shop.cart
 
 import cats.effect.Sync
 import cats.implicits._
+import io.chrisdavenport.log4cats.Logger
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.auth.CommonUser
 import io.kirill.shoppingcart.common.web.RestController
@@ -10,7 +11,7 @@ import io.kirill.shoppingcart.shop.item.ItemId
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 
-final class CartController[F[_]: Sync](cartService: CartService[F]) extends RestController[F] {
+final class CartController[F[_]: Sync: Logger](cartService: CartService[F]) extends RestController[F] {
   private val prefixPath = "/shopping-cart"
 
   private val httpRoutes: AuthedRoutes[CommonUser, F] =

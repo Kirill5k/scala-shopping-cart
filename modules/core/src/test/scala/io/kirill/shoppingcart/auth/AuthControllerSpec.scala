@@ -68,7 +68,8 @@ class AuthControllerSpec extends ControllerSpec {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)
 
-        when(authServiceMock.login(any[Username], any[Password])).thenReturn(IO.raiseError(InvalidUsernameOrPassword))
+        when(authServiceMock.login(any[Username], any[Password]))
+          .thenReturn(IO.raiseError(InvalidUsernameOrPassword(authedUser.value.name)))
 
         val request                    = Request[IO](uri = uri"/users/auth/login", method = Method.POST).withEntity(loginRequestJson())
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)

@@ -7,6 +7,7 @@ import cats.effect.Sync
 import io.circe._
 import io.circe.generic.auto._
 import cats.implicits._
+import io.chrisdavenport.log4cats.Logger
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.shop.brand.BrandName
@@ -16,7 +17,7 @@ import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
 import org.http4s.server.Router
 import squants.Money
 
-final class ItemController[F[_]: Sync](itemService: ItemService[F]) extends RestController[F] {
+final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) extends RestController[F] {
   import ItemController._
 
   private val prefixPath = "/items"

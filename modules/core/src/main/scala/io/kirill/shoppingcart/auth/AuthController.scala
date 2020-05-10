@@ -12,11 +12,12 @@ import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.server.{AuthMiddleware, Router}
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection._
+import io.chrisdavenport.log4cats.Logger
 import io.circe.refined._
 import io.kirill.shoppingcart.auth.user.{Password, UserId, Username}
 import io.kirill.shoppingcart.common.errors.AuthTokenNotPresent
 
-final class AuthController[F[_]: Sync](authService: AuthService[F]) extends RestController[F]{
+final class AuthController[F[_]: Sync: Logger](authService: AuthService[F]) extends RestController[F]{
   import RestController._
   import AuthController._
 
@@ -43,7 +44,7 @@ final class AuthController[F[_]: Sync](authService: AuthService[F]) extends Rest
     case authedReq @ POST -> Root / "auth" / "logout" as user => withErrorHandling {
       AuthHeaders.getBearerToken(authedReq.req) match {
         case Some(token) => authService.logout(token, user.value.name) *> NoContent()
-        case None => Sync[F].raiseError(AuthTokenNotPresent)
+        case None => Sync[F].raiseError(AuthTokenNotPresent(user.value.name))
       }
     }
   }

@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Sync
 import cats.implicits._
+import io.chrisdavenport.log4cats.Logger
 import io.circe.generic.auto._
 import io.circe.refined._
 import io.kirill.shoppingcart.auth.CommonUser
@@ -18,7 +19,7 @@ import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.circe._
 import squants.market.{GBP, Money}
 
-final class OrderController[F[_]: Sync](
+final class OrderController[F[_]: Sync: Logger](
     orderService: OrderService[F],
     cartService: CartService[F],
     itemService: ItemService[F],

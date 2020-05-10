@@ -102,7 +102,8 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(os.get(any[UserId], any[OrderId])).thenReturn(IO.raiseError(OrderDoesNotBelongToThisUser))
+        when(os.get(any[UserId], any[OrderId]))
+          .thenReturn(IO.raiseError(OrderDoesNotBelongToThisUser(order1Id, authedUser.value.id)))
 
         val request                    = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -218,7 +219,8 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(os.get(any[UserId], any[OrderId])).thenReturn(IO.raiseError(OrderDoesNotBelongToThisUser))
+        when(os.get(any[UserId], any[OrderId]))
+          .thenReturn(IO.raiseError(OrderDoesNotBelongToThisUser(order1Id, authedUser.value.id)))
 
         val request = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003/payment", method = Method.POST)
           .withEntity(paymentReqJson())

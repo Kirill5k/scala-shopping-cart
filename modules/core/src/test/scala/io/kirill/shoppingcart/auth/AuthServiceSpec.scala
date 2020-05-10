@@ -112,7 +112,7 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
           res <- service.login(user.name, Password("password"))
         } yield res
 
-        recoverToSucceededIf[AppError] {
+        recoverToSucceededIf[InvalidUsernameOrPassword] {
           result.unsafeToFuture()
         }
       }
@@ -125,7 +125,7 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
           res <- service.login(user.name, Password("password"))
         } yield res
 
-        recoverToSucceededIf[AppError] {
+        recoverToSucceededIf[InvalidUsernameOrPassword] {
           result.unsafeToFuture()
         }
       }

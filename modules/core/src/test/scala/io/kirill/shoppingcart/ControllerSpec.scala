@@ -4,6 +4,8 @@ import java.util.UUID
 
 import cats.data.Kleisli
 import cats.effect.IO
+import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.circe._
 import io.circe.syntax._
 import io.circe.generic.auto._
@@ -18,6 +20,7 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchersSugar with Matchers {
+  implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
   val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), PasswordHash("password")))
 

@@ -1,6 +1,6 @@
 package io.kirill.shoppingcart.common
 
-import io.kirill.shoppingcart.auth.user.Username
+import io.kirill.shoppingcart.auth.user.{UserId, Username}
 import io.kirill.shoppingcart.shop.item.ItemId
 import io.kirill.shoppingcart.shop.order.OrderId
 
@@ -25,7 +25,7 @@ object errors {
     val message = s"Order with id ${orderId.value} does not exist"
   }
 
-  final case object OrderDoesNotBelongToThisUser extends AppError {
+  final case class OrderDoesNotBelongToThisUser(orderId: OrderId, userId: UserId) extends AppError {
     val message = "Order does not belong to this user"
   }
 
@@ -37,11 +37,11 @@ object errors {
     val message = "Unable to checkout empty cart"
   }
 
-  final case object InvalidUsernameOrPassword extends AppError {
+  final case class InvalidUsernameOrPassword(username: Username) extends AppError {
     val message = "Username or password is incorrect"
   }
 
-  final case object AuthTokenNotPresent extends AppError {
+  final case class AuthTokenNotPresent(username: Username) extends AppError {
     val message = "Missing Authorization bearer token"
   }
 }

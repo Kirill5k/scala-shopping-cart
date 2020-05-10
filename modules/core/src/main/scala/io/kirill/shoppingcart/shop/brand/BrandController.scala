@@ -1,13 +1,14 @@
 package io.kirill.shoppingcart.shop.brand
 
 import cats.effect.Sync
+import io.chrisdavenport.log4cats.Logger
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.json._
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
 
-final class BrandController[F[_]: Sync](brandService: BrandService[F]) extends RestController[F] {
+final class BrandController[F[_]: Sync: Logger](brandService: BrandService[F]) extends RestController[F] {
   private val prefixPath = "/brands"
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {

@@ -4,14 +4,11 @@ import java.util.UUID
 
 import cats.effect.IO
 import io.kirill.shoppingcart.auth.user.UserId
-import io.kirill.shoppingcart.common.errors.{AppError, OrderNotFound}
-import io.kirill.shoppingcart.shop.cart.Quantity
-import io.kirill.shoppingcart.shop.item.ItemId
+import io.kirill.shoppingcart.common.errors.{OrderDoesNotBelongToThisUser, OrderNotFound}
 import io.kirill.shoppingcart.shop.payment.PaymentId
 import org.mockito.scalatest.AsyncMockitoSugar
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.must.Matchers
-import squants.market.GBP
 
 class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar {
 
@@ -52,7 +49,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
           order <- service.get(userId, order1.id)
         } yield order
 
-        recoverToSucceededIf[AppError] {
+        recoverToSucceededIf[OrderDoesNotBelongToThisUser] {
           result.unsafeToFuture()
         }
       }
@@ -90,7 +87,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
         val result = for {
           repo <- repoMock
           paymentUpdate = OrderPayment(order1.id, PaymentId(UUID.randomUUID()), order1.status)
-          _ = when(repo.update(paymentUpdate)).thenReturn(IO.pure(order1.id))
+          _ = when(repo.update(paymentUpdate)).thenReturn(IO.pure(()))
           service <- OrderService.make[IO](repo)
           res      <- service.update(paymentUpdate)
         } yield res

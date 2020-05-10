@@ -24,6 +24,7 @@ services:
     image: shopping-cart:latest
     environment:
       REDIS_HOST: "redis"
+      POSTGRES_HOST: "postgres"
     restart: always
     depends_on:
       - postgres
