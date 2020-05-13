@@ -18,24 +18,22 @@ trait CartService[F[_]] {
 }
 
 final private class RedisCartService[F[_]: Sync](
-    redis: Resource[F, RedisCommands[F, String, String]]
+    redis: RedisCommands[F, String, String]
 )(
     implicit config: AppConfig
 ) extends CartService[F] {
 
   override def delete(userId: UserId): F[Unit] =
-    redis.use(_.del(userId.value.toString))
+    redis.del(userId.value.toString)
 
   override def get(userId: UserId): F[Cart] =
-    redis.use { r =>
-      for {
-        itemsMap <- r.hGetAll(userId.value.toString)
-        cartItems = itemsMap.map { case (i, q) => CartItem(ItemId(UUID.fromString(i)), Quantity(q.toInt)) }
-      } yield Cart(cartItems.toList)
-    }
+    for {
+      itemsMap <- redis.hGetAll(userId.value.toString)
+      cartItems = itemsMap.map { case (i, q) => CartItem(ItemId(UUID.fromString(i)), Quantity(q.toInt)) }
+    } yield Cart(cartItems.toList)
 
   override def removeItem(userId: UserId, itemId: ItemId): F[Unit] =
-    redis.use(_.hDel(userId.value.toString, itemId.value.toString))
+    redis.hDel(userId.value.toString, itemId.value.toString)
 
   override def add(userId: UserId, cart: Cart): F[Unit] =
     processItems(userId, cart.items) {
@@ -56,15 +54,13 @@ final private class RedisCartService[F[_]: Sync](
     }
 
   private def processItems(userId: UserId, items: Seq[CartItem])(f: (RedisCommands[F, String, String], CartItem) => F[Unit]): F[Unit] =
-    redis.use { r =>
-      items.map(i => f(r, i)).toList.sequence *> r.expire(userId.value.toString, config.shop.cartExpiration)
-    }
+    items.map(i => f(redis, i)).toList.sequence *> redis.expire(userId.value.toString, config.shop.cartExpiration)
 }
 
 object CartService {
 
   def redisCartService[F[_]: Sync](
-      redis: Resource[F, RedisCommands[F, String, String]]
+      redis: RedisCommands[F, String, String]
   )(
       implicit config: AppConfig
   ): F[CartService[F]] = Sync[F].delay(new RedisCartService[F](redis))

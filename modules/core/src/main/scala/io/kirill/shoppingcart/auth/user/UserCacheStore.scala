@@ -18,39 +18,31 @@ sealed trait UserCacheStore[F[_]] {
 }
 
 final private class RedisUserCacheStore[F[_]: Sync](
-    redis: Resource[F, RedisCommands[F, String, String]]
+    redis: RedisCommands[F, String, String]
 )(
     implicit config: AppConfig
 ) extends UserCacheStore[F] {
 
   override def findUser(token: JwtToken): F[Option[User]] =
-    redis.use { r =>
-      r.get(token.value)
-        .map(_.flatMap { json =>
-          decode[User](json).toOption
-        })
-    }
+    redis.get(token.value)
+      .map(_.flatMap { json =>
+        decode[User](json).toOption
+      })
 
   override def put(token: JwtToken, user: User): F[Unit] =
-    redis.use { r =>
-      r.setEx(token.value, user.asJson.noSpaces, config.auth.tokenExpiration) *>
-        r.setEx(user.name.value, token.value, config.auth.tokenExpiration)
-    }
+    redis.setEx(token.value, user.asJson.noSpaces, config.auth.tokenExpiration) *>
+      redis.setEx(user.name.value, token.value, config.auth.tokenExpiration)
 
   override def findToken(username: Username): F[Option[JwtToken]] =
-    redis.use { r =>
-      r.get(username.value).map(_.map(JwtToken))
-    }
+    redis.get(username.value).map(_.map(JwtToken))
 
   override def remove(token: JwtToken, username: Username): F[Unit] =
-    redis.use { r =>
-      r.del(token.value) *> r.del(username.value)
-    }
+    redis.del(token.value) *> redis.del(username.value)
 }
 
 object UserStore {
   def redisUserCacheStore[F[_]: Sync](
-      redis: Resource[F, RedisCommands[F, String, String]]
+      redis: RedisCommands[F, String, String]
   )(
       implicit config: AppConfig
   ): F[UserCacheStore[F]] =

@@ -17,7 +17,7 @@ sealed trait HealthCheckService[F[_]] {
 
 final private class LiveHealthCheckService[F[_]: Concurrent: Parallel: Timer](
     session: Resource[F, Session[F]],
-    redis: Resource[F, RedisCommands[F, String, String]]
+    redis: RedisCommands[F, String, String]
 ) extends HealthCheckService[F] {
 
   private val q: Query[Void, Int] =
@@ -33,7 +33,7 @@ final private class LiveHealthCheckService[F[_]: Concurrent: Parallel: Timer](
 
   private def redisHealth: F[RedisStatus] =
     redis
-      .use(_.ping)
+      .ping
       .map(_.nonEmpty)
       .timeout(3 second)
       .orElse(false.pure[F])
@@ -46,7 +46,7 @@ final private class LiveHealthCheckService[F[_]: Concurrent: Parallel: Timer](
 object HealthCheckService {
   def make[F[_]: Concurrent: Parallel: Timer](
       session: Resource[F, Session[F]],
-      redis: Resource[F, RedisCommands[F, String, String]]
+      redis: RedisCommands[F, String, String]
   ): F[HealthCheckService[F]] =
     Sync[F].delay(new LiveHealthCheckService[F](session, redis))
 }
