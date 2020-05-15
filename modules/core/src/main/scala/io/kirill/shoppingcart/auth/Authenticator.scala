@@ -6,8 +6,8 @@ import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.jwt._
 import io.circe.parser.{decode => jsonDecode}
+import io.circe.generic.auto._
 import io.kirill.shoppingcart.auth.user.{User, UserCacheStore, UserId, Username}
-import io.kirill.shoppingcart.config.AppConfig
 import pdi.jwt.JwtClaim
 
 sealed trait Authenticator[F[_], U] {
@@ -33,11 +33,10 @@ object Authenticator {
   def commonUserAuthenticator[F[_]: Sync](userCacheStore: UserCacheStore[F]): F[Authenticator[F, CommonUser]] =
     Sync[F].delay(new CommonUserAuthenticator[F](userCacheStore))
 
-  def adminUserAuthenticator[F[_]: Sync](adminJwtAuth: AdminJwtAuth)(implicit config: AppConfig): F[Authenticator[F, AdminUser]] =
+  def adminUserAuthenticator[F[_]: Sync](adminToken: JwtToken, adminJwtAuth: AdminJwtAuth): F[Authenticator[F, AdminUser]] =
     for {
-      adminToken <- Sync[F].delay(JwtToken(config.auth.adminJwt.token))
       claim <- jwtDecode[F](adminToken, adminJwtAuth.value)
-      adminClaim <- Sync[F].fromEither(jsonDecode[UUID](claim.content))
-      adminUser = AdminUser(User(UserId(adminClaim), Username("admin"), None))
+      adminClaim <- Sync[F].fromEither(jsonDecode[AdminClaimContent](claim.content))
+      adminUser = AdminUser(User(UserId(adminClaim.id), Username("admin"), None))
     } yield new AdminUserAuthenticator[F](adminToken, adminUser)
 }

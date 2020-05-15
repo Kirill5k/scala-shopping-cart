@@ -31,13 +31,14 @@ object Auth {
       UserJwtAuth(JwtAuth.hmac(config.auth.userJwt.secretKey, JwtAlgorithm.HS256))
 
     for {
-      repo              <- UserRepository.make[F](session)
-      caheStore         <- UserCacheStore.redisUserCacheStore[F](redis)
-      tokenGen          <- TokenGenerator.make[F]
-      passwordEncryptor <- PasswordEncryptor.make[F]
-      authService       <- AuthService.make(repo, caheStore, tokenGen, passwordEncryptor)
-      userAuth          <- Authenticator.commonUserAuthenticator(caheStore)
-      adminAuth         <- Authenticator.adminUserAuthenticator(adminJwtAuth)
+      repo        <- UserRepository.make[F](session)
+      caheStore   <- UserCacheStore.redisUserCacheStore[F](redis)
+      tokenGen    <- TokenGenerator.make[F]
+      encryptor   <- PasswordEncryptor.make[F]
+      authService <- AuthService.make(repo, caheStore, tokenGen, encryptor)
+      userAuth    <- Authenticator.commonUserAuthenticator(caheStore)
+      adminToken = JwtToken(config.auth.adminJwt.token)
+      adminAuth <- Authenticator.adminUserAuthenticator(adminToken, adminJwtAuth)
     } yield new Auth[F](authService, adminAuth, userAuth, adminJwtAuth, userJwtAuth)
   }
 }
