@@ -22,7 +22,7 @@ import org.scalatest.wordspec.AnyWordSpec
 trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchersSugar with Matchers {
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
-  val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), PasswordHash("password")))
+  val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), Some(PasswordHash("password"))))
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] = AuthMiddleware(Kleisli.pure(authedUser))
 

@@ -27,7 +27,7 @@ final private class LiveAuthService[F[_]: Sync](
       case None => InvalidUsernameOrPassword(username).raiseError[F, JwtToken]
       case Some(u) =>
         for {
-          isValidPassword <- passwordEncryptor.isValid(password, u.password)
+          isValidPassword <- u.password.fold(false.pure[F])(ph => passwordEncryptor.isValid(password, ph))
           token <- if (isValidPassword) userCacheStore.findToken(username).flatMap {
             case Some(t) => t.pure[F]
             case None    => tokenGenerator.generate.flatMap(t => userCacheStore.put(t, u) *> t.pure[F])

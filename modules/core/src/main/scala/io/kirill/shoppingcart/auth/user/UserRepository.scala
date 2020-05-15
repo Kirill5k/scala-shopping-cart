@@ -19,7 +19,7 @@ class UserRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F
     run { session =>
       session.prepare(insert).use { cmd =>
         val userId = UserId(UUID.randomUUID())
-        cmd.execute(User(userId, username, password)).map(_ => userId)
+        cmd.execute(User(userId, username, Some(password))).map(_ => userId)
       }
     }
 }
@@ -27,9 +27,9 @@ class UserRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F
 object UserRepository {
 
   private val codec: Codec[User] =
-    (uuid ~ varchar ~ varchar).imap {
-      case i ~ n ~ p => User(UserId(i), Username(n), PasswordHash(p))
-    }(u => u.id.value ~ u.name.value ~ u.password.value)
+    (uuid ~ varchar ~ varchar.opt).imap {
+      case i ~ n ~ p => User(UserId(i), Username(n), p.map(PasswordHash))
+    }(u => u.id.value ~ u.name.value ~ u.password.map(_.value))
 
   private val selectByName: Query[String, User] =
     sql"""

@@ -12,6 +12,6 @@ package object user {
   final case class User(
       id: UserId,
       name: Username,
-      password: PasswordHash
+      password: Option[PasswordHash]
   )
 }

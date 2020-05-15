@@ -30,8 +30,8 @@ final private class RedisUserCacheStore[F[_]: Sync](
       })
 
   override def put(token: JwtToken, user: User): F[Unit] =
-    redis.setEx(token.value, user.asJson.noSpaces, config.auth.tokenExpiration) *>
-      redis.setEx(user.name.value, token.value, config.auth.tokenExpiration)
+    redis.setEx(token.value, user.asJson.noSpaces, config.auth.userJwt.tokenExpiration) *>
+      redis.setEx(user.name.value, token.value, config.auth.userJwt.tokenExpiration)
 
   override def findToken(username: Username): F[Option[JwtToken]] =
     redis.get(username.value).map(_.map(JwtToken))
@@ -40,7 +40,7 @@ final private class RedisUserCacheStore[F[_]: Sync](
     redis.del(token.value) *> redis.del(username.value)
 }
 
-object UserStore {
+object UserCacheStore {
   def redisUserCacheStore[F[_]: Sync](
       redis: RedisCommands[F, String, String]
   )(

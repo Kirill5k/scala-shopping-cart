@@ -21,11 +21,21 @@ object config {
       maxConnections: Int
   )
 
+  final case class UserJwtConfig(
+      secretKey: String,
+      tokenExpiration: FiniteDuration
+  )
+
+  final case class AdminJwtConfig(
+      secretKey: String,
+      token: String,
+      claim: String
+  )
+
   final case class AuthConfig(
-      jwtSecretKey: String,
-      jwtClaim: String,
-      tokenExpiration: FiniteDuration,
-      passwordSalt: String
+      passwordSalt: String,
+      userJwt: UserJwtConfig,
+      adminJwt: AdminJwtConfig
   )
 
   final case class ShopConfig(

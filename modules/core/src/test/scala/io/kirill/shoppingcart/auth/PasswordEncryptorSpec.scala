@@ -1,13 +1,10 @@
 package io.kirill.shoppingcart.auth
 
-import java.util.concurrent.TimeUnit
 
 import cats.effect.IO
 import io.kirill.shoppingcart.CatsIOSpec
 import io.kirill.shoppingcart.auth.user.Password
-import io.kirill.shoppingcart.config.{AppConfig, AuthConfig}
-
-import scala.concurrent.duration.FiniteDuration
+import io.kirill.shoppingcart.config.AppConfig
 
 class PasswordEncryptorSpec extends CatsIOSpec {
 
@@ -17,7 +14,7 @@ class PasswordEncryptorSpec extends CatsIOSpec {
       import AppConfig.appConfig
 
       val result = for {
-        e       <- IO(PasswordEncryptor[IO])
+        e       <- PasswordEncryptor.make[IO]
         hash    <- e.hash(Password("Password123!"))
         isValid <- e.isValid(Password("Password123!"), hash)
       } yield isValid

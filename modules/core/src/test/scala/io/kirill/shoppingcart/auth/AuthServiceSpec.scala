@@ -19,13 +19,13 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
         val (repo, cache, tokenGen, passEncr) = mocks
         val result = for {
           service <- AuthService.make(repo, cache, tokenGen, passEncr)
-          _ = when(passEncr.hash(any[Password])).thenReturn(IO.pure(user.password))
+          _ = when(passEncr.hash(any[Password])).thenReturn(IO.pure(user.password.get))
           _ = when(repo.create(any[Username], any[PasswordHash])).thenReturn(IO.pure(user.id))
           res <- service.create(user.name, Password("password"))
         } yield res
 
         result.unsafeToFuture().map { r =>
-          verify(repo).create(user.name, user.password)
+          verify(repo).create(user.name, user.password.get)
           verify(passEncr).hash(Password("password"))
           r must be (user.id)
         }
@@ -36,7 +36,7 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
         val result = for {
           service <- AuthService.make(repo, cache, tokenGen, passEncr)
           _ = when(repo.create(any[Username], any[PasswordHash])).thenReturn(IO.raiseError(UniqueViolation("name already taken")))
-          _ = when(passEncr.hash(any[Password])).thenReturn(IO.pure(user.password))
+          _ = when(passEncr.hash(any[Password])).thenReturn(IO.pure(user.password.get))
           res <- service.create(user.name, Password("password"))
         } yield res
 
@@ -77,7 +77,7 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
 
         result.unsafeToFuture().map { r =>
           verify(repo).findByName(user.name)
-          verify(passEncr).isValid(Password("password"), user.password)
+          verify(passEncr).isValid(Password("password"), user.password.get)
           verify(cache).findToken(user.name)
           verify(tokenGen).generate
           verify(cache).put(token, user)
@@ -97,7 +97,7 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
 
         result.unsafeToFuture().map { r =>
           verify(repo).findByName(user.name)
-          verify(passEncr).isValid(Password("password"), user.password)
+          verify(passEncr).isValid(Password("password"), user.password.get)
           verify(cache).findToken(user.name)
           r must be (token)
         }
@@ -109,6 +109,19 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
           service <- AuthService.make(repo, cache, tokenGen, passEncr)
           _ = when(repo.findByName(any[Username])).thenReturn(IO.pure(Some(user)))
           _ = when(passEncr.isValid(any[Password], any[PasswordHash])).thenReturn(IO.pure(false))
+          res <- service.login(user.name, Password("password"))
+        } yield res
+
+        recoverToSucceededIf[InvalidUsernameOrPassword] {
+          result.unsafeToFuture()
+        }
+      }
+
+      "return InvalidUsernameOrPassword when user has no password set" in {
+        val (repo, cache, tokenGen, passEncr) = mocks
+        val result = for {
+          service <- AuthService.make(repo, cache, tokenGen, passEncr)
+          _ = when(repo.findByName(any[Username])).thenReturn(IO.pure(Some(user.copy(password = None))))
           res <- service.login(user.name, Password("password"))
         } yield res
 
