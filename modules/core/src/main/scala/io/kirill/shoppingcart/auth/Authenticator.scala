@@ -8,20 +8,20 @@ import dev.profunktor.auth.jwt._
 import io.circe.parser.{decode => jsonDecode}
 import io.kirill.shoppingcart.auth.user.{User, UserCacheStore, UserId, Username}
 import io.kirill.shoppingcart.config.AppConfig
-import pdi.jwt.{JwtAlgorithm, JwtClaim}
+import pdi.jwt.JwtClaim
 
 sealed trait Authenticator[F[_], U] {
   def findUser(token: JwtToken)(claim: JwtClaim): F[Option[U]]
 }
 
-final class CommonUserAuthenticator[F[_]: Sync](
+final private class CommonUserAuthenticator[F[_]: Sync](
     userCacheStore: UserCacheStore[F]
 ) extends Authenticator[F, CommonUser] {
   override def findUser(token: JwtToken)(claim: JwtClaim): F[Option[CommonUser]] =
     userCacheStore.findUser(token).map(_.map(CommonUser))
 }
 
-final class AdminUserAuthenticator[F[_]: Sync](
+final private class AdminUserAuthenticator[F[_]: Sync](
     adminToken: JwtToken,
     adminUser: AdminUser
 ) extends Authenticator[F, AdminUser] {
