@@ -66,4 +66,7 @@ object AuthController {
   final case class AuthLoginRequest(username: NonEmptyString, password: NonEmptyString)
 
   final case class AuthLoginResponse(token: JwtToken)
+
+  def make[F[_]: Sync: Logger](authService: AuthService[F]): F[AuthController[F]] =
+    Sync[F].delay(new AuthController[F](authService))
 }

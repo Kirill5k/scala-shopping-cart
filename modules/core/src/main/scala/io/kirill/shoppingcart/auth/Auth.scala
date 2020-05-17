@@ -4,6 +4,7 @@ import cats.effect.{Resource, Sync}
 import cats.implicits._
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
+import io.chrisdavenport.log4cats.Logger
 import io.kirill.shoppingcart.auth.user.{UserCacheStore, UserRepository}
 import io.kirill.shoppingcart.config.AppConfig
 import pdi.jwt._
@@ -14,12 +15,13 @@ final class Auth[F[_]](
     val adminAuth: Authenticator[F, AdminUser],
     val userAuth: Authenticator[F, CommonUser],
     val adminJwtAuth: AdminJwtAuth,
-    val userJwtAuth: UserJwtAuth
+    val userJwtAuth: UserJwtAuth,
+    val authController: AuthController[F]
 )
 
 object Auth {
 
-  def make[F[_]: Sync](
+  def make[F[_]: Sync: Logger](
       session: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
   )(implicit config: AppConfig): F[Auth[F]] = {
@@ -39,6 +41,7 @@ object Auth {
       userAuth    <- Authenticator.commonUserAuthenticator(caheStore)
       adminToken = JwtToken(config.auth.adminJwt.token)
       adminAuth <- Authenticator.adminUserAuthenticator(adminToken, adminJwtAuth)
-    } yield new Auth[F](authService, adminAuth, userAuth, adminJwtAuth, userJwtAuth)
+      authController <- AuthController.make(authService)
+    } yield new Auth[F](authService, adminAuth, userAuth, adminJwtAuth, userJwtAuth, authController)
   }
 }
