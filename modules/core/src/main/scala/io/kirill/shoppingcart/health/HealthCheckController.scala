@@ -34,11 +34,15 @@ object HealthCheckController {
   final case class HealthCheckResponse(redis: String, postgres: String)
 
   object HealthCheckResponse {
-    def from(appStatus: AppStatus): HealthCheckResponse = {
+    def from(appStatus: AppStatus): HealthCheckResponse =
       HealthCheckResponse(
         if (appStatus.redis.value) "up" else "down",
         if (appStatus.postgres.value) "up" else "down"
       )
-    }
   }
+
+  def make[F[_]: Sync: Logger](
+      hcs: HealthCheckService[F]
+  ): F[HealthCheckController[F]] =
+    Sync[F].delay(new HealthCheckController[F](hcs))
 }
