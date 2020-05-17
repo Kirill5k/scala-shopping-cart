@@ -23,6 +23,6 @@ final class BrandController[F[_]: Sync: Logger](brandService: BrandService[F]) e
 }
 
 object BrandController {
-  def make[F[_]: Sync: Logger](bs: BrandService[F]): F[BrandService[F]] =
+  def make[F[_]: Sync: Logger](bs: BrandService[F]): F[BrandController[F]] =
     Sync[F].delay(new BrandController[F](bs))
 }
