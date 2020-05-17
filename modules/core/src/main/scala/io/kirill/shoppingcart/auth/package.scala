@@ -2,15 +2,14 @@ package io.kirill.shoppingcart
 
 import java.util.UUID
 
-import cats.effect.{Resource, Sync}
+import cats.effect.Sync
 import cats.implicits._
+import dev.profunktor.auth.JwtAuthMiddleware
 import dev.profunktor.auth.jwt.{JwtAuth, JwtSymmetricAuth, JwtToken}
-import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.chrisdavenport.log4cats.Logger
 import io.kirill.shoppingcart.auth.user.{User, UserCacheStore, UserRepository}
 import io.kirill.shoppingcart.config.AppConfig
 import pdi.jwt.JwtAlgorithm
-import skunk.Session
 
 package object auth {
   final case class AdminClaimContent(id: UUID)           extends AnyVal
@@ -20,14 +19,18 @@ package object auth {
   final case class CommonUser(value: User) extends AnyVal
   final case class AdminUser(value: User)  extends AnyVal
 
-  final class Auth[F[_]](
-      val authService: AuthService[F],
-      val adminAuth: Authenticator[F, AdminUser],
-      val userAuth: Authenticator[F, CommonUser],
-      val adminJwtAuth: AdminJwtAuth,
-      val userJwtAuth: UserJwtAuth,
+  final class Auth[F[_]: Sync](
+      private val adminJwtAuth: AdminJwtAuth,
+      private val adminAuth: Authenticator[F, AdminUser],
+      private val userJwtAuth: UserJwtAuth,
+      private val userAuth: Authenticator[F, CommonUser],
       val authController: AuthController[F]
-  )
+  ) {
+    val adminMiddleware =
+      JwtAuthMiddleware[F, AdminUser](adminJwtAuth.value, t => c => adminAuth.findUser(t)(c))
+    val userMiddleware =
+      JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, t => c => userAuth.findUser(t)(c))
+  }
 
   object Auth {
     def make[F[_]: Sync: Logger](
@@ -50,7 +53,7 @@ package object auth {
         adminToken = JwtToken(config.auth.adminJwt.token)
         adminAuth      <- Authenticator.adminUserAuthenticator(adminToken, adminJwtAuth)
         authController <- AuthController.make(authService)
-      } yield new Auth[F](authService, adminAuth, userAuth, adminJwtAuth, userJwtAuth, authController)
+      } yield new Auth[F](adminJwtAuth, adminAuth, userJwtAuth, userAuth, authController)
     }
   }
 }

@@ -20,8 +20,10 @@ package object shop {
 
   object Shop {
     def make[F[_]: Sync: Logger](
-        res: Resources[F]
-    )(implicit config: AppConfig): F[Shop[F]] =
+        res: Resources[F],
+        auth: Auth[F]
+    )(implicit config: AppConfig): F[Shop[F]] = {
+
       for {
         brandService    <- BrandRepository.make(res.postgres).flatMap(BrandService.make)
         cartService     <- CartService.redisCartService(res.redis)
@@ -30,5 +32,6 @@ package object shop {
         paymentService  <- PaymentService.make[F]()
         orderService    <- OrderRepository.make(res.postgres).flatMap(OrderService.make)
       } yield new Shop[F]()
+    }
   }
 }
