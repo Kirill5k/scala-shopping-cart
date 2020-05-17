@@ -47,4 +47,6 @@ final class CartController[F[_]: Sync: Logger](cartService: CartService[F]) exte
 }
 
 object CartController {
+  def make[F[_]: Sync: Logger](cs: CartService[F]): F[CartController[F]] =
+    Sync[F].delay(new CartController[F](cs))
 }

@@ -90,4 +90,12 @@ object OrderController {
         order.totalPrice
       )
   }
+
+  def make[F[_]: Sync: Logger](
+      os: OrderService[F],
+      cs: CartService[F],
+      is: ItemService[F],
+      ps: PaymentService[F]
+  ): F[OrderController[F]] =
+    Sync[F].delay(new OrderController[F](os, cs, is, ps))
 }

@@ -21,3 +21,8 @@ final class BrandController[F[_]: Sync: Logger](brandService: BrandService[F]) e
     prefixPath -> httpRoutes
   )
 }
+
+object BrandController {
+  def make[F[_]: Sync: Logger](bs: BrandService[F]): F[BrandService[F]] =
+    Sync[F].delay(new BrandController[F](bs))
+}

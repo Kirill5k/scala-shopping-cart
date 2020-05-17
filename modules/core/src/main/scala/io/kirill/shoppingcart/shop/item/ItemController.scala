@@ -72,4 +72,7 @@ object ItemController {
         item.category.name
       )
   }
+
+  def make[F[_]: Sync: Logger](is: ItemService[F]): F[ItemController[F]] =
+    Sync[F].delay(new ItemController[F](is))
 }

@@ -1,7 +1,5 @@
 package io.kirill.shoppingcart.shop.category
 
-import java.util.UUID
-
 import cats.effect.Sync
 import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
@@ -15,12 +13,18 @@ final class CategoryController[F[_]: Sync: Logger](categoryService: CategoryServ
   private val prefixPath = "/categories"
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
-    case GET -> Root => withErrorHandling {
-      Ok(categoryService.findAll)
-    }
+    case GET -> Root =>
+      withErrorHandling {
+        Ok(categoryService.findAll)
+      }
   }
 
   val routes: HttpRoutes[F] = Router(
     prefixPath -> httpRoutes
   )
+}
+
+object CategoryController {
+  def make[F[_]: Sync: Logger](cs: CategoryService[F]): F[CategoryController[F]] =
+    Sync[F].delay(new CategoryController[F](cs))
 }
