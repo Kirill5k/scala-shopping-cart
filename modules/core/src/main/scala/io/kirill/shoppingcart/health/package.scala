@@ -16,7 +16,7 @@ package object health {
   )
 
   final class Health[F[_]: Sync](
-      healthCheckController: HealthCheckController[F]
+      val healthCheckController: HealthCheckController[F]
   )
 
   object Health {
