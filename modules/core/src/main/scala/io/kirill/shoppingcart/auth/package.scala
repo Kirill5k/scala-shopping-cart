@@ -26,10 +26,8 @@ package object auth {
       private val userAuth: Authenticator[F, CommonUser],
       val authController: AuthController[F]
   ) {
-    val adminMiddleware =
-      JwtAuthMiddleware[F, AdminUser](adminJwtAuth.value, t => c => adminAuth.findUser(t)(c))
-    val userMiddleware =
-      JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, t => c => userAuth.findUser(t)(c))
+    val adminMiddleware = JwtAuthMiddleware[F, AdminUser](adminJwtAuth.value, adminAuth.findUser)
+    val userMiddleware  = JwtAuthMiddleware[F, CommonUser](userJwtAuth.value, userAuth.findUser)
   }
 
   object Auth {
