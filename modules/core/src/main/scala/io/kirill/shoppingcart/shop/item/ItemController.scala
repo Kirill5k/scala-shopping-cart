@@ -8,21 +8,23 @@ import io.circe._
 import io.circe.generic.auto._
 import cats.implicits._
 import io.chrisdavenport.log4cats.Logger
+import io.kirill.shoppingcart.auth.AdminUser
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.shop.brand.BrandName
 import io.kirill.shoppingcart.shop.category.CategoryName
-import org.http4s.{HttpRoutes, ParseFailure, QueryParamDecoder}
+import org.http4s.{AuthedRoutes, HttpRoutes, ParseFailure, QueryParamDecoder}
 import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
 import org.http4s.server.Router
 import squants.Money
 
 final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) extends RestController[F] {
+  import RestController._
   import ItemController._
 
   private val prefixPath = "/items"
 
-  private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
+  private val publicHttpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root / UUIDVar(itemId) =>
       withErrorHandling {
         Ok(itemService.findById(ItemId(itemId)).map(ItemResponse.from))
@@ -37,8 +39,18 @@ final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) exte
       }
   }
 
+  private val adminHttpRoutes: AuthedRoutes[AdminUser, F] = AuthedRoutes.of {
+    case adminReq @ PUT -> Root as _ => withErrorHandling {
+      for {
+        update <- adminReq.req.decodeR[ItemUpdateRequest]
+        _ <- itemService.update(UpdateItem(update.id, update.price))
+        res <- NoContent()
+      } yield res
+    }
+  }
+
   val routes: HttpRoutes[F] =
-    Router(prefixPath -> httpRoutes)
+    Router(prefixPath -> publicHttpRoutes)
 }
 
 object ItemController {
@@ -72,6 +84,8 @@ object ItemController {
         item.category.name
       )
   }
+
+  final case class ItemUpdateRequest(id: ItemId, price: Money)
 
   def make[F[_]: Sync: Logger](is: ItemService[F]): F[ItemController[F]] =
     Sync[F].delay(new ItemController[F](is))
