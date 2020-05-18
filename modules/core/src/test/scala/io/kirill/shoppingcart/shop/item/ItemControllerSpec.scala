@@ -34,7 +34,7 @@ class ItemControllerSpec extends ControllerSpec {
         when(itemServiceMock.findById(any[ItemId])).thenReturn(IO.pure(testitem))
 
         val request = Request[IO](uri = uri"/items/607995e0-8e3a-11ea-bc55-0242ac130003")
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         val expectedResponse = ItemResponse(
           testitem.id,
@@ -55,7 +55,7 @@ class ItemControllerSpec extends ControllerSpec {
         when(itemServiceMock.findById(any[ItemId])).thenReturn(IO.raiseError(ItemNotFound(ItemId(itemId))))
 
         val request = Request[IO](uri = uri"/items/607995e0-8e3a-11ea-bc55-0242ac130003")
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.NotFound, Some(ErrorResponse("Item with id 607995e0-8e3a-11ea-bc55-0242ac130003 does not exist")))
         verify(itemServiceMock).findById(ItemId(itemId))
@@ -71,7 +71,7 @@ class ItemControllerSpec extends ControllerSpec {
         when(itemServiceMock.findAll).thenReturn(fs2.Stream.emits(List(testitem)).lift[IO])
 
         val request = Request[IO](uri = uri"/items")
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         val expectedResponse = ItemResponse(
           testitem.id,
@@ -95,7 +95,7 @@ class ItemControllerSpec extends ControllerSpec {
         when(itemServiceMock.findBy(any[BrandName])).thenReturn(fs2.Stream.emits(List(testitem)).lift[IO])
 
         val request = Request[IO](uri = uri"/items?brand=test-brand")
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         val expectedResponse = ItemResponse(
           testitem.id,
@@ -114,7 +114,7 @@ class ItemControllerSpec extends ControllerSpec {
         val controller      = new ItemController[IO](itemServiceMock)
 
         val request = Request[IO](uri = uri"/items?brand=")
-        val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
+        val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[String](response, Status.BadRequest, Some("Brand must not be blank"))
         verify(itemServiceMock, never).findBy(any[BrandName])

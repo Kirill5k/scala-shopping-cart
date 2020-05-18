@@ -15,7 +15,7 @@ import io.kirill.shoppingcart.shop.brand.BrandName
 import io.kirill.shoppingcart.shop.category.CategoryName
 import org.http4s.{AuthedRoutes, HttpRoutes, ParseFailure, QueryParamDecoder}
 import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
-import org.http4s.server.Router
+import org.http4s.server.{AuthMiddleware, Router}
 import squants.Money
 
 final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) extends RestController[F] {
@@ -49,8 +49,11 @@ final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) exte
     }
   }
 
-  val routes: HttpRoutes[F] =
-    Router(prefixPath -> publicHttpRoutes)
+  def routes(adminAuthMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] =
+    Router(
+      prefixPath -> publicHttpRoutes,
+      "/admin" + prefixPath -> adminAuthMiddleware(adminHttpRoutes)
+    )
 }
 
 object ItemController {
