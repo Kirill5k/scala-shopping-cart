@@ -31,7 +31,7 @@ final class BrandController[F[_]: Sync: Logger](brandService: BrandService[F]) e
       withErrorHandling {
         for {
           req <- adminReq.req.decodeR[BrandCreateRequest]
-          id  <- brandService.create(BrandName(req.name.value))
+          id  <- brandService.create(BrandName(req.name.value.capitalize))
           res <- Created(BrandCreateResponse(id))
         } yield res
       }

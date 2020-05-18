@@ -30,7 +30,7 @@ final class CategoryController[F[_]: Sync: Logger](categoryService: CategoryServ
       withErrorHandling {
         for {
           req <- adminReq.req.decodeR[CategoryCreateRequest]
-          id  <- categoryService.create(CategoryName(req.name.value))
+          id  <- categoryService.create(CategoryName(req.name.value.capitalize))
           res <- Created(CategoryCreateResponse(id))
         } yield res
       }

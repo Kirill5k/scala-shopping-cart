@@ -57,7 +57,7 @@ class BrandControllerSpec extends ControllerSpec {
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[BrandCreateResponse](response, Status.Created, Some(BrandCreateResponse(brandId)))
-        verify(brandServiceMock).create(BrandName("test-brand"))
+        verify(brandServiceMock).create(BrandName("Test-brand"))
       }
 
       "return bad request when brand name is taken" in {
@@ -70,7 +70,7 @@ class BrandControllerSpec extends ControllerSpec {
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.BadRequest, Some(ErrorResponse("Brand with name test-brand already exists")))
-        verify(brandServiceMock).create(BrandName("test-brand"))
+        verify(brandServiceMock).create(BrandName("Test-brand"))
       }
     }
   }

@@ -44,7 +44,7 @@ class CategoryControllerSpec extends ControllerSpec {
     }
 
     "POST /admin/categories" should {
-      "create new brand when success" in {
+      "create new category when success" in {
         val categoryServiceMock = mock[CategoryService[IO]]
         val controller = new CategoryController[IO](categoryServiceMock)
 
@@ -54,10 +54,10 @@ class CategoryControllerSpec extends ControllerSpec {
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[CategoryCreateResponse](response, Status.Created, Some(CategoryCreateResponse(categoryId)))
-        verify(categoryServiceMock).create(CategoryName("test-category"))
+        verify(categoryServiceMock).create(CategoryName("Test-category"))
       }
 
-      "return bad request when brand name is taken" in {
+      "return bad request when category name is taken" in {
         val categoryServiceMock = mock[CategoryService[IO]]
         val controller = new CategoryController[IO](categoryServiceMock)
 
@@ -67,7 +67,7 @@ class CategoryControllerSpec extends ControllerSpec {
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.BadRequest, Some(ErrorResponse("Category with name test-category already exists")))
-        verify(categoryServiceMock).create(CategoryName("test-category"))
+        verify(categoryServiceMock).create(CategoryName("Test-category"))
       }
     }
   }
