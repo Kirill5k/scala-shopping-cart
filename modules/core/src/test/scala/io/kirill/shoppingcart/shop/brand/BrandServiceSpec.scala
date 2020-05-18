@@ -3,6 +3,7 @@ package io.kirill.shoppingcart.shop.brand
 import java.util.UUID
 
 import cats.effect.IO
+import io.kirill.shoppingcart.common.errors.{BrandAlreadyExists, UniqueViolation}
 import org.mockito.scalatest.AsyncMockitoSugar
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -27,7 +28,7 @@ class BrandServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
     }
 
     "create" - {
-      "should create new category" in {
+      "should create new brand" in {
         val result = for {
           repo <- repoMock
           _ = when(repo.create(brand1.name)).thenReturn(IO.pure(brand1.id))
@@ -36,6 +37,19 @@ class BrandServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
         } yield id
 
         result.unsafeToFuture().map(_ must be (brand1.id))
+      }
+
+      "should return brand already exists error if unique violation" in {
+        val result = for {
+          repo <- repoMock
+          _ = when(repo.create(brand1.name)).thenReturn(IO.raiseError(UniqueViolation("error")))
+          service <- BrandService.make[IO](repo)
+          id      <- service.create(brand1.name)
+        } yield id
+
+        recoverToSucceededIf[BrandAlreadyExists] {
+          result.unsafeToFuture()
+        }
       }
     }
   }

@@ -49,7 +49,7 @@ final class OrderController[F[_]: Sync: Logger](
             total      = items.foldLeft(GBP(0)) { case (total, (i, q)) => total + (i.price * q.value) }
             orderId <- orderService.create(OrderCheckout(user.value.id, orderItems, total))
             _       <- cartService.delete(user.value.id)
-            res     <- Created(OrderCheckoutResponse(orderId.value))
+            res     <- Created(OrderCheckoutResponse(orderId))
           } yield res
         }
       case authedReq @ POST -> Root / UUIDVar(orderId) / "payment" as user =>
@@ -72,7 +72,7 @@ object OrderController {
 
   final case class OrderPaymentRequest(card: Card)
 
-  final case class OrderCheckoutResponse(orderId: UUID)
+  final case class OrderCheckoutResponse(orderId: OrderId)
 
   final case class OrderResponse(
       id: OrderId,

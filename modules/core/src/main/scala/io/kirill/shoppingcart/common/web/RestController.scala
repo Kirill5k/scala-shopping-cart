@@ -15,10 +15,10 @@ trait RestController[F[_]] extends Http4sDsl[F] {
   import io.kirill.shoppingcart.common.json._
 
   protected def withErrorHandling(
-                                   response: => F[Response[F]]
-                                 )(
-    implicit s: Sync[F],
-    l: Logger[F]
+      response: => F[Response[F]]
+  )(
+      implicit s: Sync[F],
+      l: Logger[F]
   ): F[Response[F]] =
     response.handleErrorWith {
       case e @ OrderDoesNotBelongToThisUser(oid, uid) =>
@@ -39,7 +39,7 @@ trait RestController[F[_]] extends Http4sDsl[F] {
       case InvalidMessageBodyFailure(details, cause) =>
         cause match {
           case Some(c) => l.error(s"error parsing json: ${c.getMessage}\n ${details}") *> BadRequest(ErrorResponse(c.getMessage))
-          case _ => l.error(s"malformed json: $details") *> UnprocessableEntity(ErrorResponse(details))
+          case _       => l.error(s"malformed json: $details") *> UnprocessableEntity(ErrorResponse(details))
         }
       case error =>
         l.error(error)(s"unexpected error: ${error.getMessage}") *>
@@ -52,8 +52,7 @@ object RestController {
   final case class ErrorResponse(message: String)
 
   implicit class RequestDecoder[F[_]: Sync](private val req: Request[F]) {
-    def decodeR[A: Decoder]: F[A] = {
+    def decodeR[A: Decoder]: F[A] =
       req.asJsonDecode[A]
-    }
   }
 }

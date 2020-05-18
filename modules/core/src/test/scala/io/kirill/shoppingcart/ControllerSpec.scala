@@ -9,7 +9,7 @@ import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.circe._
 import io.circe.syntax._
 import io.circe.generic.auto._
-import io.kirill.shoppingcart.auth.CommonUser
+import io.kirill.shoppingcart.auth.{AdminUser, CommonUser}
 import io.kirill.shoppingcart.auth.user._
 import io.kirill.shoppingcart.common.json._
 import org.http4s.server.AuthMiddleware
@@ -23,8 +23,10 @@ trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchers
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
   val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), Some(PasswordHash("password"))))
+  val adminUser = AdminUser(User(UserId(UUID.randomUUID()), Username("admin"), None))
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] = AuthMiddleware(Kleisli.pure(authedUser))
+  val adminMiddleware: AuthMiddleware[IO, AdminUser] = AuthMiddleware(Kleisli.pure(adminUser))
 
   def verifyResponse[A: Encoder](actual: IO[Response[IO]], expectedStatus: Status, expectedBody: Option[A] = None)(
     implicit ev: EntityDecoder[IO, A]

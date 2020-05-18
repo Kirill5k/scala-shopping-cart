@@ -35,7 +35,7 @@ class AuthControllerSpec extends ControllerSpec {
     def createUserRequestJson(name: String = "boris", password: String = "password"): Json =
       json"""{"username":$name,"password":$password}"""
 
-    "logout" should {
+    "POST /user/auth/logout" should {
       "return no content on success" in {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)
@@ -50,7 +50,7 @@ class AuthControllerSpec extends ControllerSpec {
       }
     }
 
-    "login" should {
+    "POST /users/auth/login" should {
       "return token on success" in {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)
@@ -106,7 +106,7 @@ class AuthControllerSpec extends ControllerSpec {
 
     }
 
-    "create" should {
+    "POST /users" should {
       "register new user on success" in {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)

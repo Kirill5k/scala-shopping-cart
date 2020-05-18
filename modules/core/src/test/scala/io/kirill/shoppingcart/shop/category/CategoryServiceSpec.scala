@@ -3,6 +3,7 @@ package io.kirill.shoppingcart.shop.category
 import java.util.UUID
 
 import cats.effect.IO
+import io.kirill.shoppingcart.common.errors.{CategoryAlreadyExists, UniqueViolation}
 import org.mockito.scalatest.AsyncMockitoSugar
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -36,6 +37,19 @@ class CategoryServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoS
         } yield id
 
         result.unsafeToFuture().map(_ must be (category1.id))
+      }
+
+      "should return category already exists error if unique violation" in {
+        val result = for {
+          repo <- repoMock
+          _ = when(repo.create(category1.name)).thenReturn(IO.raiseError(UniqueViolation("error")))
+          service <- CategoryService.make[IO](repo)
+          id      <- service.create(category1.name)
+        } yield id
+
+        recoverToSucceededIf[CategoryAlreadyExists] {
+          result.unsafeToFuture()
+        }
       }
     }
   }

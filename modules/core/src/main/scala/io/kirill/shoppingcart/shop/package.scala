@@ -28,16 +28,16 @@ package object shop {
         res: Resources[F]
     )(implicit config: AppConfig): F[Shop[F]] =
       for {
-        brandService       <- BrandRepository.make(res.postgres).flatMap(BrandService.make)
+        brandService       <- BrandRepository.make(res.postgres).flatMap(BrandService.make[F])
         brandController    <- BrandController.make(brandService)
         cartService        <- CartService.redisCartService(res.redis)
         cartController     <- CartController.make(cartService)
-        categoryService    <- CategoryRepository.make(res.postgres).flatMap(CategoryService.make)
+        categoryService    <- CategoryRepository.make(res.postgres).flatMap(CategoryService.make[F])
         categoryController <- CategoryController.make(categoryService)
-        itemService        <- ItemRepository.make(res.postgres).flatMap(ItemService.make)
+        itemService        <- ItemRepository.make(res.postgres).flatMap(ItemService.make[F])
         itemController     <- ItemController.make(itemService)
         paymentService     <- PaymentService.make[F]()
-        orderService       <- OrderRepository.make(res.postgres).flatMap(OrderService.make)
+        orderService       <- OrderRepository.make(res.postgres).flatMap(OrderService.make[F])
         orderController    <- OrderController.make(orderService, cartService, itemService, paymentService)
       } yield new Shop[F](
         brandController,

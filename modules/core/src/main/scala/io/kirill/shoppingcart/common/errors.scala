@@ -1,6 +1,8 @@
 package io.kirill.shoppingcart.common
 
 import io.kirill.shoppingcart.auth.user.{UserId, Username}
+import io.kirill.shoppingcart.shop.brand.BrandName
+import io.kirill.shoppingcart.shop.category.CategoryName
 import io.kirill.shoppingcart.shop.item.ItemId
 import io.kirill.shoppingcart.shop.order.OrderId
 
@@ -31,6 +33,14 @@ object errors {
 
   final case class UsernameInUse(username: Username) extends BadRequestError {
     val message = s"Username ${username.value} is already taken"
+  }
+
+  final case class BrandAlreadyExists(brandName: BrandName) extends BadRequestError {
+    val message = s"Brand with name ${brandName.value} already exists"
+  }
+
+  final case class CategoryAlreadyExists(categoryName: CategoryName) extends BadRequestError {
+    val message = s"Category with name ${categoryName.value} already exists"
   }
 
   final case object EmptyCart extends BadRequestError {

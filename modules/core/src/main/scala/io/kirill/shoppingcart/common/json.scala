@@ -8,9 +8,9 @@ import io.circe.generic.extras.semiauto._
 import io.circe.{Decoder, Encoder}
 import io.circe.refined._
 import io.kirill.shoppingcart.auth.user.{Password, PasswordHash, UserId, Username}
-import io.kirill.shoppingcart.shop.brand.BrandName
+import io.kirill.shoppingcart.shop.brand.{BrandId, BrandName}
 import io.kirill.shoppingcart.shop.cart.Quantity
-import io.kirill.shoppingcart.shop.category.CategoryName
+import io.kirill.shoppingcart.shop.category.{CategoryId, CategoryName}
 import io.kirill.shoppingcart.shop.item.{ItemDescription, ItemId, ItemName}
 import io.kirill.shoppingcart.shop.order.{OrderId, OrderStatus}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
@@ -28,6 +28,12 @@ trait JsonCodecs {
 
   implicit val oidEncoder: Encoder[OrderId]         = deriveUnwrappedEncoder
   implicit val ostatusEncoder: Encoder[OrderStatus] = deriveUnwrappedEncoder
+
+  implicit val bidEncoder: Encoder[BrandId] = deriveUnwrappedEncoder
+  implicit val bidDecoder: Decoder[BrandId] = deriveUnwrappedDecoder
+
+  implicit val cidEncoder: Encoder[CategoryId] = deriveUnwrappedEncoder
+  implicit val cidDecoder: Decoder[CategoryId] = deriveUnwrappedDecoder
 
   implicit val iidEncoder: Encoder[ItemId] = deriveUnwrappedEncoder
   implicit val iidDecoder: Decoder[ItemId] = deriveUnwrappedDecoder

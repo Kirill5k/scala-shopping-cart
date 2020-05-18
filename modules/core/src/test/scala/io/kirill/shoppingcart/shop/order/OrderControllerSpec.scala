@@ -128,7 +128,7 @@ class OrderControllerSpec extends ControllerSpec {
         val request                    = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        verifyResponse[OrderCheckoutResponse](response, Status.Created, Some(OrderCheckoutResponse(orderId.value)))
+        verifyResponse[OrderCheckoutResponse](response, Status.Created, Some(OrderCheckoutResponse(orderId)))
         verify(cs).get(authedUser.value.id)
         verify(is).findById(item1Id)
         verify(is).findById(item2.id)
