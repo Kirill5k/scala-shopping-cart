@@ -8,9 +8,10 @@ import io.circe.generic.auto._
 import io.circe.literal._
 import io.kirill.shoppingcart.ControllerSpec
 import io.kirill.shoppingcart.common.errors.ItemNotFound
-import io.kirill.shoppingcart.shop.brand.BrandName
+import io.kirill.shoppingcart.shop.brand.{BrandId, BrandName}
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.common.web.RestController.ErrorResponse
+import io.kirill.shoppingcart.shop.category.CategoryId
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.implicits._
@@ -152,6 +153,28 @@ class ItemControllerSpec extends ControllerSpec {
 
         verifyResponse[ErrorResponse](response, Status.NotFound, Some(ErrorResponse("Item with id 607995e0-8e3a-11ea-bc55-0242ac130003 does not exist")))
         verify(itemServiceMock).update(UpdateItem(ItemId(itemId), GBP(14.99)))
+      }
+    }
+
+    "POST /admin/items" should {
+
+      val brandId = UUID.fromString("2fd275de-99fb-11ea-bb37-0242ac130002")
+      val categoryId = UUID.fromString("2fd277e6-99fb-11ea-bb37-0242ac130002")
+
+      def createRequest(name: String = "test-item") =
+        json"""{"name": $name, "description": "test-item description", "price": 10.99, "brandId": $brandId, "categoryId": $categoryId}"""
+
+      "return no content on success" in {
+        val itemServiceMock = mock[ItemService[IO]]
+        val controller      = new ItemController[IO](itemServiceMock)
+
+        when(itemServiceMock.create(any[CreateItem])).thenReturn(IO.pure(ItemId(itemId)))
+
+        val request = Request[IO](uri = uri"/admin/items", method = Method.POST).withEntity(createRequest())
+        val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
+
+        verifyResponse[ItemCreateResponse](response, Status.Created, Some(ItemCreateResponse(ItemId(itemId))))
+        verify(itemServiceMock).create(CreateItem(ItemName("test-item"), ItemDescription("test-item description"), GBP(10.99), BrandId(brandId), CategoryId(categoryId)))
       }
     }
   }
