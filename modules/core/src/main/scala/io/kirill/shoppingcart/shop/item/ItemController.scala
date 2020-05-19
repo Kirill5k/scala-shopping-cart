@@ -40,10 +40,10 @@ final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) exte
   }
 
   private val adminHttpRoutes: AuthedRoutes[AdminUser, F] = AuthedRoutes.of {
-    case adminReq @ PUT -> Root as _ => withErrorHandling {
+    case adminReq @ PUT -> Root / UUIDVar(itemId) as _ => withErrorHandling {
       for {
         update <- adminReq.req.decodeR[ItemUpdateRequest]
-        _ <- itemService.update(UpdateItem(update.id, update.price))
+        _ <- itemService.update(UpdateItem(ItemId(itemId), update.price))
         res <- NoContent()
       } yield res
     }
@@ -88,7 +88,7 @@ object ItemController {
       )
   }
 
-  final case class ItemUpdateRequest(id: ItemId, price: Money)
+  final case class ItemUpdateRequest(price: Money)
 
   def make[F[_]: Sync: Logger](is: ItemService[F]): F[ItemController[F]] =
     Sync[F].delay(new ItemController[F](is))
