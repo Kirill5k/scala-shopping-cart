@@ -32,7 +32,10 @@ final private class LiveItemService[F[_]: Sync](
     itemRepository.create(item)
 
   override def update(item: UpdateItem): F[Unit] =
-    itemRepository.update(item)
+    itemRepository.exists(item.id).flatMap {
+      case false => ItemNotFound(item.id).raiseError[F, Unit]
+      case true => itemRepository.update(item)
+    }
 }
 
 object ItemService {

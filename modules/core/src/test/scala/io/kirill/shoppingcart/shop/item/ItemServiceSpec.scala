@@ -71,13 +71,27 @@ class ItemServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
       "should update item" in {
         val result = for {
           repo <- repoMock
-          _ = when(repo.update(any[UpdateItem])).thenReturn(IO.pure(()))
+          _ = when(repo.exists(any[ItemId])).thenReturn(IO.pure(true))
+          _ = when(repo.update(any[UpdateItem])).thenReturn(IO.unit)
           service <- ItemService.make(repo)
           res    <- service.update(UpdateItem(item1.id, GBP(99.99)))
         } yield res
 
         result.unsafeToFuture().map { res =>
           res must be(())
+        }
+      }
+
+      "should return item not found error when item does not exists" in {
+        val result = for {
+          repo <- repoMock
+          _ = when(repo.exists(any[ItemId])).thenReturn(IO.pure(false))
+          service <- ItemService.make(repo)
+          res    <- service.update(UpdateItem(item1.id, GBP(99.99)))
+        } yield res
+
+        recoverToSucceededIf[ItemNotFound] {
+          result.unsafeToFuture()
         }
       }
     }
