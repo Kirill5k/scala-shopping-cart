@@ -6,13 +6,16 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.effect.Sync
 import io.circe._
 import io.circe.generic.auto._
+import io.circe.refined._
 import cats.implicits._
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.collection.NonEmpty
 import io.chrisdavenport.log4cats.Logger
 import io.kirill.shoppingcart.auth.AdminUser
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.json._
-import io.kirill.shoppingcart.shop.brand.BrandName
-import io.kirill.shoppingcart.shop.category.CategoryName
+import io.kirill.shoppingcart.shop.brand.{BrandId, BrandName}
+import io.kirill.shoppingcart.shop.category.{CategoryId, CategoryName}
 import org.http4s.{AuthedRoutes, HttpRoutes, ParseFailure, QueryParamDecoder}
 import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
 import org.http4s.server.{AuthMiddleware, Router}
@@ -40,18 +43,28 @@ final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) exte
   }
 
   private val adminHttpRoutes: AuthedRoutes[AdminUser, F] = AuthedRoutes.of {
-    case adminReq @ PUT -> Root / UUIDVar(itemId) as _ => withErrorHandling {
-      for {
-        update <- adminReq.req.decodeR[ItemUpdateRequest]
-        _ <- itemService.update(UpdateItem(ItemId(itemId), update.price))
-        res <- NoContent()
-      } yield res
-    }
+    case adminReq @ PUT -> Root / UUIDVar(itemId) as _ =>
+      withErrorHandling {
+        for {
+          update <- adminReq.req.decodeR[ItemUpdateRequest]
+          _      <- itemService.update(UpdateItem(ItemId(itemId), update.price))
+          res    <- NoContent()
+        } yield res
+      }
+    case adminReq @ POST -> Root as _ =>
+      withErrorHandling {
+        for {
+          r <- adminReq.req.decodeR[ItemCreateRequest]
+          item = CreateItem(ItemName(r.name.value), ItemDescription(r.description.value), r.price, r.brandId, r.categoryId)
+          id  <- itemService.create(item)
+          res <- Created(ItemCreateResponse(id))
+        } yield res
+      }
   }
 
   def routes(adminAuthMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] =
     Router(
-      prefixPath -> publicHttpRoutes,
+      prefixPath            -> publicHttpRoutes,
       "/admin" + prefixPath -> adminAuthMiddleware(adminHttpRoutes)
     )
 }
@@ -89,6 +102,18 @@ object ItemController {
   }
 
   final case class ItemUpdateRequest(price: Money)
+
+  type NonEmptyString = String Refined NonEmpty
+
+  final case class ItemCreateRequest(
+      name: NonEmptyString,
+      description: NonEmptyString,
+      price: Money,
+      brandId: BrandId,
+      categoryId: CategoryId
+  )
+
+  final case class ItemCreateResponse(itemId: ItemId)
 
   def make[F[_]: Sync: Logger](is: ItemService[F]): F[ItemController[F]] =
     Sync[F].delay(new ItemController[F](is))
