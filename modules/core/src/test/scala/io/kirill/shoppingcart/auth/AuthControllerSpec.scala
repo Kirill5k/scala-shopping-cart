@@ -100,7 +100,11 @@ class AuthControllerSpec extends ControllerSpec {
         val request                    = Request[IO](uri = uri"/users/auth/login", method = Method.POST).withEntity("foo")
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        verifyResponse[ErrorResponse](response, Status.UnprocessableEntity, Some(ErrorResponse("""Could not decode JSON: "foo"""")))
+        verifyResponse[ErrorResponse](
+          response,
+          Status.BadRequest,
+          Some(ErrorResponse("""Attempt to decode value on failed cursor: DownField(username)"""))
+        )
         verify(authServiceMock, never).login(any[Username], any[Password])
       }
 
@@ -127,7 +131,11 @@ class AuthControllerSpec extends ControllerSpec {
         val request                    = Request[IO](uri = uri"/users", method = Method.POST).withEntity(createUserRequestJson(name = ""))
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        verifyResponse[ErrorResponse](response, Status.BadRequest, Some(ErrorResponse("Predicate isEmpty() did not fail.: DownField(username)")))
+        verifyResponse[ErrorResponse](
+          response,
+          Status.BadRequest,
+          Some(ErrorResponse("Predicate isEmpty() did not fail.: DownField(username)"))
+        )
         verify(authServiceMock, never).create(any[Username], any[Password])
       }
 

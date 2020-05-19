@@ -12,15 +12,16 @@ class UserRepositorySpec extends PostgresRepositorySpec {
       val repository = UserRepository.make[IO](session)
 
       val result = for {
-        r <- repository
-        uid <- r.create(Username("boris"), PasswordHash("password"))
+        r    <- repository
+        uid  <- r.create(Username("boris"), PasswordHash("password"))
         user <- r.findByName(Username("boris"))
       } yield (uid, user.get)
 
-      result.asserting { case (uid, user) =>
-        user.id must be (uid)
-        user.name must be (Username("boris"))
-        user.password must be (PasswordHash("password"))
+      result.asserting {
+        case (uid, user) =>
+          user.id must be(uid)
+          user.name must be(Username("boris"))
+          user.password must be(Some(PasswordHash("password")))
       }
     }
 

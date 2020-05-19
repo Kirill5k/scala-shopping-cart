@@ -6,7 +6,6 @@ import cats.effect.IO
 import dev.profunktor.auth.jwt.JwtToken
 import io.kirill.shoppingcart.{RedisSpec}
 
-
 class UserCacheStoreSpec extends RedisSpec {
 
   import io.kirill.shoppingcart.config.AppConfig.appConfig
@@ -17,50 +16,62 @@ class UserCacheStoreSpec extends RedisSpec {
 
     "store user in cache" in {
       withRedisAsync() { port =>
-        val result = stringCommands(port).use(r => for {
-          store <- UserCacheStore.redisUserCacheStore[IO](r)
-          _ <- store.put(JwtToken("token"), testUser)
-          token <- store.findToken(testUser.name)
-        } yield token)
+        val result = stringCommands(port).use(
+          r =>
+            for {
+              store <- UserCacheStore.redisUserCacheStore[IO](r)
+              _     <- store.put(JwtToken("token"), testUser)
+              token <- store.findToken(testUser.name)
+            } yield token
+        )
 
-        result.asserting(_ must be (Some(JwtToken("token"))))
+        result.asserting(_ must be(Some(JwtToken("token"))))
       }
     }
 
     "return user from cache if it exists" in {
       withRedisAsync() { port =>
-        val result = stringCommands(port).use(r => for {
-          store <- UserCacheStore.redisUserCacheStore[IO](r)
-          _ <- store.put(JwtToken("token"), testUser)
-          user <- store.findUser(JwtToken("token"))
-        } yield user)
+        val result = stringCommands(port).use(
+          r =>
+            for {
+              store <- UserCacheStore.redisUserCacheStore[IO](r)
+              _     <- store.put(JwtToken("token"), testUser)
+              user  <- store.findUser(JwtToken("token"))
+            } yield user
+        )
 
-        result.asserting(_ must be (Some(testUser)))
+        result.asserting(_ must be(Some(testUser)))
       }
     }
 
     "return empty option if user not found" in {
       withRedisAsync() { port =>
-        val result = stringCommands(port).use(r => for {
-          store <- UserCacheStore.redisUserCacheStore[IO](r)
-          user <- store.findUser(JwtToken("another-token"))
-        } yield user)
+        val result = stringCommands(port).use(
+          r =>
+            for {
+              store <- UserCacheStore.redisUserCacheStore[IO](r)
+              user  <- store.findUser(JwtToken("another-token"))
+            } yield user
+        )
 
-        result.asserting(_ must be (None))
+        result.asserting(_ must be(None))
       }
     }
 
     "remove user and token from cache" in {
       withRedisAsync() { port =>
-        val result = stringCommands(port).use(r => for {
-          store <- UserCacheStore.redisUserCacheStore[IO](r)
-          _ <- store.put(JwtToken("token"), testUser)
-          _ <- store.remove(JwtToken("token"), testUser.name)
-          t <- store.findToken(testUser.name)
-          u <- store.findUser(JwtToken("token"))
-        } yield (t, u))
+        val result = stringCommands(port).use(
+          r =>
+            for {
+              store <- UserCacheStore.redisUserCacheStore[IO](r)
+              _     <- store.put(JwtToken("token"), testUser)
+              _     <- store.remove(JwtToken("token"), testUser.name)
+              t     <- store.findToken(testUser.name)
+              u     <- store.findUser(JwtToken("token"))
+            } yield (t, u)
+        )
 
-        result.asserting(_ must be ((None, None)))
+        result.asserting(_ must be((None, None)))
       }
     }
   }

@@ -36,7 +36,7 @@ class BrandServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
           id      <- service.create(brand1.name)
         } yield id
 
-        result.unsafeToFuture().map(_ must be (brand1.id))
+        result.unsafeToFuture().map(_ must be(brand1.id))
       }
 
       "should return brand already exists error if unique violation" in {

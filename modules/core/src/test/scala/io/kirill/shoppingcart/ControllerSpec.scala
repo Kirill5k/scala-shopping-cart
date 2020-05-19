@@ -23,13 +23,13 @@ trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchers
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
   val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), Some(PasswordHash("password"))))
-  val adminUser = AdminUser(User(UserId(UUID.randomUUID()), Username("admin"), None))
+  val adminUser  = AdminUser(User(UserId(UUID.randomUUID()), Username("admin"), None))
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] = AuthMiddleware(Kleisli.pure(authedUser))
   val adminMiddleware: AuthMiddleware[IO, AdminUser] = AuthMiddleware(Kleisli.pure(adminUser))
 
   def verifyResponse[A: Encoder](actual: IO[Response[IO]], expectedStatus: Status, expectedBody: Option[A] = None)(
-    implicit ev: EntityDecoder[IO, A]
+      implicit ev: EntityDecoder[IO, A]
   ): Unit = {
     val actualResp = actual.unsafeRunSync
 

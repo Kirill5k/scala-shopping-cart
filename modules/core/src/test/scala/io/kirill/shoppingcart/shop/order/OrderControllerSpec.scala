@@ -238,7 +238,9 @@ class OrderControllerSpec extends ControllerSpec {
           .withEntity(paymentReqJson(name = "123"))
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        val expectedResponse = ErrorResponse("""Predicate failed: "123".matches("^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$").: DownField(name),DownField(card)""")
+        val expectedResponse = ErrorResponse(
+          """Predicate failed: "123".matches("^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$").: DownField(name),DownField(card)"""
+        )
         verifyResponse[ErrorResponse](response, Status.BadRequest, Some(expectedResponse))
       }
 
@@ -262,7 +264,9 @@ class OrderControllerSpec extends ControllerSpec {
           .withEntity(paymentReqJson(cvv = 9999))
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
-        val expectedResponse = ErrorResponse("""Right predicate of ((9999 > 0) && !(9999 > 999)) failed: Predicate (9999 > 999) did not fail.: DownField(cvv),DownField(card)""")
+        val expectedResponse = ErrorResponse(
+          """Right predicate of ((9999 > 0) && !(9999 > 999)) failed: Predicate (9999 > 999) did not fail.: DownField(cvv),DownField(card)"""
+        )
         verifyResponse[ErrorResponse](response, Status.BadRequest, Some(expectedResponse))
       }
     }

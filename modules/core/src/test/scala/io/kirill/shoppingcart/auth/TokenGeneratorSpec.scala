@@ -13,12 +13,12 @@ class TokenGeneratorSpec extends CatsIOSpec {
       import AppConfig.appConfig
 
       val result = for {
-        gen       <- TokenGenerator.make[IO]
-        token    <- gen.generate
+        gen   <- TokenGenerator.make[IO]
+        token <- gen.generate
       } yield token
 
       result.asserting { t =>
-        t mustBe a [JwtToken]
+        t mustBe a[JwtToken]
       }
     }
   }

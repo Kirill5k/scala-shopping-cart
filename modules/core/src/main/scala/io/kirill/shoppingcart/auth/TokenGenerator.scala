@@ -26,6 +26,8 @@ object TokenGenerator {
         } yield jwt
     }
 
-  def make[F[_]: Sync](implicit  config: AppConfig): F[TokenGenerator[F]] =
-    Sync[F].delay(java.time.Clock.systemUTC).map { implicit jClock => hs256TokenGenerator }
+  def make[F[_]: Sync](implicit config: AppConfig): F[TokenGenerator[F]] =
+    Sync[F].delay(java.time.Clock.systemUTC).map { implicit jClock =>
+      hs256TokenGenerator
+    }
 }

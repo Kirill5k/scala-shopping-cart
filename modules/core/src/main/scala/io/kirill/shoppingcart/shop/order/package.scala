@@ -15,7 +15,7 @@ package object order {
   final case class OrderStatus(value: String) extends AnyVal
   object OrderStatus {
     val awaitingPayment = OrderStatus("order received. awaiting payment")
-    val processing = OrderStatus("payment received. awaiting payment")
+    val processing      = OrderStatus("payment received. awaiting payment")
   }
 
   final case class Order(

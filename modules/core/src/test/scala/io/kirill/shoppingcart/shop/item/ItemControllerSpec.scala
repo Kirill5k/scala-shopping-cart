@@ -36,7 +36,7 @@ class ItemControllerSpec extends ControllerSpec {
         val testitem = item("item-1").copy(id = ItemId(itemId))
         when(itemServiceMock.findById(any[ItemId])).thenReturn(IO.pure(testitem))
 
-        val request = Request[IO](uri = uri"/items/607995e0-8e3a-11ea-bc55-0242ac130003")
+        val request                    = Request[IO](uri = uri"/items/607995e0-8e3a-11ea-bc55-0242ac130003")
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         val expectedResponse = ItemResponse(
@@ -57,10 +57,14 @@ class ItemControllerSpec extends ControllerSpec {
 
         when(itemServiceMock.findById(any[ItemId])).thenReturn(IO.raiseError(ItemNotFound(ItemId(itemId))))
 
-        val request = Request[IO](uri = uri"/items/607995e0-8e3a-11ea-bc55-0242ac130003")
+        val request                    = Request[IO](uri = uri"/items/607995e0-8e3a-11ea-bc55-0242ac130003")
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
-        verifyResponse[ErrorResponse](response, Status.NotFound, Some(ErrorResponse("Item with id 607995e0-8e3a-11ea-bc55-0242ac130003 does not exist")))
+        verifyResponse[ErrorResponse](
+          response,
+          Status.NotFound,
+          Some(ErrorResponse("Item with id 607995e0-8e3a-11ea-bc55-0242ac130003 does not exist"))
+        )
         verify(itemServiceMock).findById(ItemId(itemId))
       }
     }
@@ -73,7 +77,7 @@ class ItemControllerSpec extends ControllerSpec {
         val testitem = item("item-1")
         when(itemServiceMock.findAll).thenReturn(fs2.Stream.emits(List(testitem)).lift[IO])
 
-        val request = Request[IO](uri = uri"/items")
+        val request                    = Request[IO](uri = uri"/items")
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         val expectedResponse = ItemResponse(
@@ -97,7 +101,7 @@ class ItemControllerSpec extends ControllerSpec {
         val testitem = item("item-1")
         when(itemServiceMock.findBy(any[BrandName])).thenReturn(fs2.Stream.emits(List(testitem)).lift[IO])
 
-        val request = Request[IO](uri = uri"/items?brand=test-brand")
+        val request                    = Request[IO](uri = uri"/items?brand=test-brand")
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         val expectedResponse = ItemResponse(
@@ -116,7 +120,7 @@ class ItemControllerSpec extends ControllerSpec {
         val itemServiceMock = mock[ItemService[IO]]
         val controller      = new ItemController[IO](itemServiceMock)
 
-        val request = Request[IO](uri = uri"/items?brand=")
+        val request                    = Request[IO](uri = uri"/items?brand=")
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[String](response, Status.BadRequest, Some("Brand must not be blank"))
@@ -135,7 +139,8 @@ class ItemControllerSpec extends ControllerSpec {
 
         when(itemServiceMock.update(any[UpdateItem])).thenReturn(IO.unit)
 
-        val request = Request[IO](uri = uri"/admin/items/607995e0-8e3a-11ea-bc55-0242ac130003", method = Method.PUT).withEntity(updateRequest())
+        val request =
+          Request[IO](uri = uri"/admin/items/607995e0-8e3a-11ea-bc55-0242ac130003", method = Method.PUT).withEntity(updateRequest())
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[ItemResponse](response, Status.NoContent, None)
@@ -148,17 +153,22 @@ class ItemControllerSpec extends ControllerSpec {
 
         when(itemServiceMock.update(any[UpdateItem])).thenReturn(IO.raiseError(ItemNotFound(ItemId(itemId))))
 
-        val request = Request[IO](uri = uri"/admin/items/607995e0-8e3a-11ea-bc55-0242ac130003", method = Method.PUT).withEntity(updateRequest())
+        val request =
+          Request[IO](uri = uri"/admin/items/607995e0-8e3a-11ea-bc55-0242ac130003", method = Method.PUT).withEntity(updateRequest())
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
-        verifyResponse[ErrorResponse](response, Status.NotFound, Some(ErrorResponse("Item with id 607995e0-8e3a-11ea-bc55-0242ac130003 does not exist")))
+        verifyResponse[ErrorResponse](
+          response,
+          Status.NotFound,
+          Some(ErrorResponse("Item with id 607995e0-8e3a-11ea-bc55-0242ac130003 does not exist"))
+        )
         verify(itemServiceMock).update(UpdateItem(ItemId(itemId), GBP(14.99)))
       }
     }
 
     "POST /admin/items" should {
 
-      val brandId = UUID.fromString("2fd275de-99fb-11ea-bb37-0242ac130002")
+      val brandId    = UUID.fromString("2fd275de-99fb-11ea-bb37-0242ac130002")
       val categoryId = UUID.fromString("2fd277e6-99fb-11ea-bb37-0242ac130002")
 
       def createRequest(name: String = "test-item") =
@@ -170,11 +180,13 @@ class ItemControllerSpec extends ControllerSpec {
 
         when(itemServiceMock.create(any[CreateItem])).thenReturn(IO.pure(ItemId(itemId)))
 
-        val request = Request[IO](uri = uri"/admin/items", method = Method.POST).withEntity(createRequest())
+        val request                    = Request[IO](uri = uri"/admin/items", method = Method.POST).withEntity(createRequest())
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[ItemCreateResponse](response, Status.Created, Some(ItemCreateResponse(ItemId(itemId))))
-        verify(itemServiceMock).create(CreateItem(ItemName("test-item"), ItemDescription("test-item description"), GBP(10.99), BrandId(brandId), CategoryId(categoryId)))
+        verify(itemServiceMock).create(
+          CreateItem(ItemName("test-item"), ItemDescription("test-item description"), GBP(10.99), BrandId(brandId), CategoryId(categoryId))
+        )
       }
     }
   }

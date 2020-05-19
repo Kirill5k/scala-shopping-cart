@@ -12,9 +12,8 @@ import dev.profunktor.redis4cats.log4cats._
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
-
 trait RedisSpec extends CatsIOSpec with EmbeddedRedis {
-  implicit val ec = scala.concurrent.ExecutionContext.global
+  implicit val ec                 = scala.concurrent.ExecutionContext.global
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
   def stringCommands(port: Int): Resource[IO, RedisCommands[IO, String, String]] =

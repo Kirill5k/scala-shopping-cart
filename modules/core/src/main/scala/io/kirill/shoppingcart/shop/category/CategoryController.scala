@@ -37,7 +37,7 @@ final class CategoryController[F[_]: Sync: Logger](categoryService: CategoryServ
   }
 
   def routes(adminAuthMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = Router(
-    prefixPath -> publicHttpRoutes,
+    prefixPath            -> publicHttpRoutes,
     "/admin" + prefixPath -> adminAuthMiddleware(adminHttpRoutes)
   )
 }

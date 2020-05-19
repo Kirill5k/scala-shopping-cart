@@ -1,6 +1,5 @@
 package io.kirill.shoppingcart.auth
 
-
 import cats.effect.IO
 import io.kirill.shoppingcart.CatsIOSpec
 import io.kirill.shoppingcart.auth.user.Password

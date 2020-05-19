@@ -22,16 +22,16 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
     "find" - {
       "return order by id" in {
         val result = for {
-          r <- OrderRepository.make(session)
+          r   <- OrderRepository.make(session)
           oid <- insertTestOrder(r)
-          o <- r.find(oid)
+          o   <- r.find(oid)
         } yield o.get
 
         result.asserting { order =>
-          order.items must be (orderItems)
-          order.totalPrice must be (GBP(BigDecimal(25.54)))
-          order.status must be (OrderStatus.awaitingPayment)
-          order.paymentId must be (None)
+          order.items must be(orderItems)
+          order.totalPrice must be(GBP(BigDecimal(25.54)))
+          order.status must be(OrderStatus.awaitingPayment)
+          order.paymentId must be(None)
         }
       }
 
@@ -48,15 +48,15 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
       "update payment id on the existing order" in {
         val paymentId = PaymentId(UUID.randomUUID())
         val result = for {
-          r <- OrderRepository.make(session)
+          r   <- OrderRepository.make(session)
           oid <- insertTestOrder(r)
-          _ <- r.update(OrderPayment(oid, paymentId))
-          o <- r.find(oid)
+          _   <- r.update(OrderPayment(oid, paymentId))
+          o   <- r.find(oid)
         } yield o.get
 
         result.asserting { order =>
-          order.status must be (OrderStatus.processing)
-          order.paymentId must be (Some(paymentId))
+          order.status must be(OrderStatus.processing)
+          order.paymentId must be(Some(paymentId))
         }
       }
     }
@@ -64,15 +64,16 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
     "findBy" - {
       "return orders placed by user" in {
         val result = for {
-          uid <- insertTestUser
-          r <- OrderRepository.make(session)
-          _ <- insertTestOrder(r)
+          uid    <- insertTestUser
+          r      <- OrderRepository.make(session)
+          _      <- insertTestOrder(r)
           orders <- r.findBy(uid).compile.toList
         } yield (orders, uid)
 
-        result.asserting { case (orders, uid) =>
-          orders must not be empty
-          orders.map(_.userId) must contain only uid
+        result.asserting {
+          case (orders, uid) =>
+            orders must not be empty
+            orders.map(_.userId) must contain only uid
         }
       }
 
@@ -86,8 +87,8 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
 
   def insertTestUser: IO[UserId] =
     for {
-      r <- UserRepository.make(session)
-      u <- r.findByName(Username("test-user"))
+      r   <- UserRepository.make(session)
+      u   <- r.findByName(Username("test-user"))
       uid <- u.fold(r.create(Username("test-user"), PasswordHash("password")))(x => IO.pure(x.id))
     } yield uid
 

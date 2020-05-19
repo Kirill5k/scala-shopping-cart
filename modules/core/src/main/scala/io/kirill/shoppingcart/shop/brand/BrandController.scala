@@ -38,7 +38,7 @@ final class BrandController[F[_]: Sync: Logger](brandService: BrandService[F]) e
   }
 
   def routes(adminAuthMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = Router(
-    prefixPath -> publicHttpRoutes,
+    prefixPath            -> publicHttpRoutes,
     "/admin" + prefixPath -> adminAuthMiddleware(adminHttpRoutes)
   )
 }

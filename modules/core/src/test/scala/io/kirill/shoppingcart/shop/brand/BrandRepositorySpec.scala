@@ -13,14 +13,14 @@ class BrandRepositorySpec extends PostgresRepositorySpec {
       val repository = BrandRepository.make[IO](session)
 
       val allBrands = for {
-        r <- repository
-        _ <- r.create(BrandName("foo"))
+        r      <- repository
+        _      <- r.create(BrandName("foo"))
         brands <- r.findAll.compile.toList
       } yield brands
 
       allBrands.asserting { brands =>
         brands must have size 1
-        brands.head.name must be (BrandName("foo"))
+        brands.head.name must be(BrandName("foo"))
       }
     }
 

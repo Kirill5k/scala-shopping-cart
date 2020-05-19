@@ -12,14 +12,14 @@ class CategoryRepositorySpec extends PostgresRepositorySpec {
       val repository = CategoryRepository.make[IO](session)
 
       val allCategories = for {
-        r <- repository
-        _ <- r.create(CategoryName("foo"))
+        r      <- repository
+        _      <- r.create(CategoryName("foo"))
         brands <- r.findAll.compile.toList
       } yield brands
 
       allCategories.asserting { brands =>
         brands must have size 1
-        brands.head.name must be (CategoryName("foo"))
+        brands.head.name must be(CategoryName("foo"))
       }
     }
 

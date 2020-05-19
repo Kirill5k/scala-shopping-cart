@@ -19,15 +19,15 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
 
         val result = for {
           repo <- itemRepository
-          iid <- insertTestItem(repo)
+          iid  <- insertTestItem(repo)
           item <- repo.find(iid)
         } yield item.get
 
         result.asserting { item =>
-          item.description must be (ItemDescription("description"))
-          item.price must be (GBP(BigDecimal(10.99)))
-          item.brand.name must be (BrandName("test-brand"))
-          item.category.name must be (CategoryName("test-category"))
+          item.description must be(ItemDescription("description"))
+          item.price must be(GBP(BigDecimal(10.99)))
+          item.brand.name must be(BrandName("test-brand"))
+          item.category.name must be(CategoryName("test-category"))
         }
       }
 
@@ -36,7 +36,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
 
         val result = itemRepository.flatMap(r => r.find(ItemId(UUID.randomUUID())))
 
-        result.asserting(_ must be (None))
+        result.asserting(_ must be(None))
       }
     }
 
@@ -45,8 +45,8 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         val itemRepository = ItemRepository.make(session)
 
         val result = for {
-          repo <- itemRepository
-          _ <- insertTestItem(repo)
+          repo  <- itemRepository
+          _     <- insertTestItem(repo)
           items <- repo.findBy(BrandName("test-brand")).compile.toList
         } yield items
 
@@ -59,7 +59,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
       "return empty list if no matches" in {
         val itemRepository = ItemRepository.make(session)
 
-        itemRepository.flatMap(_.findBy(BrandName("foo")).compile.toList).asserting(_ must be (Nil))
+        itemRepository.flatMap(_.findBy(BrandName("foo")).compile.toList).asserting(_ must be(Nil))
       }
     }
 
@@ -68,8 +68,8 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         val itemRepository = ItemRepository.make(session)
 
         val result = for {
-          repo <- itemRepository
-          _ <- insertTestItem(repo)
+          repo  <- itemRepository
+          _     <- insertTestItem(repo)
           items <- repo.findAll.compile.toList
         } yield items
 
@@ -86,13 +86,13 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
 
         val result = for {
           repo <- itemRepository
-          id <- insertTestItem(repo)
-          _ <- repo.update(UpdateItem(id, GBP(BigDecimal(99.99))))
+          id   <- insertTestItem(repo)
+          _    <- repo.update(UpdateItem(id, GBP(BigDecimal(99.99))))
           item <- repo.find(id)
         } yield item.get
 
         result.asserting { item =>
-          item.price must be (GBP(BigDecimal(99.99)))
+          item.price must be(GBP(BigDecimal(99.99)))
         }
       }
     }
@@ -101,7 +101,15 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
       "return error when brand does not exist" in {
         val result = for {
           repo <- ItemRepository.make(session)
-          iid <- repo.create(CreateItem(ItemName("item"), ItemDescription("description"), GBP(BigDecimal(10.99)), BrandId(UUID.randomUUID()), CategoryId(UUID.randomUUID())))
+          iid <- repo.create(
+            CreateItem(
+              ItemName("item"),
+              ItemDescription("description"),
+              GBP(BigDecimal(10.99)),
+              BrandId(UUID.randomUUID()),
+              CategoryId(UUID.randomUUID())
+            )
+          )
         } yield iid
 
         result.assertThrows[ForeignKeyViolation]
@@ -113,13 +121,13 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         val itemRepository = ItemRepository.make(session)
 
         val result = for {
-          repo <- itemRepository
-          id <- insertTestItem(repo)
+          repo   <- itemRepository
+          id     <- insertTestItem(repo)
           exists <- repo.exists(id)
         } yield exists
 
         result.asserting { res =>
-          res must be (true)
+          res must be(true)
         }
       }
 
@@ -127,12 +135,12 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         val itemRepository = ItemRepository.make(session)
 
         val result = for {
-          repo <- itemRepository
+          repo   <- itemRepository
           exists <- repo.exists(ItemId(UUID.randomUUID()))
         } yield exists
 
         result.asserting { res =>
-          res must be (false)
+          res must be(false)
         }
       }
     }
@@ -140,15 +148,15 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
 
   def insertTestBrand: IO[BrandId] =
     for {
-      r <- BrandRepository.make(session)
-      bs <- r.findAll.compile.toList
+      r   <- BrandRepository.make(session)
+      bs  <- r.findAll.compile.toList
       bid <- bs.find(_.name == BrandName("test-brand")).fold(r.create(BrandName("test-brand")))(b => IO.pure(b.id))
     } yield bid
 
   def insertTestCategory: IO[CategoryId] =
     for {
-      r <- CategoryRepository.make(session)
-      bs <- r.findAll.compile.toList
+      r   <- CategoryRepository.make(session)
+      bs  <- r.findAll.compile.toList
       cid <- bs.find(_.name == CategoryName("test-category")).fold(r.create(CategoryName("test-category")))(b => IO.pure(b.id))
     } yield cid
 
@@ -156,6 +164,8 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
     for {
       bid <- insertTestBrand
       cid <- insertTestCategory
-      iid <- repo.create(CreateItem(ItemName(s"item-${System.currentTimeMillis()}"), ItemDescription("description"), GBP(BigDecimal(10.99)), bid, cid))
+      iid <- repo.create(
+        CreateItem(ItemName(s"item-${System.currentTimeMillis()}"), ItemDescription("description"), GBP(BigDecimal(10.99)), bid, cid)
+      )
     } yield iid
 }

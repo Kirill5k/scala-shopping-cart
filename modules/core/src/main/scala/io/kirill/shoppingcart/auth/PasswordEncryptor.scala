@@ -13,7 +13,7 @@ trait PasswordEncryptor[F[_]] {
 
 object PasswordEncryptor {
 
-  def make[F[_]: Sync](implicit  config: AppConfig): F[PasswordEncryptor[F]] =
+  def make[F[_]: Sync](implicit config: AppConfig): F[PasswordEncryptor[F]] =
     Sync[F].delay {
       new PasswordEncryptor[F] {
         override def hash(password: Password): F[PasswordHash] =

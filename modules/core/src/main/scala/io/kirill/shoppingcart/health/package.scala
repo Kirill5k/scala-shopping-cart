@@ -22,7 +22,7 @@ package object health {
   object Health {
     def make[F[_]: Concurrent: Parallel: Timer: Logger](res: Resources[F]): F[Health[F]] =
       for {
-        service <- HealthCheckService.make(res.postgres, res.redis)
+        service    <- HealthCheckService.make(res.postgres, res.redis)
         controller <- HealthCheckController.make(service)
       } yield new Health[F](controller)
   }

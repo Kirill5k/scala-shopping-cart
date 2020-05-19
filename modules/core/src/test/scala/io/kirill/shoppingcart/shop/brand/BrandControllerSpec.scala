@@ -23,7 +23,7 @@ import scala.concurrent.ExecutionContext
 class BrandControllerSpec extends ControllerSpec {
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.Implicits.global)
 
-  val brandId = BrandId(UUID.fromString("d09c402a-8615-11ea-bc55-0242ac130003"))
+  val brandId   = BrandId(UUID.fromString("d09c402a-8615-11ea-bc55-0242ac130003"))
   val testBrand = Brand(brandId, BrandName("test-brand"))
 
   "A BrandController" should {
@@ -34,7 +34,7 @@ class BrandControllerSpec extends ControllerSpec {
     "GET /brands" should {
       "return all brands" in {
         val brandServiceMock = mock[BrandService[IO]]
-        val controller      = new BrandController[IO](brandServiceMock)
+        val controller       = new BrandController[IO](brandServiceMock)
 
         when(brandServiceMock.findAll).thenReturn(fs2.Stream.emits(List(testBrand)).lift[IO])
 
@@ -49,7 +49,7 @@ class BrandControllerSpec extends ControllerSpec {
     "POST /admin/brands" should {
       "create new brand when success" in {
         val brandServiceMock = mock[BrandService[IO]]
-        val controller      = new BrandController[IO](brandServiceMock)
+        val controller       = new BrandController[IO](brandServiceMock)
 
         when(brandServiceMock.create(any[BrandName])).thenReturn(IO.pure(brandId))
 
@@ -62,7 +62,7 @@ class BrandControllerSpec extends ControllerSpec {
 
       "return bad request when brand name is taken" in {
         val brandServiceMock = mock[BrandService[IO]]
-        val controller      = new BrandController[IO](brandServiceMock)
+        val controller       = new BrandController[IO](brandServiceMock)
 
         when(brandServiceMock.create(any[BrandName])).thenReturn(IO.raiseError(BrandAlreadyExists(testBrand.name)))
 

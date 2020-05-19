@@ -13,11 +13,11 @@ object errors {
   }
 
   sealed trait BadRequestError extends AppError
-  sealed trait NotFoundError extends AppError
+  sealed trait NotFoundError   extends AppError
 
   final case class ForeignKeyViolation(message: String) extends BadRequestError
-  final case class UniqueViolation(message: String) extends BadRequestError
-  final case class ProcessingError(message: String) extends BadRequestError
+  final case class UniqueViolation(message: String)     extends BadRequestError
+  final case class ProcessingError(message: String)     extends BadRequestError
 
   final case class ItemNotFound(itemId: ItemId) extends NotFoundError {
     val message = s"Item with id ${itemId.value} does not exist"

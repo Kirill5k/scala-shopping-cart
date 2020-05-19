@@ -24,7 +24,8 @@ final private class RedisUserCacheStore[F[_]: Sync](
 ) extends UserCacheStore[F] {
 
   override def findUser(token: JwtToken): F[Option[User]] =
-    redis.get(token.value)
+    redis
+      .get(token.value)
       .map(_.flatMap { json =>
         decode[User](json).toOption
       })

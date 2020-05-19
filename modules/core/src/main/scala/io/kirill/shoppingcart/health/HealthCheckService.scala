@@ -32,8 +32,7 @@ final private class LiveHealthCheckService[F[_]: Concurrent: Parallel: Timer](
       .map(PostgresStatus.apply)
 
   private def redisHealth: F[RedisStatus] =
-    redis
-      .ping
+    redis.ping
       .map(_.nonEmpty)
       .timeout(3 second)
       .orElse(false.pure[F])

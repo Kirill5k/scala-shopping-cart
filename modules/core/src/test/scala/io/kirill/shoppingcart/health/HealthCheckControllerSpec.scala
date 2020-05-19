@@ -23,7 +23,7 @@ class HealthCheckControllerSpec extends ControllerSpec {
 
       when(healthCheckServiceMock.status).thenReturn(IO.pure(AppStatus(PostgresStatus(true), RedisStatus(false))))
 
-      val request = Request[IO](uri = uri"/healthcheck/status")
+      val request                    = Request[IO](uri = uri"/healthcheck/status")
       val response: IO[Response[IO]] = controller.routes.orNotFound.run(request)
 
       verifyResponse[HealthCheckResponse](response, Status.Ok, Some(HealthCheckResponse("down", "up")))

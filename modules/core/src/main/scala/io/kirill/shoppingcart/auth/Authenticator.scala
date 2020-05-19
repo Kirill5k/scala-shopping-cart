@@ -35,7 +35,7 @@ object Authenticator {
 
   def adminUserAuthenticator[F[_]: Sync](adminToken: JwtToken, adminJwtAuth: AdminJwtAuth): F[Authenticator[F, AdminUser]] =
     for {
-      claim <- jwtDecode[F](adminToken, adminJwtAuth.value)
+      claim      <- jwtDecode[F](adminToken, adminJwtAuth.value)
       adminClaim <- Sync[F].fromEither(jsonDecode[AdminClaimContent](claim.content))
       adminUser = AdminUser(User(UserId(adminClaim.id), Username("admin"), None))
     } yield new AdminUserAuthenticator[F](adminToken, adminUser)

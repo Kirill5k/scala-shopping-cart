@@ -36,7 +36,7 @@ class CategoryServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoS
           id      <- service.create(category1.name)
         } yield id
 
-        result.unsafeToFuture().map(_ must be (category1.id))
+        result.unsafeToFuture().map(_ must be(category1.id))
       }
 
       "should return category already exists error if unique violation" in {

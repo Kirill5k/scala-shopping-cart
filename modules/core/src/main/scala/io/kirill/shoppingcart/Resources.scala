@@ -13,8 +13,8 @@ import natchez.Trace.Implicits.noop
 import skunk.Session
 
 final case class Resources[F[_]](
-  postgres: Resource[F, Session[F]],
-  redis: RedisCommands[F, String, String]
+    postgres: Resource[F, Session[F]],
+    redis: RedisCommands[F, String, String]
 )
 
 object Resources {

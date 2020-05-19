@@ -26,7 +26,7 @@ class CartControllerSpec extends ControllerSpec {
     "GET /shopping-cat" should {
       "return shopping cart of a current user" in {
         val cartService = mockService
-        val controller = new CartController[IO](cartService)
+        val controller  = new CartController[IO](cartService)
 
         when(cartService.get(any[UserId])).thenReturn(IO.pure(cart))
 
@@ -41,7 +41,7 @@ class CartControllerSpec extends ControllerSpec {
     "DELETE /shopping-cat/{itemId}" should {
       "delete shopping cart of a current user" in {
         val cartService = mockService
-        val controller = new CartController[IO](cartService)
+        val controller  = new CartController[IO](cartService)
 
         when(cartService.removeItem(any[UserId], any[ItemId])).thenReturn(IO.pure(()))
 
@@ -56,11 +56,11 @@ class CartControllerSpec extends ControllerSpec {
     "POST /shopping-cart" should {
       "add items to a shopping cart" in {
         val cartService = mockService
-        val controller = new CartController[IO](cartService)
+        val controller  = new CartController[IO](cartService)
 
         when(cartService.add(any[UserId], any[Cart])).thenReturn(IO.pure(()))
 
-        val request = Request[IO](uri = uri"/shopping-cart", method = Method.POST).withEntity(shoppingCartReq)
+        val request                    = Request[IO](uri = uri"/shopping-cart", method = Method.POST).withEntity(shoppingCartReq)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[Cart](response, Status.Ok, None)
@@ -71,11 +71,11 @@ class CartControllerSpec extends ControllerSpec {
     "PUT /shopping-cart" should {
       "update items to a shopping cart" in {
         val cartService = mockService
-        val controller = new CartController[IO](cartService)
+        val controller  = new CartController[IO](cartService)
 
         when(cartService.update(any[UserId], any[Cart])).thenReturn(IO.pure(()))
 
-        val request = Request[IO](uri = uri"/shopping-cart", method = Method.PUT).withEntity(shoppingCartReq)
+        val request                    = Request[IO](uri = uri"/shopping-cart", method = Method.PUT).withEntity(shoppingCartReq)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[Cart](response, Status.Ok, None)

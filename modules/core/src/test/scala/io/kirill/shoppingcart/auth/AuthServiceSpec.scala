@@ -10,7 +10,7 @@ import org.scalatest.matchers.must.Matchers
 
 class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar {
 
-  val user = UserBuilder.user()
+  val user  = UserBuilder.user()
   val token = JwtToken("token")
 
   "An AuthService" - {
@@ -27,7 +27,7 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
         result.unsafeToFuture().map { r =>
           verify(repo).create(user.name, user.password.get)
           verify(passEncr).hash(Password("password"))
-          r must be (user.id)
+          r must be(user.id)
         }
       }
 
@@ -57,7 +57,7 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
 
         result.unsafeToFuture().map { r =>
           verify(cache).remove(token, user.name)
-          r must be (())
+          r must be(())
         }
       }
     }
@@ -81,7 +81,7 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
           verify(cache).findToken(user.name)
           verify(tokenGen).generate
           verify(cache).put(token, user)
-          r must be (token)
+          r must be(token)
         }
       }
 
@@ -99,7 +99,7 @@ class AuthServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
           verify(repo).findByName(user.name)
           verify(passEncr).isValid(Password("password"), user.password.get)
           verify(cache).findToken(user.name)
-          r must be (token)
+          r must be(token)
         }
       }
 

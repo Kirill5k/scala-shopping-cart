@@ -10,9 +10,8 @@ import eu.timepit.refined.string.{MatchesRegex}
 import io.kirill.shoppingcart.shop.order.Order
 
 package object payment {
-  type NameRegex = W.`"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"`.T
+  type NameRegex       = W.`"^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"`.T
   type ExpirationRegex = W.`"^[0-9]{4}$"`.T
-
 
   type Name       = String Refined MatchesRegex[NameRegex]
   type Number     = Long Refined (Positive And LessEqual[9999999999999999L])

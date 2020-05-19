@@ -74,7 +74,7 @@ class ItemServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
           _ = when(repo.exists(any[ItemId])).thenReturn(IO.pure(true))
           _ = when(repo.update(any[UpdateItem])).thenReturn(IO.unit)
           service <- ItemService.make(repo)
-          res    <- service.update(UpdateItem(item1.id, GBP(99.99)))
+          res     <- service.update(UpdateItem(item1.id, GBP(99.99)))
         } yield res
 
         result.unsafeToFuture().map { res =>
@@ -87,7 +87,7 @@ class ItemServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
           repo <- repoMock
           _ = when(repo.exists(any[ItemId])).thenReturn(IO.pure(false))
           service <- ItemService.make(repo)
-          res    <- service.update(UpdateItem(item1.id, GBP(99.99)))
+          res     <- service.update(UpdateItem(item1.id, GBP(99.99)))
         } yield res
 
         recoverToSucceededIf[ItemNotFound] {
@@ -102,7 +102,7 @@ class ItemServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
           repo <- repoMock
           _ = when(repo.create(any[CreateItem])).thenReturn(IO.pure(item1.id))
           service <- ItemService.make(repo)
-          res    <- service.create(CreateItem(item1.name, item1.description, item1.price, item1.brand.id, item1.category.id))
+          res     <- service.create(CreateItem(item1.name, item1.description, item1.price, item1.brand.id, item1.category.id))
         } yield res
 
         result.unsafeToFuture().map { res =>

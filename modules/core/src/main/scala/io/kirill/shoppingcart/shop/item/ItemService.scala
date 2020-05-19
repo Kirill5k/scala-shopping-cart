@@ -24,7 +24,7 @@ final private class LiveItemService[F[_]: Sync](
 
   override def findById(id: ItemId): F[Item] =
     itemRepository.find(id).flatMap {
-      case None => ItemNotFound(id).raiseError[F, Item]
+      case None       => ItemNotFound(id).raiseError[F, Item]
       case Some(item) => item.pure[F]
     }
 
@@ -34,7 +34,7 @@ final private class LiveItemService[F[_]: Sync](
   override def update(item: UpdateItem): F[Unit] =
     itemRepository.exists(item.id).flatMap {
       case false => ItemNotFound(item.id).raiseError[F, Unit]
-      case true => itemRepository.update(item)
+      case true  => itemRepository.update(item)
     }
 }
 

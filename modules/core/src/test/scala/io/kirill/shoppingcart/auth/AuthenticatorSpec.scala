@@ -25,21 +25,25 @@ class AuthenticatorSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSug
         res <- userAuth.findUser(JwtToken("token"))(mock[JwtClaim])
       } yield res
 
-      result.unsafeToFuture().map(_ must be (Some(CommonUser(testUser))))
+      result.unsafeToFuture().map(_ must be(Some(CommonUser(testUser))))
     }
   }
 
   "A AdminUserAuthenticator" - {
     val adminJwtAuth: AdminJwtAuth = AdminJwtAuth(JwtAuth.hmac("admin-secret-key", JwtAlgorithm.HS256))
-    val adminToken: JwtToken = JwtToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWQiOiJjNTUyYWI0Ni05NmUxLTExZWEtYmIzNy0wMjQyYWMxMzAwMDIiLCJpYXQiOjE1MTYyMzkwMjJ9.aU-fe4RCRvzwnQfEVj0w-Ycmv3FxuV_FiR5YEz9SS1Y")
+    val adminToken: JwtToken = JwtToken(
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWQiOiJjNTUyYWI0Ni05NmUxLTExZWEtYmIzNy0wMjQyYWMxMzAwMDIiLCJpYXQiOjE1MTYyMzkwMjJ9.aU-fe4RCRvzwnQfEVj0w-Ycmv3FxuV_FiR5YEz9SS1Y"
+    )
 
     "should return admin user if token matches" in {
       val result = for {
         adminAuth <- Authenticator.adminUserAuthenticator[IO](adminToken, adminJwtAuth)
-        res <- adminAuth.findUser(adminToken)(mock[JwtClaim])
+        res       <- adminAuth.findUser(adminToken)(mock[JwtClaim])
       } yield res
 
-      result.unsafeToFuture().map(_ must be (Some(AdminUser(User(UserId(UUID.fromString("c552ab46-96e1-11ea-bb37-0242ac130002")), Username("admin"), None)))))
+      result
+        .unsafeToFuture()
+        .map(_ must be(Some(AdminUser(User(UserId(UUID.fromString("c552ab46-96e1-11ea-bb37-0242ac130002")), Username("admin"), None)))))
     }
   }
 }

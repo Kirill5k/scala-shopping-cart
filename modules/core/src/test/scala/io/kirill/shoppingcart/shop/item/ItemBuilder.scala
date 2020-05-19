@@ -8,7 +8,7 @@ import squants.market.{GBP, Money}
 
 object ItemBuilder {
 
-  def item(name: String, price: Money = Money(10, GBP)): Item = {
+  def item(name: String, price: Money = Money(10, GBP)): Item =
     Item(
       ItemId(UUID.randomUUID()),
       ItemName(name),
@@ -17,5 +17,4 @@ object ItemBuilder {
       Brand(BrandId(UUID.randomUUID()), BrandName("Test Brand")),
       Category(CategoryId(UUID.randomUUID()), CategoryName("Test Category"))
     )
-  }
 }

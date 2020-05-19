@@ -21,7 +21,7 @@ trait ItemRepository[F[_]] extends Repository[F, Item] {
   def exists(id: ItemId): F[Boolean]
 }
 
-private final class PostgresItemRepository[F[_]: Sync] (val sessionPool: Resource[F, Session[F]]) extends ItemRepository[F] {
+final private class PostgresItemRepository[F[_]: Sync](val sessionPool: Resource[F, Session[F]]) extends ItemRepository[F] {
   import ItemRepository._
 
   def findAll: fs2.Stream[F, Item] =
