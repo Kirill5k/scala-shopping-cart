@@ -18,6 +18,7 @@ trait ItemRepository[F[_]] extends Repository[F, Item] {
   def find(id: ItemId): F[Option[Item]]
   def create(item: CreateItem): F[ItemId]
   def update(item: UpdateItem): F[Unit]
+  def exists(id: ItemId): F[Boolean]
 }
 
 private final class PostgresItemRepository[F[_]: Sync] (val sessionPool: Resource[F, Session[F]]) extends ItemRepository[F] {
@@ -31,6 +32,13 @@ private final class PostgresItemRepository[F[_]: Sync] (val sessionPool: Resourc
 
   def find(id: ItemId): F[Option[Item]] =
     findOneBy(selectById, id.value)
+
+  def exists(id: ItemId): F[Boolean] =
+    run { session =>
+      session.prepare(existsBy).use { cmd =>
+        cmd.option(id.value).map(_.fold(false)(_ > 0))
+      }
+    }
 
   def create(item: CreateItem): F[ItemId] =
     run { session =>
@@ -57,6 +65,13 @@ object ItemRepository {
           Category(CategoryId(ci), CategoryName(cn))
         )
     }
+
+  private[item] val existsBy: Query[UUID, Long] =
+    sql"""
+         SELECT count(1)
+         FROM items AS i
+         WHERE i.id = $uuid
+         """.query(int8)
 
   private[item] val selectAll: Query[Void, Item] =
     sql"""

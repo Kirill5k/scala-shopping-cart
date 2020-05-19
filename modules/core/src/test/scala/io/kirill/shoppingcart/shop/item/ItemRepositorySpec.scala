@@ -107,6 +107,35 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         result.assertThrows[ForeignKeyViolation]
       }
     }
+
+    "exists" - {
+      "return true when item exists" in {
+        val itemRepository = ItemRepository.make(session)
+
+        val result = for {
+          repo <- itemRepository
+          id <- insertTestItem(repo)
+          exists <- repo.exists(id)
+        } yield exists
+
+        result.asserting { res =>
+          res must be (true)
+        }
+      }
+
+      "return false when item does not exist" in {
+        val itemRepository = ItemRepository.make(session)
+
+        val result = for {
+          repo <- itemRepository
+          exists <- repo.exists(ItemId(UUID.randomUUID()))
+        } yield exists
+
+        result.asserting { res =>
+          res must be (false)
+        }
+      }
+    }
   }
 
   def insertTestBrand: IO[BrandId] =
