@@ -18,7 +18,7 @@ A basic backend system for imaginary online store.
 A guest user can:
 - register into the system
 - login with valid credentials
-- see items catalogue
+- see items from the catalogue as well as brands and categories
 
 A registered user can:
 - update content of the shopping cart
