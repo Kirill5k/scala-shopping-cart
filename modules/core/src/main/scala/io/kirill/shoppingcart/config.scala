@@ -7,6 +7,11 @@ import pureconfig.module.catseffect.syntax._
 
 object config {
 
+  final case class ServerConfig(
+      host: String,
+      port: Int
+  )
+
   final case class RedisConfig(
       host: String,
       port: Int
@@ -43,6 +48,7 @@ object config {
   )
 
   final case class AppConfig(
+      server: ServerConfig,
       auth: AuthConfig,
       shop: ShopConfig,
       redis: RedisConfig,
