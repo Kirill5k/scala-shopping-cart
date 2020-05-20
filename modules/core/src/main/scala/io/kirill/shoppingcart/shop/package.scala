@@ -31,10 +31,10 @@ package object shop {
     ): HttpRoutes[F] = {
       val allRoutes =
         brandController.routes(adminAuthMiddleware) <+>
-        categoryController.routes(adminAuthMiddleware) <+>
-        cartController.routes(userAuthMiddleware) <+>
-        itemController.routes(adminAuthMiddleware) <+>
-        orderController.routes(userAuthMiddleware)
+          categoryController.routes(adminAuthMiddleware) <+>
+          cartController.routes(userAuthMiddleware) <+>
+          itemController.routes(adminAuthMiddleware) <+>
+          orderController.routes(userAuthMiddleware)
       Router("/shop" -> allRoutes)
     }
   }
