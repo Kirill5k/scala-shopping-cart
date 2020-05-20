@@ -1,6 +1,6 @@
 # Scala-shopping-cart
 
-A basic backend system for imaginary online store.
+A basic backend system for imaginary online store based on the examples from Practical FP in Scala by G. Volpe.
 
 ## Technical stack
 - cats and cats-effect: basic functional blocks as well as concurrency and functional effects
