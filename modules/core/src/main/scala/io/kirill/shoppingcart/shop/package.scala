@@ -4,7 +4,7 @@ import cats.effect.{Resource, Sync}
 import cats.implicits._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import io.chrisdavenport.log4cats.Logger
-import io.kirill.shoppingcart.auth.Auth
+import io.kirill.shoppingcart.auth.{AdminUser, Auth, CommonUser}
 import io.kirill.shoppingcart.config.AppConfig
 import io.kirill.shoppingcart.shop.brand.{BrandController, BrandRepository, BrandService}
 import io.kirill.shoppingcart.shop.cart.{CartController, CartService}
@@ -12,16 +12,32 @@ import io.kirill.shoppingcart.shop.category.{CategoryController, CategoryReposit
 import io.kirill.shoppingcart.shop.item.{ItemController, ItemRepository, ItemService}
 import io.kirill.shoppingcart.shop.order.{OrderController, OrderRepository, OrderService}
 import io.kirill.shoppingcart.shop.payment.PaymentService
+import org.http4s.HttpRoutes
+import org.http4s.server.{AuthMiddleware, Router}
 
 package object shop {
 
-  final class Shop[F[_]](
+  final class Shop[F[_]: Sync](
       val brandController: BrandController[F],
       val categoryController: CategoryController[F],
       val cartController: CartController[F],
       val itemController: ItemController[F],
       val orderController: OrderController[F]
-  )
+  ) {
+
+    def routes(
+        userAuthMiddleware: AuthMiddleware[F, CommonUser],
+        adminAuthMiddleware: AuthMiddleware[F, AdminUser]
+    ): HttpRoutes[F] = {
+      val allRoutes =
+        brandController.routes(adminAuthMiddleware) <+>
+        categoryController.routes(adminAuthMiddleware) <+>
+        cartController.routes(userAuthMiddleware) <+>
+        itemController.routes(adminAuthMiddleware) <+>
+        orderController.routes(userAuthMiddleware)
+      Router("/shop" -> allRoutes)
+    }
+  }
 
   object Shop {
     def make[F[_]: Sync: Logger](
