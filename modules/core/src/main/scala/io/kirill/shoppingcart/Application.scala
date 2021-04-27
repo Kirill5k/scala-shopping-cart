@@ -30,7 +30,6 @@ object Application extends IOApp {
             .serve
             .compile
             .drain
-          _ <- logger.info("scala-shopping-cart has started!")
         } yield ExitCode.Success
       }
     }
