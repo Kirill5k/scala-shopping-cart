@@ -7,6 +7,7 @@ object Dependencies {
     val http4s        = "0.21.22"
     val mockito       = "1.16.37"
     val refined       = "0.9.24"
+    val newtype       = "0.4.4"
     val redis4cats    = "0.13.1"
     val skunk         = "0.0.24"
     val squants       = "1.7.4"
@@ -57,6 +58,7 @@ object Dependencies {
 
     val refinedCore = refined("refined")
     val refinedCats = refined("refined-cats")
+    val newtype     = "io.estatico" %% "newtype" % Versions.newtype
 
     val redis4catsCore   = redis("redis4cats-effects")
     val redis4catsStream = redis("redis4cats-streams")
@@ -79,4 +81,47 @@ object Dependencies {
     val testContainersScalatest = testContainers("testcontainers-scala-scalatest")
     val testContainersPostgres  = testContainers("testcontainers-scala-postgresql")
   }
+
+  lazy val core: Seq[ModuleID] = Seq(
+    Libraries.pureConfigCore,
+    Libraries.pureConfigCats,
+    Libraries.logback % Runtime,
+    Libraries.log4cats,
+    Libraries.circeCore,
+    Libraries.circeGeneric,
+    Libraries.circeGenericExtras,
+    Libraries.circeParser,
+    Libraries.circeLiteral,
+    Libraries.circeRefined,
+    Libraries.http4sCore,
+    Libraries.http4sDsl,
+    Libraries.http4sServer,
+    Libraries.http4sClient,
+    Libraries.http4sCirce,
+    Libraries.http4sJwtAuth,
+    Libraries.bcrypt,
+    Libraries.squants,
+    Libraries.redis4catsCore,
+    Libraries.redis4catsStream,
+    Libraries.redis4catsLogs,
+    Libraries.refinedCore,
+    Libraries.refinedCats,
+    Libraries.newtype,
+    Libraries.skunkCore,
+    Libraries.skunkCirce
+  )
+
+  lazy val test: Seq[ModuleID] = Seq(
+    Libraries.scalaTest               % Test,
+    Libraries.scalaTestPlus           % Test,
+    Libraries.scalaCheck              % Test,
+    Libraries.catsTestkit             % Test,
+    Libraries.catsEffectTest          % Test,
+    Libraries.mockitoCore             % Test,
+    Libraries.mockitoScalatest        % Test,
+    Libraries.redisEmbedded           % Test,
+    Libraries.testContainersScalatest % Test,
+    Libraries.testContainersPostgres  % Test,
+    Libraries.postgresDriver          % Test
+  )
 }
