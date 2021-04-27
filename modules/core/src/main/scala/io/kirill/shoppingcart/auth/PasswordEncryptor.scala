@@ -13,14 +13,14 @@ trait PasswordEncryptor[F[_]] {
 
 object PasswordEncryptor {
 
-  def make[F[_]: Sync](implicit config: AppConfig): F[PasswordEncryptor[F]] =
+  def make[F[_]: Sync](config: AuthConfig): F[PasswordEncryptor[F]] =
     Sync[F].delay {
       new PasswordEncryptor[F] {
         override def hash(password: Password): F[PasswordHash] =
-          Sync[F].delay(password.value.bcrypt(config.auth.passwordSalt)).map(PasswordHash)
+          Sync[F].delay(password.value.bcryptBounded(config.passwordSalt)).map(PasswordHash)
 
         override def isValid(password: Password, passwordHash: PasswordHash): F[Boolean] =
-          Sync[F].fromTry(password.value.isBcryptedSafe(passwordHash.value))
+          Sync[F].fromTry(password.value.isBcryptedSafeBounded(passwordHash.value))
       }
     }
 }

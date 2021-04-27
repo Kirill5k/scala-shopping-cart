@@ -36,5 +36,6 @@ lazy val core = (project in file("modules/core"))
     scalafmtOnCompile := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     Defaults.itSettings,
-    libraryDependencies ++= Dependencies.core ++ Dependencies.test
+    libraryDependencies ++= Dependencies.core ++ Dependencies.test,
+    libraryDependencies += compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full)
   )

@@ -21,7 +21,7 @@ object Application extends IOApp {
         for {
           _      <- logger.info("starting scala-shopping-cart app...")
           health <- Health.make[IO](res)
-          auth   <- Auth.make[IO](res, config)
+          auth   <- Auth.make[IO](res, config.auth)
           shop   <- Shop.make[IO](res, config.shop)
           http   <- Http.make[IO](auth, health, shop)
           _ <- BlazeServerBuilder[IO](ExecutionContext.global)

@@ -1,7 +1,5 @@
 package io.kirill.shoppingcart.auth
 
-import java.util.UUID
-
 import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.jwt._
