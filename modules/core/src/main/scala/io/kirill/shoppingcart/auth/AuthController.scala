@@ -11,7 +11,7 @@ import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.server.{AuthMiddleware, Router}
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection._
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import io.circe.refined._
 import io.kirill.shoppingcart.auth.user.{Password, UserId, Username}
 import io.kirill.shoppingcart.common.errors.AuthTokenNotPresent

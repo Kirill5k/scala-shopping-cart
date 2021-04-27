@@ -3,7 +3,7 @@ package io.kirill.shoppingcart
 import cats.Parallel
 import cats.effect.{Concurrent, Sync, Timer}
 import cats.implicits._
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 
 package object health {
 

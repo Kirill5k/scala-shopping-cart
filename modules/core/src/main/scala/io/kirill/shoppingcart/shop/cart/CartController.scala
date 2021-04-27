@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.shop.cart
 
 import cats.effect.Sync
 import cats.implicits._
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.auth.CommonUser
 import io.kirill.shoppingcart.common.web.RestController

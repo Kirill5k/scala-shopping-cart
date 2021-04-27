@@ -1,5 +1,7 @@
 package io.kirill.shoppingcart
 
+import cats.effect.{Blocker, ContextShift, Sync}
+
 import scala.concurrent.duration.FiniteDuration
 import pureconfig._
 import pureconfig.generic.auto._
@@ -56,6 +58,8 @@ object config {
   )
 
   object AppConfig {
-    implicit val appConfig: AppConfig = ConfigSource.default.loadOrThrow[AppConfig]
+    def load[F[_]: Sync: ContextShift](
+        blocker: Blocker
+    ): F[AppConfig] = ConfigSource.default.loadF[F, AppConfig](blocker)
   }
 }

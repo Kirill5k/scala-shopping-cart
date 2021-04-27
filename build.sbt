@@ -1,24 +1,33 @@
 import Dependencies.Libraries._
 
-ThisBuild / scalaVersion := "2.13.1"
+ThisBuild / scalaVersion := "2.13.5"
 ThisBuild / version := "0.1.0"
-ThisBuild / organization := "io.kirill"
-ThisBuild / organizationName := "kirill"
+ThisBuild / organization := "io.github.kirill5k"
+ThisBuild / organizationName := "kirill5k"
 
-lazy val root = (project in file("."))
-  .settings(
-    name := "shopping-cart"
-  )
-  .aggregate(core)
+lazy val noPublish = Seq(
+  publish := {},
+  publishLocal := {},
+  publishArtifact := false,
+  publish / skip := true
+)
 
 lazy val dockerSettings = Seq(
-  packageName in Docker := "shopping-cart",
-  version in Docker := sys.env.getOrElse("APP_VERSION", version.value),
+  Docker / packageName := "shopping-cart",
+  Docker / version := sys.env.getOrElse("APP_VERSION", version.value),
   dockerBaseImage := "openjdk:11.0.4-jre-slim",
   dockerExposedPorts ++= Seq(8080),
   dockerUpdateLatest := true,
   makeBatScripts := Seq()
 )
+
+lazy val root = project
+  .in(file("."))
+  .settings(noPublish)
+  .settings(
+    name := "shopping-cart"
+  )
+  .aggregate(core)
 
 lazy val core = (project in file("modules/core"))
   .enablePlugins(DockerPlugin, AshScriptPlugin)
@@ -32,9 +41,6 @@ lazy val core = (project in file("modules/core"))
     libraryDependencies ++= Seq(
       pureConfigCore,
       pureConfigCats,
-      catsCore,
-      catsEffect,
-      fs2,
       logback % Runtime,
       log4cats,
       circeCore,

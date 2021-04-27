@@ -2,19 +2,23 @@ import sbt._
 
 object Dependencies {
   object Versions {
-    val cats       = "2.1.1"
-    val pureConfig = "0.12.3"
-    val circe      = "0.13.0"
-    val http4s     = "0.21.3"
-    val mockito    = "1.14.0"
-    val refined    = "0.9.13"
-    val redis4cats = "0.9.6"
-    val skunk      = "0.0.8"
+    val pureConfig    = "0.14.1"
+    val circe         = "0.13.0"
+    val http4s        = "0.21.22"
+    val mockito       = "1.16.37"
+    val refined       = "0.9.24"
+    val redis4cats    = "0.13.1"
+    val skunk         = "0.0.24"
+    val squants       = "1.7.4"
+    val logback       = "1.2.3"
+    val log4cats      = "1.3.0"
+    val http4sJwtAuth = "0.0.6"
+    val bcrypt        = "4.3.0"
 
-    val scalaCheck     = "1.14.3"
-    val scalaTest      = "3.1.1"
-    val scalaTestPlus  = "3.1.1.1"
-    val testContainers = "0.36.1"
+    val scalaCheck     = "1.15.3"
+    val scalaTest      = "3.2.8"
+    val scalaTestPlus  = "3.2.2.0"
+    val testContainers = "0.39.3"
   }
 
   object Libraries {
@@ -27,11 +31,8 @@ object Dependencies {
     def skunk(artifact: String): ModuleID          = "org.tpolecat"          %% artifact % Versions.skunk
     def testContainers(artifact: String): ModuleID = "com.dimafeng"          %% artifact % Versions.testContainers
 
-    val catsCore    = "org.typelevel"    %% "cats-core"              % "2.1.1"
     val catsTestkit = "org.typelevel"    %% "cats-testkit-scalatest" % "1.0.1"
-    val catsEffect  = "org.typelevel"    %% "cats-effect"            % "2.1.2"
     val catsRetry   = "com.github.cb372" %% "cats-retry"             % "1.1.0"
-    val fs2         = "co.fs2"           %% "fs2-core"               % "2.3.0"
 
     val pureConfigCore = pureConfig("pureconfig")
     val pureConfigCats = pureConfig("pureconfig-cats-effect")
@@ -39,20 +40,20 @@ object Dependencies {
     val skunkCore  = skunk("skunk-core")
     val skunkCirce = skunk("skunk-circe")
 
-    val circeCore    = circe("circe-core")
-    val circeGeneric = circe("circe-generic")
+    val circeCore          = circe("circe-core")
+    val circeGeneric       = circe("circe-generic")
     val circeGenericExtras = circe("circe-generic-extras")
-    val circeParser  = circe("circe-parser")
-    val circeRefined = circe("circe-refined")
-    val circeLiteral = circe("circe-literal")
+    val circeParser        = circe("circe-parser")
+    val circeRefined       = circe("circe-refined")
+    val circeLiteral       = circe("circe-literal")
 
     val http4sCore    = http4s("http4s-core")
     val http4sDsl     = http4s("http4s-dsl")
     val http4sServer  = http4s("http4s-blaze-server")
     val http4sClient  = http4s("http4s-blaze-client")
     val http4sCirce   = http4s("http4s-circe")
-    val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % "0.0.4"
-    val bcrypt        = "com.github.t3hnar" %% "scala-bcrypt" % "4.1"
+    val http4sJwtAuth = "dev.profunktor"    %% "http4s-jwt-auth" % Versions.http4sJwtAuth
+    val bcrypt        = "com.github.t3hnar" %% "scala-bcrypt"    % Versions.bcrypt
 
     val refinedCore = refined("refined")
     val refinedCats = refined("refined-cats")
@@ -61,20 +62,20 @@ object Dependencies {
     val redis4catsStream = redis("redis4cats-streams")
     val redis4catsLogs   = redis("redis4cats-log4cats")
 
-    val logback  = "ch.qos.logback"    % "logback-classic" % "1.2.3"
-    val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % "1.0.1"
-    val squants  = "org.typelevel"     %% "squants"        % "1.6.0"
+    val logback  = "ch.qos.logback" % "logback-classic" % Versions.logback
+    val log4cats = "org.typelevel" %% "log4cats-slf4j"  % Versions.log4cats
+    val squants  = "org.typelevel" %% "squants"         % Versions.squants
 
     val scalaCheck    = "org.scalacheck"    %% "scalacheck"      % Versions.scalaCheck
     val scalaTest     = "org.scalatest"     %% "scalatest"       % Versions.scalaTest
     val scalaTestPlus = "org.scalatestplus" %% "scalacheck-1-14" % Versions.scalaTestPlus
 
-    val catsEffectTest   = "com.codecommit" %% "cats-effect-testing-scalatest" % "0.4.0"
+    val catsEffectTest   = "com.codecommit"     %% "cats-effect-testing-scalatest" % "0.4.0"
     val mockitoCore      = mockito("mockito-scala")
     val mockitoScalatest = mockito("mockito-scala-scalatest")
-    val redisEmbedded    = "com.github.sebruck" %% "scalatest-embedded-redis" % "0.4.0"
+    val redisEmbedded    = "com.github.sebruck" %% "scalatest-embedded-redis"      % "0.4.0"
 
-    val postgresDriver          = "postgresql" % "postgresql" % "9.1-901-1.jdbc4"
+    val postgresDriver          = "postgresql" % "postgresql" % "9.1-901.jdbc4"
     val testContainersScalatest = testContainers("testcontainers-scala-scalatest")
     val testContainersPostgres  = testContainers("testcontainers-scala-postgresql")
   }

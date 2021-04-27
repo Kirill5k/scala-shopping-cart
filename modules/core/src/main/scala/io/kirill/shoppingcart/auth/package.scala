@@ -6,7 +6,7 @@ import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.JwtAuthMiddleware
 import dev.profunktor.auth.jwt.{JwtAuth, JwtSymmetricAuth, JwtToken}
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import io.kirill.shoppingcart.auth.user.{User, UserCacheStore, UserRepository}
 import io.kirill.shoppingcart.config.AppConfig
 import pdi.jwt.JwtAlgorithm
@@ -32,8 +32,9 @@ package object auth {
 
   object Auth {
     def make[F[_]: Sync: Logger](
-        res: Resources[F]
-    )(implicit config: AppConfig): F[Auth[F]] = {
+        res: Resources[F],
+        config: AppConfig
+    ): F[Auth[F]] = {
 
       val adminJwtAuth: AdminJwtAuth =
         AdminJwtAuth(JwtAuth.hmac(config.auth.adminJwt.secretKey, JwtAlgorithm.HS256))

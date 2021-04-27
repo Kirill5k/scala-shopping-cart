@@ -9,8 +9,8 @@ import dev.profunktor.redis4cats.connection.{RedisClient, RedisURI}
 import dev.profunktor.redis4cats.domain.RedisCodec
 import dev.profunktor.redis4cats.interpreter.Redis
 import dev.profunktor.redis4cats.log4cats._
-import io.chrisdavenport.log4cats.Logger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 trait RedisSpec extends CatsIOSpec with EmbeddedRedis {
   implicit val ec                 = scala.concurrent.ExecutionContext.global

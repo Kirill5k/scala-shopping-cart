@@ -10,7 +10,7 @@ import io.circe.refined._
 import cats.implicits._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection.NonEmpty
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import io.kirill.shoppingcart.auth.AdminUser
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.common.json._

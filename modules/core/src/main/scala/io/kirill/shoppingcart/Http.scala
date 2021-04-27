@@ -14,9 +14,9 @@ import org.http4s.server.middleware._
 import scala.concurrent.duration.FiniteDuration
 
 final class Http[F[_]: Concurrent: Timer] private (
-    auth: Auth[F],
-    health: Health[F],
-    shop: Shop[F]
+    private val auth: Auth[F],
+    private val health: Health[F],
+    private val shop: Shop[F]
 ) {
 
   private val routes: HttpRoutes[F] =

@@ -4,8 +4,8 @@ import java.util.UUID
 
 import cats.data.Kleisli
 import cats.effect.IO
-import io.chrisdavenport.log4cats.Logger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import io.circe._
 import io.circe.syntax._
 import io.circe.generic.auto._

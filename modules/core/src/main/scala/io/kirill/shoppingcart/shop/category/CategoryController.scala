@@ -4,7 +4,7 @@ import cats.effect.Sync
 import cats.implicits._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection.NonEmpty
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import io.circe.generic.auto._
 import io.circe.refined._
 import io.kirill.shoppingcart.auth.AdminUser

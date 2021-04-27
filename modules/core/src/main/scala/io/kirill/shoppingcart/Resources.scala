@@ -2,34 +2,27 @@ package io.kirill.shoppingcart
 
 import cats.effect.{ConcurrentEffect, ContextShift, Resource}
 import cats.implicits._
-import dev.profunktor.redis4cats.algebra.RedisCommands
-import dev.profunktor.redis4cats.connection.{RedisClient, RedisURI}
-import dev.profunktor.redis4cats.domain.RedisCodec
-import dev.profunktor.redis4cats.interpreter.Redis
+import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import dev.profunktor.redis4cats.log4cats._
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import io.kirill.shoppingcart.config.AppConfig
 import natchez.Trace.Implicits.noop
 import skunk.Session
 
-final case class Resources[F[_]](
-    postgres: Resource[F, Session[F]],
-    redis: RedisCommands[F, String, String]
+final class Resources[F[_]] private (
+    val postgres: Resource[F, Session[F]],
+    val redis: RedisCommands[F, String, String]
 )
 
 object Resources {
 
   private def makeRedis[F[_]: ConcurrentEffect: ContextShift: Logger](
-      implicit config: AppConfig
+      config: AppConfig
   ): Resource[F, RedisCommands[F, String, String]] =
-    for {
-      uri    <- Resource.liftF(RedisURI.make[F](s"redis://${config.redis.host}:${config.redis.port}"))
-      client <- RedisClient[F](uri)
-      redis  <- Redis[F, String, String](client, RedisCodec.Utf8)
-    } yield redis
+    Redis[F].utf8(s"redis://${config.redis.host}:${config.redis.port}")
 
   private def makePostgres[F[_]: ConcurrentEffect: ContextShift: Logger](
-      implicit config: AppConfig
+      config: AppConfig
   ): Resource[F, Resource[F, Session[F]]] =
     Session.pooled[F](
       host = config.postgres.host,
@@ -41,7 +34,7 @@ object Resources {
     )
 
   def make[F[_]: ConcurrentEffect: ContextShift: Logger](
-      implicit config: AppConfig
+      config: AppConfig
   ): Resource[F, Resources[F]] =
-    (makePostgres, makeRedis).mapN(Resources.apply[F])
+    (makePostgres(config), makeRedis(config)).mapN((p, r) => new Resources[F](p, r))
 }
