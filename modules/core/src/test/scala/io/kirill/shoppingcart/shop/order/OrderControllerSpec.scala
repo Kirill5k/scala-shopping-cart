@@ -7,14 +7,14 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.literal._
 import io.kirill.shoppingcart.ControllerSpec
-import io.kirill.shoppingcart.auth.user.UserId
+import io.kirill.shoppingcart.auth.user.User
 import io.kirill.shoppingcart.common.errors.{ItemNotFound, OrderDoesNotBelongToThisUser, OrderNotFound}
 import io.kirill.shoppingcart.common.json._
-import io.kirill.shoppingcart.common.web.RestController.ErrorResponse
+import io.kirill.shoppingcart.common.web.ErrorResponse
 import io.kirill.shoppingcart.shop.cart.{Cart, CartItem, CartService, Quantity}
-import io.kirill.shoppingcart.shop.item.{ItemBuilder, ItemId, ItemService}
+import io.kirill.shoppingcart.shop.item.{ItemBuilder, Item, ItemService}
 import io.kirill.shoppingcart.shop.order.OrderController.{OrderCheckoutResponse, OrderResponse}
-import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentId, PaymentService}
+import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentService}
 import eu.timepit.refined.auto._
 import org.http4s._
 import org.http4s.circe._
@@ -24,15 +24,14 @@ import squants.market.GBP
 import scala.concurrent.ExecutionContext
 
 class OrderControllerSpec extends ControllerSpec {
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.Implicits.global)
 
-  val paymentId = PaymentId(UUID.randomUUID())
+  val paymentId = Payment.Id(UUID.randomUUID())
 
-  val item1Id = ItemId(UUID.fromString("607995e0-8e3a-11ea-bc55-0242ac130003"))
+  val item1Id = Item.Id(UUID.fromString("607995e0-8e3a-11ea-bc55-0242ac130003"))
   val item1   = ItemBuilder.item("item-1", GBP(14.99)).copy(id = item1Id)
   val item2   = ItemBuilder.item("item-2", GBP(5.99))
 
-  val order1Id = OrderId(UUID.fromString("666665e0-8e3a-11ea-bc55-0242ac130003"))
+  val order1Id = Order.Id(UUID.fromString("666665e0-8e3a-11ea-bc55-0242ac130003"))
   val order1   = OrderBuilder.order.copy(id = order1Id)
 
   "An OrderController" should {
@@ -42,7 +41,7 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(os.findBy(any[UserId])).thenReturn(fs2.Stream(order1).lift[IO])
+        when(os.findBy(any[User.Id])).thenReturn(fs2.Stream(order1).lift[IO])
 
         val request                    = Request[IO](uri = uri"/orders", method = Method.GET)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -65,7 +64,7 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(os.get(any[UserId], any[OrderId])).thenReturn(IO.pure(order1))
+        when(os.get(any[User.Id], any[Order.Id])).thenReturn(IO.pure(order1))
 
         val request                    = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -85,7 +84,7 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(os.get(any[UserId], any[OrderId])).thenReturn(IO.raiseError(OrderNotFound(order1Id)))
+        when(os.get(any[User.Id], any[Order.Id])).thenReturn(IO.raiseError(OrderNotFound(order1Id)))
 
         val request                    = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -102,7 +101,7 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(os.get(any[UserId], any[OrderId]))
+        when(os.get(any[User.Id], any[Order.Id]))
           .thenReturn(IO.raiseError(OrderDoesNotBelongToThisUser(order1Id, authedUser.value.id)))
 
         val request                    = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
@@ -118,12 +117,12 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        val cart    = Cart(List(CartItem(item1.id, Quantity(2)), CartItem(item2.id, Quantity(1))))
-        val orderId = OrderId(UUID.randomUUID())
-        when(cs.get(any[UserId])).thenReturn(IO.pure(cart))
-        when(is.findById(any[ItemId])).thenReturn(IO.pure(item1)).andThen(IO.pure(item2))
+        val cart    = Cart(List(CartItem(item1.id, Item.Quantity(2)), CartItem(item2.id, Quantity(1))))
+        val orderId = Order.Id(UUID.randomUUID())
+        when(cs.get(any[User.Id])).thenReturn(IO.pure(cart))
+        when(is.findById(any[Item.Id])).thenReturn(IO.pure(item1)).andThen(IO.pure(item2))
         when(os.create(any[OrderCheckout])).thenReturn(IO.pure(orderId))
-        when(cs.delete(any[UserId])).thenReturn(IO.pure(()))
+        when(cs.delete(any[User.Id])).thenReturn(IO.pure(()))
 
         val request                    = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -147,8 +146,8 @@ class OrderControllerSpec extends ControllerSpec {
         val controller       = new OrderController[IO](os, cs, is, ps)
 
         val cart = Cart(List(CartItem(item1.id, Quantity(1)), CartItem(item2.id, Quantity(2))))
-        when(cs.get(any[UserId])).thenReturn(IO.pure(cart))
-        when(is.findById(any[ItemId])).thenReturn(IO.raiseError(ItemNotFound(item1.id)))
+        when(cs.get(any[User.Id])).thenReturn(IO.pure(cart))
+        when(is.findById(any[Item.Id])).thenReturn(IO.raiseError(ItemNotFound(item1.id)))
 
         val request                    = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -167,7 +166,7 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(cs.get(any[UserId])).thenReturn(IO.pure(Cart(Nil)))
+        when(cs.get(any[User.Id])).thenReturn(IO.pure(Cart(Nil)))
 
         val request                    = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -183,7 +182,7 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(os.get(any[UserId], any[OrderId])).thenReturn(IO.pure(order1))
+        when(os.get(any[User.Id], any[Order.Id])).thenReturn(IO.pure(order1))
         when(ps.process(any[Payment])).thenReturn(IO.pure(paymentId))
         when(os.update(any[OrderPayment])).thenReturn(IO.pure(()))
 
@@ -201,7 +200,7 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(os.get(any[UserId], any[OrderId])).thenReturn(IO.raiseError(OrderNotFound(order1Id)))
+        when(os.get(any[User.Id], any[Order.Id])).thenReturn(IO.raiseError(OrderNotFound(order1Id)))
 
         val request = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003/payment", method = Method.POST)
           .withEntity(paymentReqJson())
@@ -219,7 +218,7 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        when(os.get(any[UserId], any[OrderId]))
+        when(os.get(any[User.Id], any[Order.Id]))
           .thenReturn(IO.raiseError(OrderDoesNotBelongToThisUser(order1Id, authedUser.value.id)))
 
         val request = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003/payment", method = Method.POST)

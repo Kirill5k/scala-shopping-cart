@@ -4,18 +4,17 @@ import java.util.UUID
 
 import cats.effect.IO
 import io.kirill.shoppingcart.PostgresRepositorySpec
-import io.kirill.shoppingcart.auth.user.{PasswordHash, UserId, UserRepository, Username}
-import io.kirill.shoppingcart.shop.cart.Quantity
-import io.kirill.shoppingcart.shop.item.ItemId
-import io.kirill.shoppingcart.shop.payment.PaymentId
+import io.kirill.shoppingcart.auth.user.{User, UserRepository}
+import io.kirill.shoppingcart.shop.item.Item
+import io.kirill.shoppingcart.shop.payment.Payment
 import squants.market.GBP
 
 class OrderRepositorySpec extends PostgresRepositorySpec {
 
   val orderItems: Seq[OrderItem] = List(
-    OrderItem(ItemId(UUID.randomUUID()), GBP(BigDecimal(10)), Quantity(1)),
-    OrderItem(ItemId(UUID.randomUUID()), GBP(BigDecimal(5.55)), Quantity(4)),
-    OrderItem(ItemId(UUID.randomUUID()), GBP(BigDecimal(9.99)), Quantity(2))
+    OrderItem(Item.Id(UUID.randomUUID()), GBP(BigDecimal(10)), Quantity(1)),
+    OrderItem(Item.Id(UUID.randomUUID()), GBP(BigDecimal(5.55)), Quantity(4)),
+    OrderItem(Item.Id(UUID.randomUUID()), GBP(BigDecimal(9.99)), Quantity(2))
   )
 
   "An OrderRepository" - {
@@ -30,7 +29,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
         result.asserting { order =>
           order.items must be(orderItems)
           order.totalPrice must be(GBP(BigDecimal(25.54)))
-          order.status must be(OrderStatus.awaitingPayment)
+          order.status must be(Order.AwaitingPayment)
           order.paymentId must be(None)
         }
       }
@@ -38,7 +37,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
       "return empty option if order does not exist" in {
         val orderRepository = OrderRepository.make(session)
 
-        val result = orderRepository.flatMap(r => r.find(OrderId(UUID.randomUUID())))
+        val result = orderRepository.flatMap(r => r.find(Order.Id(UUID.randomUUID())))
 
         result.asserting(_ must be(None))
       }
@@ -46,7 +45,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
 
     "update" - {
       "update payment id on the existing order" in {
-        val paymentId = PaymentId(UUID.randomUUID())
+        val paymentId = Payment.Id(UUID.randomUUID())
         val result = for {
           r   <- OrderRepository.make(session)
           oid <- insertTestOrder(r)
@@ -55,7 +54,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
         } yield o.get
 
         result.asserting { order =>
-          order.status must be(OrderStatus.processing)
+          order.status must be(Order.Processing)
           order.paymentId must be(Some(paymentId))
         }
       }
@@ -80,21 +79,21 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
       "return empty list if no matches" in {
         val orderRepository = OrderRepository.make(session)
 
-        orderRepository.flatMap(_.findBy(UserId(UUID.randomUUID())).compile.toList).asserting(_ must be(Nil))
+        orderRepository.flatMap(_.findBy(User.Id(UUID.randomUUID())).compile.toList).asserting(_ must be(Nil))
       }
     }
   }
 
-  def insertTestUser: IO[UserId] =
+  def insertTestUser: IO[User.Id] =
     for {
       r   <- UserRepository.make(session)
-      u   <- r.findByName(Username("test-user"))
-      uid <- u.fold(r.create(Username("test-user"), PasswordHash("password")))(x => IO.pure(x.id))
+      u   <- r.findByName(User.Name("test-user"))
+      uid <- u.fold(r.create(User.Name("test-user"), User.PasswordHash("password")))(x => IO.pure(x.id))
     } yield uid
 
-  def insertTestOrder(repository: OrderRepository[IO]): IO[OrderId] =
+  def insertTestOrder(repository: OrderRepository[IO]): IO[Order.Id] =
     for {
       uid <- insertTestUser
-      oid <- repository.create(OrderCheckout(uid, orderItems, GBP(BigDecimal(25.54))))
+      oid <- repository.create(OrderCheckout(uid, orderItems.toList, GBP(BigDecimal(25.54))))
     } yield oid
 }

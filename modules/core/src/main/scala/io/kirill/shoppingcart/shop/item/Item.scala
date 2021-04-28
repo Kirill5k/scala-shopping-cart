@@ -3,32 +3,35 @@ package io.kirill.shoppingcart.shop.item
 import io.estatico.newtype.macros.newtype
 
 import java.util.UUID
-import io.kirill.shoppingcart.shop.brand.{Brand, BrandId}
-import io.kirill.shoppingcart.shop.category.{Category, CategoryId}
+import io.kirill.shoppingcart.shop.brand.Brand
+import io.kirill.shoppingcart.shop.category.Category
 import squants.market.Money
 
-@newtype case class ItemId(value: UUID)
-@newtype case class ItemName(value: String)
-@newtype case class ItemDescription(value: String)
-
 final case class Item(
-    id: ItemId,
-    name: ItemName,
-    description: ItemDescription,
+    id: Item.Id,
+    name: Item.Name,
+    description: Item.Description,
     price: Money,
     brand: Brand,
     category: Category
 )
 
 final case class CreateItem(
-    name: ItemName,
-    description: ItemDescription,
+    name: Item.Name,
+    description: Item.Description,
     price: Money,
-    brandId: BrandId,
-    categoryId: CategoryId
+    brandId: Brand.Id,
+    categoryId: Category.Id
 )
 
 final case class UpdateItem(
-    id: ItemId,
+    id: Item.Id,
     price: Money
 )
+
+object Item {
+  @newtype case class Id(value: UUID)
+  @newtype case class Name(value: String)
+  @newtype case class Description(value: String)
+  @newtype case class Quantity(value: Int)
+}

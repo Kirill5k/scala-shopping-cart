@@ -13,13 +13,13 @@ class CategoryRepositorySpec extends PostgresRepositorySpec {
 
       val allCategories = for {
         r      <- repository
-        _      <- r.create(CategoryName("foo"))
+        _      <- r.create(Category.Name("foo"))
         brands <- r.findAll.compile.toList
       } yield brands
 
       allCategories.asserting { brands =>
         brands must have size 1
-        brands.head.name must be(CategoryName("foo"))
+        brands.head.name must be(Category.Name("foo"))
       }
     }
 
@@ -28,8 +28,8 @@ class CategoryRepositorySpec extends PostgresRepositorySpec {
 
       val error = for {
         r <- repository
-        _ <- r.create(CategoryName("b1"))
-        e <- r.create(CategoryName("b1"))
+        _ <- r.create(Category.Name("b1"))
+        e <- r.create(Category.Name("b1"))
       } yield e
 
       error.assertThrows[UniqueViolation]

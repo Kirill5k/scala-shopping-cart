@@ -1,9 +1,8 @@
 package io.kirill.shoppingcart
 
 import java.util.UUID
-
 import cats.data.Kleisli
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import io.circe._
@@ -19,17 +18,20 @@ import org.mockito.scalatest.MockitoSugar
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchersSugar with Matchers {
-  implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+import scala.concurrent.ExecutionContext
 
-  val authedUser = CommonUser(User(UserId(UUID.randomUUID()), Username("Boris"), Some(PasswordHash("password"))))
-  val adminUser  = AdminUser(User(UserId(UUID.randomUUID()), Username("admin"), None))
+trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchersSugar with Matchers {
+  implicit val logger: Logger[IO]   = Slf4jLogger.getLogger[IO]
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
+  val authedUser = CommonUser(User(User.Id(UUID.randomUUID()), User.Name("Boris"), Some(User.PasswordHash("password"))))
+  val adminUser  = AdminUser(User(User.Id(UUID.randomUUID()), User.Name("admin"), None))
 
   val authMiddleware: AuthMiddleware[IO, CommonUser] = AuthMiddleware(Kleisli.pure(authedUser))
   val adminMiddleware: AuthMiddleware[IO, AdminUser] = AuthMiddleware(Kleisli.pure(adminUser))
 
-  def verifyResponse[A: Encoder](actual: IO[Response[IO]], expectedStatus: Status, expectedBody: Option[A] = None)(
-      implicit ev: EntityDecoder[IO, A]
+  def verifyResponse[A: Encoder](actual: IO[Response[IO]], expectedStatus: Status, expectedBody: Option[A] = None)(implicit
+      ev: EntityDecoder[IO, A]
   ): Unit = {
     val actualResp = actual.unsafeRunSync
 

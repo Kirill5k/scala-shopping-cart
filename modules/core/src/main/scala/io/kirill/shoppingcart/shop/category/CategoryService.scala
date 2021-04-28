@@ -6,7 +6,7 @@ import io.kirill.shoppingcart.common.errors.{CategoryAlreadyExists, UniqueViolat
 
 trait CategoryService[F[_]] {
   def findAll: fs2.Stream[F, Category]
-  def create(name: CategoryName): F[CategoryId]
+  def create(name: Category.Name): F[Category.Id]
 }
 
 final private class LiveCategoryService[F[_]: Sync](
@@ -16,7 +16,7 @@ final private class LiveCategoryService[F[_]: Sync](
   override def findAll: fs2.Stream[F, Category] =
     categoryRepository.findAll
 
-  override def create(name: CategoryName): F[CategoryId] =
+  override def create(name: Category.Name): F[Category.Id] =
     categoryRepository.create(name).handleErrorWith {
       case UniqueViolation(_) => Sync[F].raiseError(CategoryAlreadyExists(name))
     }

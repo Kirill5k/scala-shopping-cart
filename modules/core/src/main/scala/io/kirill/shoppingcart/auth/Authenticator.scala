@@ -5,7 +5,7 @@ import cats.implicits._
 import dev.profunktor.auth.jwt._
 import io.circe.parser.{decode => jsonDecode}
 import io.circe.generic.auto._
-import io.kirill.shoppingcart.auth.user.{User, UserCacheStore, UserId, Username}
+import io.kirill.shoppingcart.auth.user.{User, UserCacheStore}
 import pdi.jwt.JwtClaim
 
 sealed trait Authenticator[F[_], U] {
@@ -35,6 +35,6 @@ object Authenticator {
     for {
       claim      <- jwtDecode[F](adminToken, adminJwtAuth.value)
       adminClaim <- Sync[F].fromEither(jsonDecode[AdminClaimContent](claim.content))
-      adminUser = AdminUser(User(UserId(adminClaim.id), Username("admin"), None))
+      adminUser = AdminUser(User(User.Id(adminClaim.id), User.Name("admin"), None))
     } yield new AdminUserAuthenticator[F](adminToken, adminUser)
 }

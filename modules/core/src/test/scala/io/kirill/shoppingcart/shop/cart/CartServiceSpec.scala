@@ -3,14 +3,14 @@ package io.kirill.shoppingcart.shop.cart
 import java.util.UUID
 
 import io.kirill.shoppingcart.RedisSpec
-import io.kirill.shoppingcart.auth.user.UserId
-import io.kirill.shoppingcart.shop.item.ItemId
+import io.kirill.shoppingcart.auth.user.User
+import io.kirill.shoppingcart.shop.item.Item
 
 class CartServiceSpec extends RedisSpec {
 
-  val userId  = UserId(UUID.randomUUID())
-  val itemId1 = ItemId(UUID.randomUUID())
-  val itemId2 = ItemId(UUID.randomUUID())
+  val userId  = User.Id(UUID.randomUUID())
+  val itemId1 = Item.Id(UUID.randomUUID())
+  val itemId2 = Item.Id(UUID.randomUUID())
 
   "A RedisCartService" - {
 
@@ -20,13 +20,13 @@ class CartServiceSpec extends RedisSpec {
           val result = stringCommands(port).use { r =>
             for {
               service <- CartService.redisCartService(r)
-              _       <- service.add(userId, Cart(List(CartItem(itemId1, Quantity(4)))))
-              _       <- service.add(userId, Cart(List(CartItem(itemId1, Quantity(4)), CartItem(itemId2, Quantity(4)))))
+              _       <- service.add(userId, Cart(List(CartItem(itemId1, Item.Quantity(4)))))
+              _       <- service.add(userId, Cart(List(CartItem(itemId1, Item.Quantity(4)), CartItem(itemId2, Quantity(4)))))
               cart    <- service.get(userId)
             } yield cart
           }
 
-          result.asserting(_ must be(Cart(List(CartItem(itemId1, Quantity(8)), CartItem(itemId2, Quantity(4))))))
+          result.asserting(_ must be(Cart(List(CartItem(itemId1, Item.Quantity(8)), CartItem(itemId2, Quantity(4))))))
         }
       }
     }
@@ -44,7 +44,7 @@ class CartServiceSpec extends RedisSpec {
               } yield cart
           )
 
-          result.asserting(_ must be(Cart(List(CartItem(itemId1, Quantity(2))))))
+          result.asserting(_ must be(Cart(List(CartItem(itemId1, Item.Quantity(2))))))
         }
       }
 

@@ -38,7 +38,7 @@ final class OrderController[F[_]: Sync: Logger](
         }
       case GET -> Root / UUIDVar(orderId) as user =>
         withErrorHandling {
-          Ok(orderService.get(user.value.id, OrderId(orderId)).map(OrderResponse.from))
+          Ok(orderService.get(user.value.id, Order.Id(orderId)).map(OrderResponse.from))
         }
       case POST -> Root / "checkout" as user =>
         withErrorHandling {
@@ -56,7 +56,7 @@ final class OrderController[F[_]: Sync: Logger](
         withErrorHandling {
           for {
             paymentReq <- authedReq.req.decodeR[OrderPaymentRequest]
-            order      <- orderService.get(user.value.id, OrderId(orderId))
+            order      <- orderService.get(user.value.id, Order.Id(orderId))
             pid        <- paymentService.process(Payment(order, paymentReq.card))
             _          <- orderService.update(OrderPayment(order.id, pid))
             res        <- NoContent()
@@ -72,11 +72,11 @@ object OrderController {
 
   final case class OrderPaymentRequest(card: Card)
 
-  final case class OrderCheckoutResponse(orderId: OrderId)
+  final case class OrderCheckoutResponse(orderId: Order.Id)
 
   final case class OrderResponse(
-      id: OrderId,
-      status: OrderStatus,
+      id: Order.Id,
+      status: Order.Status,
       items: List[OrderItem],
       totalPrice: Money
   )

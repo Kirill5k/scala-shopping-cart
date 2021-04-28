@@ -5,7 +5,7 @@ import java.util.UUID
 import cats.effect.IO
 import cats.implicits._
 import dev.profunktor.auth.jwt.{JwtAuth, JwtToken}
-import io.kirill.shoppingcart.auth.user.{User, UserBuilder, UserCacheStore, UserId, Username}
+import io.kirill.shoppingcart.auth.user.{User, UserBuilder, UserCacheStore}
 import org.mockito.scalatest.AsyncMockitoSugar
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -43,7 +43,7 @@ class AuthenticatorSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSug
 
       result
         .unsafeToFuture()
-        .map(_ must be(Some(AdminUser(User(UserId(UUID.fromString("c552ab46-96e1-11ea-bb37-0242ac130002")), Username("admin"), None)))))
+        .map(_ must be(Some(AdminUser(User(User.Id(UUID.fromString("c552ab46-96e1-11ea-bb37-0242ac130002")), User.Name("admin"), None)))))
     }
   }
 }

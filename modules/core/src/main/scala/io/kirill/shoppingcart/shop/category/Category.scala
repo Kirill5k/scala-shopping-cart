@@ -4,7 +4,9 @@ import io.estatico.newtype.macros.newtype
 
 import java.util.UUID
 
-@newtype case class CategoryId(value: UUID)
-@newtype case class CategoryName(value: String)
+final case class Category(id: Category.Id, name: Category.Name)
 
-final case class Category(id: CategoryId, name: CategoryName)
+object Category {
+  @newtype case class Id(value: UUID)
+  @newtype case class Name(value: String)
+}

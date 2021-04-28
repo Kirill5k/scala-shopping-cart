@@ -1,44 +1,34 @@
 package io.kirill.shoppingcart.shop.item
 
-import java.util.UUID
-
-import cats.data.Validated.{Invalid, Valid}
 import cats.effect.Sync
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.refined._
 import cats.implicits._
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.collection.NonEmpty
-import org.typelevel.log4cats.Logger
+import eu.timepit.refined.types.string.NonEmptyString
+import io.circe.generic.auto._
+import io.estatico.newtype.macros.newtype
 import io.kirill.shoppingcart.auth.AdminUser
 import io.kirill.shoppingcart.common.web.RestController
-import io.kirill.shoppingcart.common.json._
-import io.kirill.shoppingcart.shop.brand.{BrandId, BrandName}
-import io.kirill.shoppingcart.shop.category.{CategoryId, CategoryName}
-import org.http4s.{AuthedRoutes, HttpRoutes, ParseFailure, QueryParamDecoder}
-import org.http4s.dsl.impl.OptionalValidatingQueryParamDecoderMatcher
+import io.kirill.shoppingcart.shop.brand.Brand
+import io.kirill.shoppingcart.shop.category.{Category}
 import org.http4s.server.{AuthMiddleware, Router}
+import org.http4s.{AuthedRoutes, HttpRoutes}
+import org.typelevel.log4cats.Logger
 import squants.Money
 
 final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) extends RestController[F] {
-  import RestController._
   import ItemController._
+
+  object BrandQueryParam extends OptionalQueryParamDecoderMatcher[BrandParam]("brand")
 
   private val prefixPath = "/items"
 
   private val publicHttpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root / UUIDVar(itemId) =>
       withErrorHandling {
-        Ok(itemService.findById(ItemId(itemId)).map(ItemResponse.from))
+        Ok(itemService.findById(Item.Id(itemId)).map(ItemResponse.from))
       }
-    case GET -> Root :? ItemQueryParams(brand) =>
+    case GET -> Root :? BrandQueryParam(brand) =>
       withErrorHandling {
-        brand match {
-          case Some(Invalid(errors)) => BadRequest(errors.map(_.details).mkString_(","))
-          case Some(Valid(brand))    => Ok(itemService.findBy(brand.toDomain).map(ItemResponse.from).compile.toList)
-          case None                  => Ok(itemService.findAll.map(ItemResponse.from).compile.toList)
-        }
+        Ok(brand.fold(itemService.findAll.map(ItemResponse.from))(b => itemService.findBy(b.toDomain).map(ItemResponse.from)))
       }
   }
 
@@ -46,16 +36,16 @@ final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) exte
     case adminReq @ PUT -> Root / UUIDVar(itemId) as _ =>
       withErrorHandling {
         for {
-          update <- adminReq.req.decodeR[ItemUpdateRequest]
-          _      <- itemService.update(UpdateItem(ItemId(itemId), update.price))
+          update <- adminReq.req.as[ItemUpdateRequest]
+          _      <- itemService.update(UpdateItem(Item.Id(itemId), update.price))
           res    <- NoContent()
         } yield res
       }
     case adminReq @ POST -> Root as _ =>
       withErrorHandling {
         for {
-          r <- adminReq.req.decodeR[ItemCreateRequest]
-          item = CreateItem(ItemName(r.name.value), ItemDescription(r.description.value), r.price, r.brandId, r.categoryId)
+          r <- adminReq.req.as[ItemCreateRequest]
+          item = CreateItem(Item.Name(r.name.value), Item.Description(r.description.value), r.price, r.brandId, r.categoryId)
           id  <- itemService.create(item)
           res <- Created(ItemCreateResponse(id))
         } yield res
@@ -70,23 +60,17 @@ final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) exte
 }
 
 object ItemController {
-  final case class BrandParam(value: String) extends AnyVal {
-    def toDomain: BrandName = BrandName(value.toLowerCase.capitalize)
+  @newtype case class BrandParam(value: NonEmptyString) {
+    def toDomain: Brand.Name = Brand.Name(value.value.capitalize)
   }
 
-  implicit val brandParamDecoder: QueryParamDecoder[BrandParam] = QueryParamDecoder[String]
-    .emap(b => Either.cond(!b.isBlank, b, ParseFailure(b, "Brand must not be blank")))
-    .map(BrandParam.apply)
-
-  object ItemQueryParams extends OptionalValidatingQueryParamDecoderMatcher[BrandParam]("brand")
-
   final case class ItemResponse(
-      id: ItemId,
-      name: ItemName,
-      description: ItemDescription,
+      id: Item.Id,
+      name: Item.Name,
+      description: Item.Description,
       price: Money,
-      brand: BrandName,
-      category: CategoryName
+      brand: Brand.Name,
+      category: Category.Name
   )
 
   object ItemResponse {
@@ -103,17 +87,15 @@ object ItemController {
 
   final case class ItemUpdateRequest(price: Money)
 
-  type NonEmptyString = String Refined NonEmpty
-
   final case class ItemCreateRequest(
       name: NonEmptyString,
       description: NonEmptyString,
       price: Money,
-      brandId: BrandId,
-      categoryId: CategoryId
+      brandId: Brand.Id,
+      categoryId: Category.Id
   )
 
-  final case class ItemCreateResponse(itemId: ItemId)
+  final case class ItemCreateResponse(itemId: Item.Id)
 
   def make[F[_]: Sync: Logger](is: ItemService[F]): F[ItemController[F]] =
     Sync[F].delay(new ItemController[F](is))

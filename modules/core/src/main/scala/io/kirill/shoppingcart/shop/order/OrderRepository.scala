@@ -5,10 +5,10 @@ import java.util.UUID
 import cats.effect.{Resource, Sync}
 import cats.implicits._
 import io.circe.generic.auto._
-import io.kirill.shoppingcart.auth.user.UserId
+import io.kirill.shoppingcart.auth.user.User
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.common.persistence.Repository
-import io.kirill.shoppingcart.shop.payment.PaymentId
+import io.kirill.shoppingcart.shop.payment.Payment
 import skunk._
 import skunk.implicits._
 import skunk.codec.all._
@@ -16,9 +16,9 @@ import skunk.circe.codec.all._
 import squants.market.GBP
 
 trait OrderRepository[F[_]] extends Repository[F, Order] {
-  def findBy(userId: UserId): fs2.Stream[F, Order]
-  def find(id: OrderId): F[Option[Order]]
-  def create(order: OrderCheckout): F[OrderId]
+  def findBy(userId: User.Id): fs2.Stream[F, Order]
+  def find(id: Order.Id): F[Option[Order]]
+  def create(order: OrderCheckout): F[Order.Id]
   def update(order: OrderPayment): F[Unit]
 }
 
@@ -27,16 +27,16 @@ final private class PostgresOrderRepository[F[_]: Sync](
 ) extends OrderRepository[F] {
   import OrderRepository._
 
-  def findBy(userId: UserId): fs2.Stream[F, Order] =
+  def findBy(userId: User.Id): fs2.Stream[F, Order] =
     findManyBy(selectByUserId, userId.value)
 
-  def find(id: OrderId): F[Option[Order]] =
+  def find(id: Order.Id): F[Option[Order]] =
     findOneBy(selectById, id.value)
 
-  def create(order: OrderCheckout): F[OrderId] =
+  def create(order: OrderCheckout): F[Order.Id] =
     run { session =>
       session.prepare(insert).use { cmd =>
-        val orderId = OrderId(UUID.randomUUID())
+        val orderId = Order.Id(UUID.randomUUID())
         cmd.execute(orderId ~ order).map(_ => orderId)
       }
     }
@@ -49,10 +49,10 @@ object OrderRepository {
   private[order] val decoder: Decoder[Order] =
     (uuid ~ varchar ~ uuid ~ uuid.opt ~ jsonb[Seq[OrderItem]] ~ numeric.map(GBP.apply)).map {
       case oid ~ status ~ uid ~ pid ~ items ~ total =>
-        Order(OrderId(oid), OrderStatus(status), UserId(uid), pid.map(PaymentId), items, total)
+        Order(Order.Id(oid), Order.Status(status), User.Id(uid), pid.map(Payment.Id), items.toList, total)
     }
 
-  private[order] val encoder: Encoder[OrderId ~ OrderCheckout] =
+  private[order] val encoder: Encoder[Order.Id ~ OrderCheckout] =
     (uuid ~ varchar ~ uuid ~ uuid.opt ~ jsonb[Seq[OrderItem]] ~ numeric).contramap {
       case id ~ o =>
         id.value ~ o.status.value ~ o.userId.value ~ None ~ o.items ~ o.totalPrice.value
@@ -70,7 +70,7 @@ object OrderRepository {
          WHERE id = $uuid
          """.query(decoder)
 
-  private[order] val insert: Command[OrderId ~ OrderCheckout] =
+  private[order] val insert: Command[Order.Id ~ OrderCheckout] =
     sql"""
          INSERT INTO orders
          VALUES ($encoder)

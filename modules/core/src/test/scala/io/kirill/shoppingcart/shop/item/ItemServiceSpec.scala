@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.shop.item
 
 import cats.effect.IO
 import io.kirill.shoppingcart.common.errors.ItemNotFound
-import io.kirill.shoppingcart.shop.brand.BrandName
+import io.kirill.shoppingcart.shop.brand.Brand.Name
 import org.mockito.scalatest.AsyncMockitoSugar
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -32,9 +32,9 @@ class ItemServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
       "should stream items by brand" in {
         val result = for {
           repo <- repoMock
-          _ = when(repo.findBy(BrandName("brand"))).thenReturn(fs2.Stream(item1, item2).lift[IO])
+          _ = when(repo.findBy(Brand.Name("brand"))).thenReturn(fs2.Stream(item1, item2).lift[IO])
           service <- ItemService.make(repo)
-          items   <- service.findBy(BrandName("brand")).compile.toList
+          items   <- service.findBy(Brand.Name("brand")).compile.toList
         } yield items
 
         result.unsafeToFuture().map(_ must be(List(item1, item2)))
@@ -71,7 +71,7 @@ class ItemServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
       "should update item" in {
         val result = for {
           repo <- repoMock
-          _ = when(repo.exists(any[ItemId])).thenReturn(IO.pure(true))
+          _ = when(repo.exists(any[Item.Id])).thenReturn(IO.pure(true))
           _ = when(repo.update(any[UpdateItem])).thenReturn(IO.unit)
           service <- ItemService.make(repo)
           res     <- service.update(UpdateItem(item1.id, GBP(99.99)))
@@ -85,7 +85,7 @@ class ItemServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar
       "should return item not found error when item does not exists" in {
         val result = for {
           repo <- repoMock
-          _ = when(repo.exists(any[ItemId])).thenReturn(IO.pure(false))
+          _ = when(repo.exists(any[Item.Id])).thenReturn(IO.pure(false))
           service <- ItemService.make(repo)
           res     <- service.update(UpdateItem(item1.id, GBP(99.99)))
         } yield res

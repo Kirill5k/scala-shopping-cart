@@ -13,9 +13,9 @@ import scala.concurrent.duration.FiniteDuration
 
 trait UserCacheStore[F[_]] {
   def findUser(token: JwtToken): F[Option[User]]
-  def findToken(username: Username): F[Option[JwtToken]]
+  def findToken(username: User.Name): F[Option[JwtToken]]
   def put(token: JwtToken, user: User): F[Unit]
-  def remove(token: JwtToken, username: Username): F[Unit]
+  def remove(token: JwtToken, username: User.Name): F[Unit]
 }
 
 final private class RedisUserCacheStore[F[_]: Monad](
@@ -34,10 +34,10 @@ final private class RedisUserCacheStore[F[_]: Monad](
     redis.setEx(token.value, user.asJson.noSpaces, tokenExpiration) *>
       redis.setEx(user.name.value, token.value, tokenExpiration)
 
-  override def findToken(username: Username): F[Option[JwtToken]] =
+  override def findToken(username: User.Name): F[Option[JwtToken]] =
     redis.get(username.value).map(_.map(JwtToken))
 
-  override def remove(token: JwtToken, username: Username): F[Unit] =
+  override def remove(token: JwtToken, username: User.Name): F[Unit] =
     redis.del(token.value) *> redis.del(username.value).void
 }
 

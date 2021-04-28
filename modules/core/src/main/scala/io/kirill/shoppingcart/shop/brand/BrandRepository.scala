@@ -11,7 +11,7 @@ import skunk.codec.all._
 
 trait BrandRepository[F[_]] extends Repository[F, Brand] {
   def findAll: fs2.Stream[F, Brand]
-  def create(name: BrandName): F[BrandId]
+  def create(name: Brand.Name): F[Brand.Id]
 }
 
 final private class PostgresBrandRepository[F[_]: Sync](
@@ -22,10 +22,10 @@ final private class PostgresBrandRepository[F[_]: Sync](
   def findAll: fs2.Stream[F, Brand] =
     fs2.Stream.evalSeq(run(_.execute(selectAll)))
 
-  def create(name: BrandName): F[BrandId] =
+  def create(name: Brand.Name): F[Brand.Id] =
     run { s =>
       s.prepare(insert).use { cmd =>
-        val brandId = BrandId(UUID.randomUUID())
+        val brandId = Brand.Id(UUID.randomUUID())
         cmd.execute(Brand(brandId, name)).map(_ => brandId)
       }
     }
@@ -34,7 +34,7 @@ final private class PostgresBrandRepository[F[_]: Sync](
 object BrandRepository {
   private[brand] val codec: Codec[Brand] =
     (uuid ~ varchar).imap {
-      case i ~ n => Brand(BrandId(i), BrandName(n))
+      case i ~ n => Brand(Brand.Id(i), Brand.Name(n))
     }(b => (b.id.value, b.name.value))
 
   private[brand] val selectAll: Query[Void, Brand] =

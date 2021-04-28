@@ -12,13 +12,13 @@ import skunk.implicits._
 class UserRepository[F[_]: Sync] private (val sessionPool: Resource[F, Session[F]]) extends Repository[F, User] {
   import UserRepository._
 
-  def findByName(username: Username): F[Option[User]] =
+  def findByName(username: User.Name): F[Option[User]] =
     findOneBy(selectByName, username.value)
 
-  def create(username: Username, password: PasswordHash): F[UserId] =
+  def create(username: User.Name, password: User.PasswordHash): F[User.Id] =
     run { session =>
       session.prepare(insert).use { cmd =>
-        val userId = UserId(UUID.randomUUID())
+        val userId = User.Id(UUID.randomUUID())
         cmd.execute(User(userId, username, Some(password))).map(_ => userId)
       }
     }
@@ -28,7 +28,7 @@ object UserRepository {
 
   private val codec: Codec[User] =
     (uuid ~ varchar ~ varchar.opt).imap {
-      case i ~ n ~ p => User(UserId(i), Username(n), p.map(PasswordHash))
+      case i ~ n ~ p => User(User.Id(i), User.Name(n), p.map(User.PasswordHash))
     }(u => u.id.value ~ u.name.value ~ u.password.map(_.value))
 
   private val selectByName: Query[String, User] =

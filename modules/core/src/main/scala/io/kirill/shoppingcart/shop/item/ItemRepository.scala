@@ -5,8 +5,8 @@ import java.util.UUID
 import cats.effect.{Resource, Sync}
 import cats.implicits._
 import io.kirill.shoppingcart.common.persistence.Repository
-import io.kirill.shoppingcart.shop.brand.{Brand, BrandId, BrandName}
-import io.kirill.shoppingcart.shop.category.{Category, CategoryId, CategoryName}
+import io.kirill.shoppingcart.shop.brand.{Brand}
+import io.kirill.shoppingcart.shop.category.{Category}
 import skunk._
 import skunk.implicits._
 import skunk.codec.all._
@@ -14,11 +14,11 @@ import squants.market.GBP
 
 trait ItemRepository[F[_]] extends Repository[F, Item] {
   def findAll: fs2.Stream[F, Item]
-  def findBy(brand: BrandName): fs2.Stream[F, Item]
-  def find(id: ItemId): F[Option[Item]]
-  def create(item: CreateItem): F[ItemId]
+  def findBy(brand: Brand.Name): fs2.Stream[F, Item]
+  def find(id: Item.Id): F[Option[Item]]
+  def create(item: CreateItem): F[Item.Id]
   def update(item: UpdateItem): F[Unit]
-  def exists(id: ItemId): F[Boolean]
+  def exists(id: Item.Id): F[Boolean]
 }
 
 final private class PostgresItemRepository[F[_]: Sync](val sessionPool: Resource[F, Session[F]]) extends ItemRepository[F] {
@@ -27,23 +27,23 @@ final private class PostgresItemRepository[F[_]: Sync](val sessionPool: Resource
   def findAll: fs2.Stream[F, Item] =
     fs2.Stream.evalSeq(run(_.execute(selectAll)))
 
-  def findBy(brand: BrandName): fs2.Stream[F, Item] =
+  def findBy(brand: Brand.Name): fs2.Stream[F, Item] =
     findManyBy(selectByBrand, brand.value)
 
-  def find(id: ItemId): F[Option[Item]] =
+  def find(id: Item.Id): F[Option[Item]] =
     findOneBy(selectById, id.value)
 
-  def exists(id: ItemId): F[Boolean] =
+  def exists(id: Item.Id): F[Boolean] =
     run { session =>
       session.prepare(existsBy).use { cmd =>
         cmd.option(id.value).map(_.fold(false)(_ > 0))
       }
     }
 
-  def create(item: CreateItem): F[ItemId] =
+  def create(item: CreateItem): F[Item.Id] =
     run { session =>
       session.prepare(insert).use { cmd =>
-        val itemId = ItemId(UUID.randomUUID())
+        val itemId = Item.Id(UUID.randomUUID())
         cmd.execute(itemId ~ item).map(_ => itemId)
       }
     }
@@ -57,12 +57,12 @@ object ItemRepository {
     (uuid ~ varchar ~ varchar ~ numeric ~ uuid ~ varchar ~ uuid ~ varchar).map {
       case i ~ n ~ d ~ p ~ bi ~ bn ~ ci ~ cn =>
         Item(
-          ItemId(i),
-          ItemName(n),
-          ItemDescription(d),
+          Item.Id(i),
+          Item.Name(n),
+          Item.Description(d),
           GBP(p),
-          Brand(BrandId(bi), BrandName(bn)),
-          Category(CategoryId(ci), CategoryName(cn))
+          Brand(Brand.Id(bi), Brand.Name(bn)),
+          Category(Category.Id(ci), Category.Name(cn))
         )
     }
 
@@ -99,7 +99,7 @@ object ItemRepository {
          WHERE i.id = $uuid
          """.query(decoder)
 
-  private[item] val insert: Command[ItemId ~ CreateItem] =
+  private[item] val insert: Command[Item.Id ~ CreateItem] =
     sql"""
          INSERT INTO items
          VALUES ($uuid, $varchar, $varchar, $numeric, $uuid, $uuid)

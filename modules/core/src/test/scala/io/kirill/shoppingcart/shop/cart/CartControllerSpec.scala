@@ -7,9 +7,9 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.literal._
 import io.kirill.shoppingcart.ControllerSpec
-import io.kirill.shoppingcart.auth.user.UserId
+import io.kirill.shoppingcart.auth.user.User
 import io.kirill.shoppingcart.common.json._
-import io.kirill.shoppingcart.shop.item.ItemId
+import io.kirill.shoppingcart.shop.item.Item
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.implicits._
@@ -17,7 +17,7 @@ import org.http4s.{Method, Request, Response}
 
 class CartControllerSpec extends ControllerSpec {
 
-  val item1Id = ItemId(UUID.fromString("607995e0-8e3a-11ea-bc55-0242ac130003"))
+  val item1Id = Item.Id(UUID.fromString("607995e0-8e3a-11ea-bc55-0242ac130003"))
 
   val cart = Cart(List(CartItem(item1Id, Quantity(4))))
 
@@ -28,7 +28,7 @@ class CartControllerSpec extends ControllerSpec {
         val cartService = mockService
         val controller  = new CartController[IO](cartService)
 
-        when(cartService.get(any[UserId])).thenReturn(IO.pure(cart))
+        when(cartService.get(any[User.Id])).thenReturn(IO.pure(cart))
 
         val request                    = Request[IO](uri = uri"/shopping-cart", method = Method.GET)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -43,7 +43,7 @@ class CartControllerSpec extends ControllerSpec {
         val cartService = mockService
         val controller  = new CartController[IO](cartService)
 
-        when(cartService.removeItem(any[UserId], any[ItemId])).thenReturn(IO.pure(()))
+        when(cartService.removeItem(any[User.Id], any[Item.Id])).thenReturn(IO.pure(()))
 
         val request                    = Request[IO](uri = uri"/shopping-cart/607995e0-8e3a-11ea-bc55-0242ac130003", method = Method.DELETE)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -58,7 +58,7 @@ class CartControllerSpec extends ControllerSpec {
         val cartService = mockService
         val controller  = new CartController[IO](cartService)
 
-        when(cartService.add(any[UserId], any[Cart])).thenReturn(IO.pure(()))
+        when(cartService.add(any[User.Id], any[Cart])).thenReturn(IO.pure(()))
 
         val request                    = Request[IO](uri = uri"/shopping-cart", method = Method.POST).withEntity(shoppingCartReq)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -73,7 +73,7 @@ class CartControllerSpec extends ControllerSpec {
         val cartService = mockService
         val controller  = new CartController[IO](cartService)
 
-        when(cartService.update(any[UserId], any[Cart])).thenReturn(IO.pure(()))
+        when(cartService.update(any[User.Id], any[Cart])).thenReturn(IO.pure(()))
 
         val request                    = Request[IO](uri = uri"/shopping-cart", method = Method.PUT).withEntity(shoppingCartReq)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)

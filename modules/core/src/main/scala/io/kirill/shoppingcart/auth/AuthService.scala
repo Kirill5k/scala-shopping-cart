@@ -7,9 +7,9 @@ import io.kirill.shoppingcart.auth.user._
 import io.kirill.shoppingcart.common.errors.{InvalidUsernameOrPassword, UniqueViolation, UsernameInUse}
 
 trait AuthService[F[_]] {
-  def login(username: Username, password: Password): F[JwtToken]
-  def logout(token: JwtToken, username: Username): F[Unit]
-  def create(username: Username, password: Password): F[UserId]
+  def login(username: User.Name, password: User.Password): F[JwtToken]
+  def logout(token: JwtToken, username: User.Name): F[Unit]
+  def create(username: User.Name, password: User.Password): F[User.Id]
 }
 
 final private class LiveAuthService[F[_]: MonadError[*[_], Throwable]](
@@ -19,7 +19,7 @@ final private class LiveAuthService[F[_]: MonadError[*[_], Throwable]](
     passwordEncryptor: PasswordEncryptor[F]
 ) extends AuthService[F] {
 
-  override def login(username: Username, password: Password): F[JwtToken] =
+  override def login(username: User.Name, password: User.Password): F[JwtToken] =
     userRepository.findByName(username).flatMap {
       case None => InvalidUsernameOrPassword(username).raiseError[F, JwtToken]
       case Some(u) =>
@@ -35,15 +35,15 @@ final private class LiveAuthService[F[_]: MonadError[*[_], Throwable]](
           }
     }
 
-  override def logout(token: JwtToken, username: Username): F[Unit] =
+  override def logout(token: JwtToken, username: User.Name): F[Unit] =
     userCacheStore.remove(token, username)
 
-  override def create(username: Username, password: Password): F[UserId] =
+  override def create(username: User.Name, password: User.Password): F[User.Id] =
     (for {
       hash <- passwordEncryptor.hash(password)
       uid  <- userRepository.create(username, hash)
     } yield uid).handleErrorWith { case UniqueViolation(_) =>
-      UsernameInUse(username).raiseError[F, UserId]
+      UsernameInUse(username).raiseError[F, User.Id]
     }
 }
 

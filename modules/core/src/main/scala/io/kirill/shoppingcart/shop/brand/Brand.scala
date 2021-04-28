@@ -4,7 +4,9 @@ import io.estatico.newtype.macros.newtype
 
 import java.util.UUID
 
-@newtype case class BrandId(value: UUID)
-@newtype case class BrandName(value: String)
+final case class Brand(id: Brand.Id, name: Brand.Name)
 
-final case class Brand(id: BrandId, name: BrandName)
+object Brand {
+  @newtype case class Id(value: UUID)
+  @newtype case class Name(value: String)
+}

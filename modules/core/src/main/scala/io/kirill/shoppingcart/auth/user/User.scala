@@ -4,13 +4,15 @@ import io.estatico.newtype.macros.newtype
 
 import java.util.UUID
 
-@newtype case class UserId(value: UUID)
-@newtype case class Username(value: String)
-@newtype case class Password(value: String)
-@newtype case class PasswordHash(value: String)
-
 final case class User(
-    id: UserId,
-    name: Username,
-    password: Option[PasswordHash]
+    id: User.Id,
+    name: User.Name,
+    password: Option[User.PasswordHash]
 )
+
+object User {
+  @newtype case class Id(value: UUID)
+  @newtype case class Name(value: String)
+  @newtype case class Password(value: String)
+  @newtype case class PasswordHash(value: String)
+}

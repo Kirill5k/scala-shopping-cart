@@ -13,15 +13,15 @@ class UserRepositorySpec extends PostgresRepositorySpec {
 
       val result = for {
         r    <- repository
-        uid  <- r.create(Username("boris"), PasswordHash("password"))
-        user <- r.findByName(Username("boris"))
+        uid  <- r.create(User.Name("boris"), User.PasswordHash("password"))
+        user <- r.findByName(User.Name("boris"))
       } yield (uid, user.get)
 
       result.asserting {
         case (uid, user) =>
           user.id must be(uid)
-          user.name must be(Username("boris"))
-          user.password must be(Some(PasswordHash("password")))
+          user.name must be(User.Name("boris"))
+          user.password must be(Some(User.PasswordHash("password")))
       }
     }
 
@@ -30,8 +30,8 @@ class UserRepositorySpec extends PostgresRepositorySpec {
 
       val result = for {
         r <- repository
-        _ <- r.create(Username("boris"), PasswordHash("password"))
-        _ <- r.create(Username("boris"), PasswordHash("password"))
+        _ <- r.create(User.Name("boris"), User.PasswordHash("password"))
+        _ <- r.create(User.Name("boris"), User.PasswordHash("password"))
       } yield ()
 
       result.assertThrows[UniqueViolation]

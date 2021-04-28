@@ -26,9 +26,11 @@ object Card {
   type CVV        = Int Refined (Positive And LessEqual[999])
 }
 
-@newtype case class PaymentId(value: UUID)
-
 final case class Payment(
     order: Order,
     card: Card
 )
+
+object Payment {
+  @newtype case class Id(value: UUID)
+}

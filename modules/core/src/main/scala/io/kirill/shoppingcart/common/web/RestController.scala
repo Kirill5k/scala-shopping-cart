@@ -2,54 +2,63 @@ package io.kirill.shoppingcart.common.web
 
 import cats.effect.Sync
 import cats.implicits._
+import eu.timepit.refined.api.{Refined, Validate}
+import eu.timepit.refined.refineV
 import org.typelevel.log4cats.Logger
 import io.circe._
 import io.circe.generic.auto._
+import io.kirill.shoppingcart.common.JsonCodecs
 import io.kirill.shoppingcart.common.errors._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{Challenge, InvalidMessageBodyFailure, Request, Response}
+import org.http4s.{Challenge, InvalidMessageBodyFailure, ParseFailure, QueryParamDecoder, Request, Response}
 
-trait RestController[F[_]] extends Http4sDsl[F] {
-  import RestController._
-  import io.kirill.shoppingcart.common.json._
+final case class ErrorResponse(message: String)
+
+trait RestController[F[_]] extends Http4sDsl[F] with JsonCodecs {
+
+  implicit def refinedParamDecoder[T: QueryParamDecoder, P](implicit
+      ev: Validate[T, P]
+  ): QueryParamDecoder[T Refined P] =
+    QueryParamDecoder[T].emap(refineV[P](_).leftMap(m => ParseFailure(m, m)))
 
   protected def withErrorHandling(
       response: => F[Response[F]]
-  )(
-      implicit s: Sync[F],
-      l: Logger[F]
+  )(implicit
+      F: Sync[F],
+      logger: Logger[F]
   ): F[Response[F]] =
     response.handleErrorWith {
       case e @ OrderDoesNotBelongToThisUser(oid, uid) =>
-        l.error(s"user ${uid.value} attempted to view order ${oid.value}") *>
+        logger.error(s"user ${uid.value} attempted to view order ${oid.value}") *>
           Forbidden(ErrorResponse(e.getMessage))
       case e @ InvalidUsernameOrPassword(username) =>
-        l.error(s"failed attempt to login by user ${username.value}") *>
+        logger.error(s"failed attempt to login by user ${username.value}") *>
           Forbidden(ErrorResponse(e.getMessage))
       case e @ AuthTokenNotPresent(username) =>
-        l.error(s"failed attempt to access secure content without auth token by ${username.value}") *>
+        logger.error(s"failed attempt to access secure content without auth token by ${username.value}") *>
           Unauthorized(Challenge(scheme = "Bearer", realm = e.getMessage))
       case e: BadRequestError =>
-        l.error(s"bad request error: ${e.getMessage}") *>
+        logger.error(s"bad request error: ${e.getMessage}") *>
           BadRequest(ErrorResponse(e.getMessage))
       case e: NotFoundError =>
-        l.error(s"entity not found error: ${e.getMessage}")
+        logger.error(s"entity not found error: ${e.getMessage}")
         NotFound(ErrorResponse(e.getMessage))
+      case ParseFailure(_, message) =>
+        logger.error(s"error processing a request: $message") *>
+          BadRequest(ErrorResponse(message))
       case InvalidMessageBodyFailure(details, cause) =>
         cause match {
-          case Some(c) => l.error(s"error parsing json: ${c.getMessage}\n ${details}") *> BadRequest(ErrorResponse(c.getMessage))
-          case _       => l.error(s"malformed json: $details") *> UnprocessableEntity(ErrorResponse(details))
+          case Some(c) => logger.error(s"error parsing json: ${c.getMessage}\n$details") *> BadRequest(ErrorResponse(c.getMessage))
+          case _       => logger.error(s"malformed json: $details") *> UnprocessableEntity(ErrorResponse(details))
         }
       case error =>
-        l.error(error)(s"unexpected error: ${error.getMessage}") *>
+        logger.error(error)(s"unexpected error: ${error.getMessage}") *>
           InternalServerError(ErrorResponse(error.getMessage))
     }
 }
 
 object RestController {
-
-  final case class ErrorResponse(message: String)
 
   implicit class RequestDecoder[F[_]: Sync](private val req: Request[F]) {
     def decodeR[A: Decoder]: F[A] =

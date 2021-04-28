@@ -8,10 +8,10 @@ import io.circe.generic.auto._
 import io.circe.literal._
 import io.kirill.shoppingcart.ControllerSpec
 import io.kirill.shoppingcart.common.errors.ItemNotFound
-import io.kirill.shoppingcart.shop.brand.{BrandId, BrandName}
+import io.kirill.shoppingcart.shop.brand.Brand
 import io.kirill.shoppingcart.common.json._
-import io.kirill.shoppingcart.common.web.RestController.ErrorResponse
-import io.kirill.shoppingcart.shop.category.CategoryId
+import io.kirill.shoppingcart.common.web.ErrorResponse
+import io.kirill.shoppingcart.shop.category.Category
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.implicits._
@@ -22,19 +22,19 @@ import scala.concurrent.ExecutionContext
 class ItemControllerSpec extends ControllerSpec {
   import ItemBuilder._
   import ItemController._
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.Implicits.global)
+
 
   val itemId = UUID.fromString("607995e0-8e3a-11ea-bc55-0242ac130003")
 
-  "An ItemController" should {
+  "An ItemController" when {
 
     "GET /items/{id}" should {
       "find item by id" in {
         val itemServiceMock = mock[ItemService[IO]]
         val controller      = new ItemController[IO](itemServiceMock)
 
-        val testitem = item("item-1").copy(id = ItemId(itemId))
-        when(itemServiceMock.findById(any[ItemId])).thenReturn(IO.pure(testitem))
+        val testitem = item("item-1").copy(id = Item.Id(itemId))
+        when(itemServiceMock.findById(any[Item.Id])).thenReturn(IO.pure(testitem))
 
         val request                    = Request[IO](uri = uri"/items/607995e0-8e3a-11ea-bc55-0242ac130003")
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
@@ -55,7 +55,7 @@ class ItemControllerSpec extends ControllerSpec {
         val itemServiceMock = mock[ItemService[IO]]
         val controller      = new ItemController[IO](itemServiceMock)
 
-        when(itemServiceMock.findById(any[ItemId])).thenReturn(IO.raiseError(ItemNotFound(ItemId(itemId))))
+        when(itemServiceMock.findById(any[Item.Id])).thenReturn(IO.raiseError(ItemNotFound(Item.Id(itemId))))
 
         val request                    = Request[IO](uri = uri"/items/607995e0-8e3a-11ea-bc55-0242ac130003")
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
@@ -65,7 +65,7 @@ class ItemControllerSpec extends ControllerSpec {
           Status.NotFound,
           Some(ErrorResponse("Item with id 607995e0-8e3a-11ea-bc55-0242ac130003 does not exist"))
         )
-        verify(itemServiceMock).findById(ItemId(itemId))
+        verify(itemServiceMock).findById(Item.Id(itemId))
       }
     }
 
@@ -99,7 +99,7 @@ class ItemControllerSpec extends ControllerSpec {
         val controller      = new ItemController[IO](itemServiceMock)
 
         val testitem = item("item-1")
-        when(itemServiceMock.findBy(any[BrandName])).thenReturn(fs2.Stream.emits(List(testitem)).lift[IO])
+        when(itemServiceMock.findBy(any[Brand.Name])).thenReturn(fs2.Stream.emits(List(testitem)).lift[IO])
 
         val request                    = Request[IO](uri = uri"/items?brand=test-brand")
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
@@ -113,7 +113,7 @@ class ItemControllerSpec extends ControllerSpec {
           testitem.category.name
         )
         verifyResponse[List[ItemResponse]](response, Status.Ok, Some(List(expectedResponse)))
-        verify(itemServiceMock).findBy(BrandName("Test-brand"))
+        verify(itemServiceMock).findBy(Brand.Name("Test-brand"))
       }
 
       "return error when brand is blank" in {
@@ -124,7 +124,7 @@ class ItemControllerSpec extends ControllerSpec {
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[String](response, Status.BadRequest, Some("Brand must not be blank"))
-        verify(itemServiceMock, never).findBy(any[BrandName])
+        verify(itemServiceMock, never).findBy(any[Brand.Name])
         verify(itemServiceMock, never).findAll
       }
     }
@@ -144,14 +144,14 @@ class ItemControllerSpec extends ControllerSpec {
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
         verifyResponse[ItemResponse](response, Status.NoContent, None)
-        verify(itemServiceMock).update(UpdateItem(ItemId(itemId), GBP(14.99)))
+        verify(itemServiceMock).update(UpdateItem(Item.Id(itemId), GBP(14.99)))
       }
 
       "return 404 when item not found" in {
         val itemServiceMock = mock[ItemService[IO]]
         val controller      = new ItemController[IO](itemServiceMock)
 
-        when(itemServiceMock.update(any[UpdateItem])).thenReturn(IO.raiseError(ItemNotFound(ItemId(itemId))))
+        when(itemServiceMock.update(any[UpdateItem])).thenReturn(IO.raiseError(ItemNotFound(Item.Id(itemId))))
 
         val request =
           Request[IO](uri = uri"/admin/items/607995e0-8e3a-11ea-bc55-0242ac130003", method = Method.PUT).withEntity(updateRequest())
@@ -162,7 +162,7 @@ class ItemControllerSpec extends ControllerSpec {
           Status.NotFound,
           Some(ErrorResponse("Item with id 607995e0-8e3a-11ea-bc55-0242ac130003 does not exist"))
         )
-        verify(itemServiceMock).update(UpdateItem(ItemId(itemId), GBP(14.99)))
+        verify(itemServiceMock).update(UpdateItem(Item.Id(itemId), GBP(14.99)))
       }
     }
 
@@ -178,14 +178,14 @@ class ItemControllerSpec extends ControllerSpec {
         val itemServiceMock = mock[ItemService[IO]]
         val controller      = new ItemController[IO](itemServiceMock)
 
-        when(itemServiceMock.create(any[CreateItem])).thenReturn(IO.pure(ItemId(itemId)))
+        when(itemServiceMock.create(any[CreateItem])).thenReturn(IO.pure(Item.Id(itemId)))
 
         val request                    = Request[IO](uri = uri"/admin/items", method = Method.POST).withEntity(createRequest())
         val response: IO[Response[IO]] = controller.routes(adminMiddleware).orNotFound.run(request)
 
-        verifyResponse[ItemCreateResponse](response, Status.Created, Some(ItemCreateResponse(ItemId(itemId))))
+        verifyResponse[ItemCreateResponse](response, Status.Created, Some(ItemCreateResponse(Item.Id(itemId))))
         verify(itemServiceMock).create(
-          CreateItem(ItemName("test-item"), ItemDescription("test-item description"), GBP(10.99), BrandId(brandId), CategoryId(categoryId))
+          CreateItem(Item.Name("test-item"), Item.Description("test-item description"), GBP(10.99), Brand.Id(brandId), Category.Id(categoryId))
         )
       }
     }

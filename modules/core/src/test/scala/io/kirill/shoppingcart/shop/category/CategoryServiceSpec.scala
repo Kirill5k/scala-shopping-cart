@@ -10,8 +10,8 @@ import org.scalatest.matchers.must.Matchers
 
 class CategoryServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar {
 
-  val category1 = Category(CategoryId(UUID.randomUUID()), CategoryName("category-1"))
-  val category2 = Category(CategoryId(UUID.randomUUID()), CategoryName("category-2"))
+  val category1 = Category(Category.Id(UUID.randomUUID()), Category.Name("category-1"))
+  val category2 = Category(Category.Id(UUID.randomUUID()), Category.Name("category-2"))
 
   "A CategoryService" - {
     "findAll" - {

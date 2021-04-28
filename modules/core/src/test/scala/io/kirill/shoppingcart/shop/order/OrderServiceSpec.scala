@@ -3,16 +3,16 @@ package io.kirill.shoppingcart.shop.order
 import java.util.UUID
 
 import cats.effect.IO
-import io.kirill.shoppingcart.auth.user.UserId
+import io.kirill.shoppingcart.auth.user.User
 import io.kirill.shoppingcart.common.errors.{OrderDoesNotBelongToThisUser, OrderNotFound}
-import io.kirill.shoppingcart.shop.payment.PaymentId
+import io.kirill.shoppingcart.shop.payment.Payment
 import org.mockito.scalatest.AsyncMockitoSugar
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.must.Matchers
 
 class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar {
 
-  val userId = UserId(UUID.randomUUID())
+  val userId = User.Id(UUID.randomUUID())
   val order1 = OrderBuilder.order.copy(userId = userId)
 
   "An OrderService" - {
@@ -44,7 +44,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
       "should return error if order does not belong to user" in {
         val result = for {
           repo <- repoMock
-          _ = when(repo.find(order1.id)).thenReturn(IO.pure(Some(order1.copy(userId = UserId(UUID.randomUUID())))))
+          _ = when(repo.find(order1.id)).thenReturn(IO.pure(Some(order1.copy(userId = User.Id(UUID.randomUUID())))))
           service <- OrderService.make(repo)
           order   <- service.get(userId, order1.id)
         } yield order
@@ -86,7 +86,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
       "should update existing order" in {
         val result = for {
           repo <- repoMock
-          paymentUpdate = OrderPayment(order1.id, PaymentId(UUID.randomUUID()), order1.status)
+          paymentUpdate = OrderPayment(order1.id, Payment.Id(UUID.randomUUID()), order1.status)
           _             = when(repo.update(paymentUpdate)).thenReturn(IO.pure(()))
           service <- OrderService.make[IO](repo)
           res     <- service.update(paymentUpdate)

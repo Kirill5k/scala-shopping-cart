@@ -14,13 +14,13 @@ class BrandRepositorySpec extends PostgresRepositorySpec {
 
       val allBrands = for {
         r      <- repository
-        _      <- r.create(BrandName("foo"))
+        _      <- r.create(Brand.Name("foo"))
         brands <- r.findAll.compile.toList
       } yield brands
 
       allBrands.asserting { brands =>
         brands must have size 1
-        brands.head.name must be(BrandName("foo"))
+        brands.head.name must be(Brand.Name("foo"))
       }
     }
 
@@ -29,8 +29,8 @@ class BrandRepositorySpec extends PostgresRepositorySpec {
 
       val error = for {
         r <- repository
-        _ <- r.create(BrandName("b1"))
-        e <- r.create(BrandName("b1"))
+        _ <- r.create(Brand.Name("b1"))
+        e <- r.create(Brand.Name("b1"))
       } yield e
 
       error.assertThrows[UniqueViolation]

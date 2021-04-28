@@ -6,8 +6,7 @@ import org.typelevel.log4cats.Logger
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.auth.CommonUser
 import io.kirill.shoppingcart.common.web.RestController
-import io.kirill.shoppingcart.common.json._
-import io.kirill.shoppingcart.shop.item.ItemId
+import io.kirill.shoppingcart.shop.item.Item
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 
@@ -18,7 +17,7 @@ final class CartController[F[_]: Sync: Logger](cartService: CartService[F]) exte
     AuthedRoutes.of {
       case DELETE -> Root / UUIDVar(itemId) as user =>
         withErrorHandling {
-          cartService.removeItem(user.value.id, ItemId(itemId)) *> NoContent()
+          cartService.removeItem(user.value.id, Item.Id(itemId)) *> NoContent()
         }
       case GET -> Root as user =>
         withErrorHandling {

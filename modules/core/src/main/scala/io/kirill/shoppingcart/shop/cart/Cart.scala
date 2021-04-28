@@ -1,14 +1,10 @@
 package io.kirill.shoppingcart.shop.cart
 
-import io.estatico.newtype.macros.newtype
-import io.kirill.shoppingcart.shop.item.ItemId
-import squants.market.{GBP, Money}
+import io.kirill.shoppingcart.shop.item.Item
 
-@newtype case class Quantity(value: Int)
-
-final case class CartItem(itemId: ItemId, quantity: Quantity)
-final case class Cart(items: List[CartItem], total: Money)
+final case class CartItem(itemId: Item.Id, quantity: Item.Quantity)
+final case class Cart(items: List[CartItem])
 
 object Cart {
-  val empty: Cart = Cart(Nil, GBP(0))
+  val empty: Cart = Cart(Nil)
 }

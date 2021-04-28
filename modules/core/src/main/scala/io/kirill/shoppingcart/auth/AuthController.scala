@@ -4,20 +4,16 @@ import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.AuthHeaders
 import dev.profunktor.auth.jwt.JwtToken
+import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.generic.auto._
-import io.kirill.shoppingcart.common.json._
-import io.kirill.shoppingcart.common.web.RestController
-import org.http4s.{AuthedRoutes, HttpRoutes}
-import org.http4s.server.{AuthMiddleware, Router}
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.collection._
-import org.typelevel.log4cats.Logger
-import io.circe.refined._
-import io.kirill.shoppingcart.auth.user.{Password, UserId, Username}
+import io.kirill.shoppingcart.auth.user.User
 import io.kirill.shoppingcart.common.errors.AuthTokenNotPresent
+import io.kirill.shoppingcart.common.web.RestController
+import org.http4s.server.{AuthMiddleware, Router}
+import org.http4s.{AuthedRoutes, HttpRoutes}
+import org.typelevel.log4cats.Logger
 
 final class AuthController[F[_]: Sync: Logger](authService: AuthService[F]) extends RestController[F] {
-  import RestController._
   import AuthController._
 
   private val prefixPath = "/users"
@@ -26,16 +22,16 @@ final class AuthController[F[_]: Sync: Logger](authService: AuthService[F]) exte
     case req @ POST -> Root =>
       withErrorHandling {
         for {
-          create <- req.decodeR[AuthCreateUserRequest]
-          uid    <- authService.create(Username(create.username.value), Password(create.password.value))
+          create <- req.as[AuthCreateUserRequest]
+          uid    <- authService.create(User.Name(create.username.value), User.Password(create.password.value))
           res    <- Created(AuthCreateUserResponse(uid))
         } yield res
       }
     case req @ POST -> Root / "auth" / "login" =>
       withErrorHandling {
         for {
-          login <- req.decodeR[AuthLoginRequest]
-          token <- authService.login(Username(login.username.value), Password(login.password.value))
+          login <- req.as[AuthLoginRequest]
+          token <- authService.login(User.Name(login.username.value), User.Password(login.password.value))
           res   <- Ok(AuthLoginResponse(token))
         } yield res
       }
@@ -59,14 +55,9 @@ final class AuthController[F[_]: Sync: Logger](authService: AuthService[F]) exte
 }
 
 object AuthController {
-  type NonEmptyString = String Refined NonEmpty
-
   final case class AuthCreateUserRequest(username: NonEmptyString, password: NonEmptyString)
-
-  final case class AuthCreateUserResponse(id: UserId)
-
+  final case class AuthCreateUserResponse(id: User.Id)
   final case class AuthLoginRequest(username: NonEmptyString, password: NonEmptyString)
-
   final case class AuthLoginResponse(token: JwtToken)
 
   def make[F[_]: Sync: Logger](authService: AuthService[F]): F[AuthController[F]] =

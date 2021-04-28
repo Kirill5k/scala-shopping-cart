@@ -3,13 +3,13 @@ package io.kirill.shoppingcart.shop.item
 import cats.effect.Sync
 import cats.implicits._
 import io.kirill.shoppingcart.common.errors.ItemNotFound
-import io.kirill.shoppingcart.shop.brand.BrandName
+import io.kirill.shoppingcart.shop.brand.Brand.Name
 
 trait ItemService[F[_]] {
   def findAll: fs2.Stream[F, Item]
-  def findBy(brand: BrandName): fs2.Stream[F, Item]
-  def findById(id: ItemId): F[Item]
-  def create(item: CreateItem): F[ItemId]
+  def findBy(brand: Brand.Name): fs2.Stream[F, Item]
+  def findById(id: Item.Id): F[Item]
+  def create(item: CreateItem): F[Item.Id]
   def update(item: UpdateItem): F[Unit]
 }
 
@@ -19,16 +19,16 @@ final private class LiveItemService[F[_]: Sync](
   override def findAll: fs2.Stream[F, Item] =
     itemRepository.findAll
 
-  override def findBy(brand: BrandName): fs2.Stream[F, Item] =
+  override def findBy(brand: Brand.Name): fs2.Stream[F, Item] =
     itemRepository.findBy(brand)
 
-  override def findById(id: ItemId): F[Item] =
+  override def findById(id: Item.Id): F[Item] =
     itemRepository.find(id).flatMap {
       case None       => ItemNotFound(id).raiseError[F, Item]
       case Some(item) => item.pure[F]
     }
 
-  override def create(item: CreateItem): F[ItemId] =
+  override def create(item: CreateItem): F[Item.Id] =
     itemRepository.create(item)
 
   override def update(item: UpdateItem): F[Unit] =

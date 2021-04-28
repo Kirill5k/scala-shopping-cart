@@ -10,8 +10,8 @@ import org.scalatest.matchers.must.Matchers
 
 class BrandServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar {
 
-  val brand1 = Brand(BrandId(UUID.randomUUID()), BrandName("brand-1"))
-  val brand2 = Brand(BrandId(UUID.randomUUID()), BrandName("brand-2"))
+  val brand1 = Brand(Brand.Id(UUID.randomUUID()), Brand.Name("brand-1"))
+  val brand2 = Brand(Brand.Id(UUID.randomUUID()), Brand.Name("brand-2"))
 
   "A BrandService" - {
     "findAll" - {

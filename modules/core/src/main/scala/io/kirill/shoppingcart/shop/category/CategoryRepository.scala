@@ -11,7 +11,7 @@ import skunk.codec.all._
 
 trait CategoryRepository[F[_]] extends Repository[F, Category] {
   def findAll: fs2.Stream[F, Category]
-  def create(name: CategoryName): F[CategoryId]
+  def create(name: Category.Name): F[Category.Id]
 }
 
 final private class PostgresCategoryRepository[F[_]: Sync](
@@ -22,10 +22,10 @@ final private class PostgresCategoryRepository[F[_]: Sync](
   def findAll: fs2.Stream[F, Category] =
     fs2.Stream.evalSeq(run(_.execute(selectAll)))
 
-  def create(name: CategoryName): F[CategoryId] =
+  def create(name: Category.Name): F[Category.Id] =
     run { s =>
       s.prepare(insert).use { cmd =>
-        val id = CategoryId(UUID.randomUUID())
+        val id = Category.Id(UUID.randomUUID())
         cmd.execute(Category(id, name)).map(_ => id)
       }
     }
@@ -34,7 +34,7 @@ final private class PostgresCategoryRepository[F[_]: Sync](
 object CategoryRepository {
   private[category] val codec: Codec[Category] =
     (uuid ~ varchar).imap {
-      case i ~ n => Category(CategoryId(i), CategoryName(n))
+      case i ~ n => Category(Category.Id(i), Category.Name(n))
     }(b => (b.id.value, b.name.value))
 
   private[category] val selectAll: Query[Void, Category] =
