@@ -4,11 +4,12 @@ import cats.effect.Sync
 import cats.implicits._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.generic.auto._
+import io.circe.refined._
 import io.estatico.newtype.macros.newtype
 import io.kirill.shoppingcart.auth.AdminUser
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.shop.brand.Brand
-import io.kirill.shoppingcart.shop.category.{Category}
+import io.kirill.shoppingcart.shop.category.Category
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.typelevel.log4cats.Logger
@@ -98,5 +99,5 @@ object ItemController {
   final case class ItemCreateResponse(itemId: Item.Id)
 
   def make[F[_]: Sync: Logger](is: ItemService[F]): F[ItemController[F]] =
-    Sync[F].delay(new ItemController[F](is))
+    Sync[F].pure(new ItemController[F](is))
 }

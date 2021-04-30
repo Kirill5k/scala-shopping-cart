@@ -4,6 +4,7 @@ import cats.effect.Sync
 import cats.implicits._
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.generic.auto._
+import io.circe.refined._
 import io.kirill.shoppingcart.auth.AdminUser
 import io.kirill.shoppingcart.common.web.RestController
 import org.http4s.server.{AuthMiddleware, Router}

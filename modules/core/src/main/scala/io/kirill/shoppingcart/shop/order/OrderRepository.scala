@@ -49,7 +49,7 @@ object OrderRepository {
   private[order] val decoder: Decoder[Order] =
     (uuid ~ varchar ~ uuid ~ uuid.opt ~ jsonb[Seq[OrderItem]] ~ numeric.map(GBP.apply)).map {
       case oid ~ status ~ uid ~ pid ~ items ~ total =>
-        Order(Order.Id(oid), Order.Status(status), User.Id(uid), pid.map(Payment.Id), items.toList, total)
+        Order(Order.Id(oid), Order.Status(status), User.Id(uid), pid.map(Payment.Id.apply), items.toList, total)
     }
 
   private[order] val encoder: Encoder[Order.Id ~ OrderCheckout] =

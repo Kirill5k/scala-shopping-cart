@@ -6,6 +6,7 @@ import dev.profunktor.auth.AuthHeaders
 import dev.profunktor.auth.jwt.JwtToken
 import eu.timepit.refined.types.string.NonEmptyString
 import io.circe.generic.auto._
+import io.circe.refined._
 import io.kirill.shoppingcart.auth.user.User
 import io.kirill.shoppingcart.common.errors.AuthTokenNotPresent
 import io.kirill.shoppingcart.common.web.RestController

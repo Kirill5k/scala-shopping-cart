@@ -17,7 +17,7 @@ object PasswordEncryptor {
     Sync[F].delay {
       new PasswordEncryptor[F] {
         override def hash(password: User.Password): F[User.PasswordHash] =
-          Sync[F].delay(password.value.bcryptBounded(config.passwordSalt)).map(User.PasswordHash)
+          Sync[F].delay(password.value.bcryptBounded(config.passwordSalt)).map(s => User.PasswordHash(s))
 
         override def isValid(password: User.Password, passwordHash: User.PasswordHash): F[Boolean] =
           Sync[F].fromTry(password.value.isBcryptedSafeBounded(passwordHash.value))

@@ -2,11 +2,10 @@ package io.kirill.shoppingcart.shop.brand
 
 import cats.effect.Sync
 import cats.implicits._
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.collection.NonEmpty
 import eu.timepit.refined.types.string.NonEmptyString
 import org.typelevel.log4cats.Logger
-import io.circe.generic.semiauto._
+import io.circe.generic.auto._
+import io.circe.refined._
 import io.kirill.shoppingcart.auth.AdminUser
 import io.kirill.shoppingcart.common.web.RestController
 import org.http4s.{AuthedRoutes, HttpRoutes}

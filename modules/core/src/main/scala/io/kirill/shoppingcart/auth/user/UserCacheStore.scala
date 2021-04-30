@@ -5,6 +5,7 @@ import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
 import dev.profunktor.redis4cats.RedisCommands
 import io.circe.generic.auto._
+import io.kirill.shoppingcart.common.json._
 import io.circe.parser.decode
 import io.circe.syntax._
 import io.kirill.shoppingcart.config.AuthConfig

@@ -3,7 +3,7 @@ package io.kirill.shoppingcart.shop.item
 import cats.effect.Sync
 import cats.implicits._
 import io.kirill.shoppingcart.common.errors.ItemNotFound
-import io.kirill.shoppingcart.shop.brand.Brand.Name
+import io.kirill.shoppingcart.shop.brand.Brand
 
 trait ItemService[F[_]] {
   def findAll: fs2.Stream[F, Item]
