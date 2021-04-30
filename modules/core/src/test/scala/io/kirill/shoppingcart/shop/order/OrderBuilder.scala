@@ -1,18 +1,24 @@
 package io.kirill.shoppingcart.shop.order
 
-import java.util.UUID
+import io.kirill.shoppingcart.auth.user.User
+import io.kirill.shoppingcart.shop.item.Item
+import io.kirill.shoppingcart.shop.payment.Payment
 
+import java.util.UUID
 import squants.market.GBP
 
 object OrderBuilder {
 
-  def order: Order =
+  def order(
+      id: Order.Id = Order.Id(UUID.randomUUID()),
+      userId: User.Id = User.Id(UUID.randomUUID())
+  ): Order =
     Order(
-      Order.Id(UUID.randomUUID()),
-      Order.Status.awaitingPayment,
-      User.Id(UUID.randomUUID()),
+      id,
+      Order.AwaitingPayment,
+      userId,
       Some(Payment.Id(UUID.randomUUID())),
-      List(OrderItem(Item.Id(UUID.randomUUID()), GBP(10), Quantity(2))),
+      List(OrderItem(Item.Id(UUID.randomUUID()), GBP(10), Item.Quantity(2))),
       GBP(20)
     )
 }

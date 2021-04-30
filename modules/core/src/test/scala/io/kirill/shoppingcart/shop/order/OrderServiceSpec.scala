@@ -13,7 +13,7 @@ import org.scalatest.matchers.must.Matchers
 class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSugar {
 
   val userId = User.Id(UUID.randomUUID())
-  val order1 = OrderBuilder.order.copy(userId = userId)
+  val order1 = OrderBuilder.order(userId = userId)
 
   "An OrderService" - {
     "get" - {
@@ -87,7 +87,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
         val result = for {
           repo <- repoMock
           paymentUpdate = OrderPayment(order1.id, Payment.Id(UUID.randomUUID()), order1.status)
-          _             = when(repo.update(paymentUpdate)).thenReturn(IO.pure(()))
+          _             = when(repo.update(paymentUpdate)).thenReturn(IO.unit)
           service <- OrderService.make[IO](repo)
           res     <- service.update(paymentUpdate)
         } yield res

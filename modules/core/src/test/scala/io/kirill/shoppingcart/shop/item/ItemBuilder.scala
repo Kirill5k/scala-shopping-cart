@@ -8,9 +8,13 @@ import squants.market.{GBP, Money}
 
 object ItemBuilder {
 
-  def item(name: String, price: Money = Money(10, GBP)): Item =
+  def item(
+      name: String,
+      price: Money = Money(10, GBP),
+      id: Item.Id = Item.Id(UUID.randomUUID())
+  ): Item =
     Item(
-      Item.Id(UUID.randomUUID()),
+      id,
       Item.Name(name),
       Item.Description("test item"),
       price,

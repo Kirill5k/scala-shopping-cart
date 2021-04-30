@@ -39,7 +39,7 @@ class AuthControllerSpec extends ControllerSpec {
         val authServiceMock = mock[AuthService[IO]]
         val controller      = new AuthController[IO](authServiceMock)
 
-        when(authServiceMock.logout(any[JwtToken], any[User.Name])).thenReturn(IO.pure(()))
+        when(authServiceMock.logout(any[JwtToken], any[User.Name])).thenReturn(IO.unit)
 
         val request                    = Request[IO](uri = uri"/users/auth/logout", method = Method.POST).withHeaders(Header("Authorization", "Bearer token"))
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)

@@ -3,15 +3,18 @@ package io.kirill.shoppingcart.health
 import cats.Parallel
 import cats.effect.{Concurrent, Timer}
 import cats.implicits._
+import io.estatico.newtype.macros.newtype
 import io.kirill.shoppingcart.Resources
 import org.typelevel.log4cats.Logger
 
-final case class ServiceStatus(value: Boolean) extends AnyVal
-
 final case class AppStatus(
-    postgres: ServiceStatus,
-    redis: ServiceStatus
+    postgres: AppStatus.Service,
+    redis: AppStatus.Service
 )
+
+object AppStatus {
+  @newtype case class Service(value: Boolean)
+}
 
 final class Health[F[_]] private (
     val healthCheckController: HealthCheckController[F]

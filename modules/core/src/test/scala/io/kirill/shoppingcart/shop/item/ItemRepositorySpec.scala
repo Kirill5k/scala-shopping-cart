@@ -1,15 +1,18 @@
 package io.kirill.shoppingcart.shop.item
 
 import java.util.UUID
-
 import cats.effect.IO
+import cats.implicits._
 import io.kirill.shoppingcart.PostgresRepositorySpec
 import io.kirill.shoppingcart.common.errors.{ForeignKeyViolation, UniqueViolation}
-import io.kirill.shoppingcart.shop.brand.{Brand}
+import io.kirill.shoppingcart.shop.brand.{Brand, BrandRepository}
 import io.kirill.shoppingcart.shop.category.{Category, CategoryRepository}
 import squants.market.GBP
 
 class ItemRepositorySpec extends PostgresRepositorySpec {
+
+  val testBrand    = Brand.Name("test-brand")
+  val testCategory = Category.Name("test-category")
 
   "An ItemRepository" - {
 
@@ -24,10 +27,10 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         } yield item.get
 
         result.asserting { item =>
-          item.description must be(Item.Description("description"))
-          item.price must be(GBP(BigDecimal(10.99)))
-          item.brand.name must be(Brand.Name("test-brand"))
-          item.category.name must be(Category.Name("test-category"))
+          item.description mustBe Item.Description("description")
+          item.price mustBe GBP(BigDecimal(10.99))
+          item.brand.name mustBe testBrand
+          item.category.name mustBe testCategory
         }
       }
 
@@ -36,7 +39,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
 
         val result = itemRepository.flatMap(r => r.find(Item.Id(UUID.randomUUID())))
 
-        result.asserting(_ must be(None))
+        result.asserting(_ mustBe None)
       }
     }
 
@@ -52,14 +55,14 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
 
         result.asserting { items =>
           items must not be empty
-          items.map(_.brand.name) must contain only (Brand.Name("test-brand"))
+          items.map(_.brand.name) must contain only Brand.Name("test-brand")
         }
       }
 
       "return empty list if no matches" in {
         val itemRepository = ItemRepository.make(session)
 
-        itemRepository.flatMap(_.findBy(Brand.Name("foo")).compile.toList).asserting(_ must be(Nil))
+        itemRepository.flatMap(_.findBy(Brand.Name("foo")).compile.toList).asserting(_ mustBe Nil)
       }
     }
 
@@ -75,7 +78,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
 
         result.asserting { items =>
           items must not be empty
-          items.map(_.brand.name) must contain only (Brand.Name("test-brand"))
+          items.map(_.brand.name) must contain only Brand.Name("test-brand")
         }
       }
     }
@@ -92,7 +95,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
         } yield item.get
 
         result.asserting { item =>
-          item.price must be(GBP(BigDecimal(99.99)))
+          item.price mustBe GBP(BigDecimal(99.99))
         }
       }
     }
@@ -126,9 +129,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
           exists <- repo.exists(id)
         } yield exists
 
-        result.asserting { res =>
-          res must be(true)
-        }
+        result.asserting(_ mustBe true)
       }
 
       "return false when item does not exist" in {
@@ -139,9 +140,7 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
           exists <- repo.exists(Item.Id(UUID.randomUUID()))
         } yield exists
 
-        result.asserting { res =>
-          res must be(false)
-        }
+        result.asserting(_ mustBe false)
       }
     }
   }
@@ -150,22 +149,27 @@ class ItemRepositorySpec extends PostgresRepositorySpec {
     for {
       r   <- BrandRepository.make(session)
       bs  <- r.findAll.compile.toList
-      bid <- bs.find(_.name == Brand.Name("test-brand")).fold(r.create(Brand.Name("test-brand")))(b => IO.pure(b.id))
+      bid <- bs.find(_.name == testBrand).fold(r.create(testBrand))(_.id.pure[IO])
     } yield bid
 
   def insertTestCategory: IO[Category.Id] =
     for {
       r   <- CategoryRepository.make(session)
       bs  <- r.findAll.compile.toList
-      cid <- bs.find(_.name == Category.Name("test-category")).fold(r.create(Category.Name("test-category")))(b => IO.pure(b.id))
+      cid <- bs.find(_.name == testCategory).fold(r.create(testCategory))(_.id.pure[IO])
     } yield cid
 
   def insertTestItem(repo: ItemRepository[IO]): IO[Item.Id] =
     for {
       bid <- insertTestBrand
       cid <- insertTestCategory
-      iid <- repo.create(
-        CreateItem(Item.Name(s"item-${System.currentTimeMillis()}"), Item.Description("description"), GBP(BigDecimal(10.99)), bid, cid)
+      createItem = CreateItem(
+        Item.Name(s"item-${System.currentTimeMillis()}"),
+        Item.Description("description"),
+        GBP(BigDecimal(10.99)),
+        bid,
+        cid
       )
+      iid <- repo.create(createItem)
     } yield iid
 }

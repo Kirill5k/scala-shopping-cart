@@ -35,9 +35,9 @@ trait ControllerSpec extends AnyWordSpec with MockitoSugar with ArgumentMatchers
   ): Unit = {
     val actualResp = actual.unsafeRunSync
 
-    actualResp.status must be(expectedStatus)
+    actualResp.status mustBe expectedStatus
     expectedBody match {
-      case Some(expected) => actualResp.as[Json].unsafeRunSync must be(expected.asJson)
+      case Some(expected) => actualResp.as[Json].unsafeRunSync mustBe expected.asJson
       case None           => actualResp.body.compile.toVector.unsafeRunSync mustBe empty
     }
   }

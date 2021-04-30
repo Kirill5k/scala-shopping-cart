@@ -15,7 +15,7 @@ final class HealthCheckController[F[_]: Sync: Logger](
 ) extends RestController[F] {
   import HealthCheckController._
 
-  private val prefixPath = "/healthcheck"
+  private val prefixPath = "/health"
 
   private val httpRoutes: HttpRoutes[F] =
     HttpRoutes.of {

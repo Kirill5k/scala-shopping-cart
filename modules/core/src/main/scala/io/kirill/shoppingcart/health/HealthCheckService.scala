@@ -22,23 +22,23 @@ final private class LiveHealthCheckService[F[_]: Concurrent: Parallel: Timer](
   private val q: Query[Void, Int] =
     sql"SELECT pid FROM pg_stat_activity".query(int4)
 
-  private def postgresHealth: F[ServiceStatus] =
+  private def postgresHealth: F[AppStatus.Service] =
     session
       .use(_.execute(q))
       .map(_.nonEmpty)
       .timeout(3.second)
       .orElse(false.pure[F])
-      .map(ServiceStatus.apply)
+      .map(AppStatus.Service.apply)
 
-  private def redisHealth: F[ServiceStatus] =
+  private def redisHealth: F[AppStatus.Service] =
     redis.ping
       .map(_.nonEmpty)
       .timeout(3.second)
       .orElse(false.pure[F])
-      .map(ServiceStatus.apply)
+      .map(AppStatus.Service.apply)
 
   override def status: F[AppStatus] =
-    (postgresHealth, redisHealth).parMapN(AppStatus)
+    (postgresHealth, redisHealth).parMapN(AppStatus.apply)
 }
 
 object HealthCheckService {
@@ -46,5 +46,5 @@ object HealthCheckService {
       session: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
   ): F[HealthCheckService[F]] =
-    Sync[F].delay(new LiveHealthCheckService[F](session, redis))
+    Sync[F].pure(new LiveHealthCheckService[F](session, redis))
 }

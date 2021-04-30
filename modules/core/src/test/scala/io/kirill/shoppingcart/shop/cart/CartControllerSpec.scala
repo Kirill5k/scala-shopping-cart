@@ -19,7 +19,7 @@ class CartControllerSpec extends ControllerSpec {
 
   val item1Id = Item.Id(UUID.fromString("607995e0-8e3a-11ea-bc55-0242ac130003"))
 
-  val cart = Cart(List(CartItem(item1Id, Quantity(4))))
+  val cart = Cart(List(CartItem(item1Id, Item.Quantity(4))))
 
   "A CartController" should {
 
@@ -43,7 +43,7 @@ class CartControllerSpec extends ControllerSpec {
         val cartService = mockService
         val controller  = new CartController[IO](cartService)
 
-        when(cartService.removeItem(any[User.Id], any[Item.Id])).thenReturn(IO.pure(()))
+        when(cartService.removeItem(any[User.Id], any[Item.Id])).thenReturn(IO.unit)
 
         val request                    = Request[IO](uri = uri"/shopping-cart/607995e0-8e3a-11ea-bc55-0242ac130003", method = Method.DELETE)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -58,7 +58,7 @@ class CartControllerSpec extends ControllerSpec {
         val cartService = mockService
         val controller  = new CartController[IO](cartService)
 
-        when(cartService.add(any[User.Id], any[Cart])).thenReturn(IO.pure(()))
+        when(cartService.add(any[User.Id], any[Cart])).thenReturn(IO.unit)
 
         val request                    = Request[IO](uri = uri"/shopping-cart", method = Method.POST).withEntity(shoppingCartReq)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
@@ -73,7 +73,7 @@ class CartControllerSpec extends ControllerSpec {
         val cartService = mockService
         val controller  = new CartController[IO](cartService)
 
-        when(cartService.update(any[User.Id], any[Cart])).thenReturn(IO.pure(()))
+        when(cartService.update(any[User.Id], any[Cart])).thenReturn(IO.unit)
 
         val request                    = Request[IO](uri = uri"/shopping-cart", method = Method.PUT).withEntity(shoppingCartReq)
         val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)

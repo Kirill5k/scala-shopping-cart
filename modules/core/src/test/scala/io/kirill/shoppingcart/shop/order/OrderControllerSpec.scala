@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.shop.order
 
 import java.util.UUID
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.{IO}
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.literal._
@@ -11,8 +11,8 @@ import io.kirill.shoppingcart.auth.user.User
 import io.kirill.shoppingcart.common.errors.{ItemNotFound, OrderDoesNotBelongToThisUser, OrderNotFound}
 import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.common.web.ErrorResponse
-import io.kirill.shoppingcart.shop.cart.{Cart, CartItem, CartService, Quantity}
-import io.kirill.shoppingcart.shop.item.{ItemBuilder, Item, ItemService}
+import io.kirill.shoppingcart.shop.cart.{Cart, CartItem, CartService}
+import io.kirill.shoppingcart.shop.item.{Item, ItemBuilder, ItemService}
 import io.kirill.shoppingcart.shop.order.OrderController.{OrderCheckoutResponse, OrderResponse}
 import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentService}
 import eu.timepit.refined.auto._
@@ -21,18 +21,16 @@ import org.http4s.circe._
 import org.http4s.implicits._
 import squants.market.GBP
 
-import scala.concurrent.ExecutionContext
-
 class OrderControllerSpec extends ControllerSpec {
 
   val paymentId = Payment.Id(UUID.randomUUID())
 
   val item1Id = Item.Id(UUID.fromString("607995e0-8e3a-11ea-bc55-0242ac130003"))
-  val item1   = ItemBuilder.item("item-1", GBP(14.99)).copy(id = item1Id)
+  val item1   = ItemBuilder.item("item-1", GBP(14.99), id = item1Id)
   val item2   = ItemBuilder.item("item-2", GBP(5.99))
 
   val order1Id = Order.Id(UUID.fromString("666665e0-8e3a-11ea-bc55-0242ac130003"))
-  val order1   = OrderBuilder.order.copy(id = order1Id)
+  val order1   = OrderBuilder.order(id = order1Id)
 
   "An OrderController" should {
 
@@ -43,14 +41,14 @@ class OrderControllerSpec extends ControllerSpec {
 
         when(os.findBy(any[User.Id])).thenReturn(fs2.Stream(order1).lift[IO])
 
-        val request                    = Request[IO](uri = uri"/orders", method = Method.GET)
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val request  = Request[IO](uri = uri"/orders", method = Method.GET)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         val expectedResponse = List(
           OrderResponse(
             order1.id,
             order1.status,
-            order1.items.toList,
+            order1.items,
             order1.totalPrice
           )
         )
@@ -66,14 +64,14 @@ class OrderControllerSpec extends ControllerSpec {
 
         when(os.get(any[User.Id], any[Order.Id])).thenReturn(IO.pure(order1))
 
-        val request                    = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val request  = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         val expectedResponse =
           OrderResponse(
             order1.id,
             order1.status,
-            order1.items.toList,
+            order1.items,
             order1.totalPrice
           )
         verifyResponse[OrderResponse](response, Status.Ok, Some(expectedResponse))
@@ -86,8 +84,8 @@ class OrderControllerSpec extends ControllerSpec {
 
         when(os.get(any[User.Id], any[Order.Id])).thenReturn(IO.raiseError(OrderNotFound(order1Id)))
 
-        val request                    = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val request  = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](
           response,
@@ -104,8 +102,8 @@ class OrderControllerSpec extends ControllerSpec {
         when(os.get(any[User.Id], any[Order.Id]))
           .thenReturn(IO.raiseError(OrderDoesNotBelongToThisUser(order1Id, authedUser.value.id)))
 
-        val request                    = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val request  = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003", method = Method.GET)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.Forbidden, Some(ErrorResponse("Order does not belong to this user")))
         verify(os).get(authedUser.value.id, order1Id)
@@ -117,15 +115,15 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        val cart    = Cart(List(CartItem(item1.id, Item.Quantity(2)), CartItem(item2.id, Quantity(1))))
+        val cart    = Cart(List(CartItem(item1.id, Item.Quantity(2)), CartItem(item2.id, Item.Quantity(1))))
         val orderId = Order.Id(UUID.randomUUID())
         when(cs.get(any[User.Id])).thenReturn(IO.pure(cart))
         when(is.findById(any[Item.Id])).thenReturn(IO.pure(item1)).andThen(IO.pure(item2))
         when(os.create(any[OrderCheckout])).thenReturn(IO.pure(orderId))
-        when(cs.delete(any[User.Id])).thenReturn(IO.pure(()))
+        when(cs.delete(any[User.Id])).thenReturn(IO.unit)
 
-        val request                    = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val request  = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[OrderCheckoutResponse](response, Status.Created, Some(OrderCheckoutResponse(orderId)))
         verify(cs).get(authedUser.value.id)
@@ -134,7 +132,7 @@ class OrderControllerSpec extends ControllerSpec {
         verify(os).create(
           OrderCheckout(
             authedUser.value.id,
-            List(OrderItem(item1.id, item1.price, Quantity(2)), OrderItem(item2.id, item2.price, Quantity(1))),
+            List(OrderItem(item1.id, item1.price, Item.Quantity(2)), OrderItem(item2.id, item2.price, Item.Quantity(1))),
             GBP(35.97)
           )
         )
@@ -145,12 +143,12 @@ class OrderControllerSpec extends ControllerSpec {
         val (os, cs, is, ps) = mocks
         val controller       = new OrderController[IO](os, cs, is, ps)
 
-        val cart = Cart(List(CartItem(item1.id, Quantity(1)), CartItem(item2.id, Quantity(2))))
+        val cart = Cart(List(CartItem(item1.id, Item.Quantity(1)), CartItem(item2.id, Item.Quantity(2))))
         when(cs.get(any[User.Id])).thenReturn(IO.pure(cart))
         when(is.findById(any[Item.Id])).thenReturn(IO.raiseError(ItemNotFound(item1.id)))
 
-        val request                    = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val request  = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](
           response,
@@ -168,8 +166,8 @@ class OrderControllerSpec extends ControllerSpec {
 
         when(cs.get(any[User.Id])).thenReturn(IO.pure(Cart(Nil)))
 
-        val request                    = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val request  = Request[IO](uri = uri"/orders/checkout", method = Method.POST)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.BadRequest, Some(ErrorResponse("Unable to checkout empty cart")))
         verify(cs).get(authedUser.value.id)
@@ -184,11 +182,11 @@ class OrderControllerSpec extends ControllerSpec {
 
         when(os.get(any[User.Id], any[Order.Id])).thenReturn(IO.pure(order1))
         when(ps.process(any[Payment])).thenReturn(IO.pure(paymentId))
-        when(os.update(any[OrderPayment])).thenReturn(IO.pure(()))
+        when(os.update(any[OrderPayment])).thenReturn(IO.unit)
 
         val request = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003/payment", method = Method.POST)
           .withEntity(paymentReqJson())
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.NoContent)
         verify(os).get(authedUser.value.id, order1Id)
@@ -204,7 +202,7 @@ class OrderControllerSpec extends ControllerSpec {
 
         val request = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003/payment", method = Method.POST)
           .withEntity(paymentReqJson())
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](
           response,
@@ -223,7 +221,7 @@ class OrderControllerSpec extends ControllerSpec {
 
         val request = Request[IO](uri = uri"/orders/666665e0-8e3a-11ea-bc55-0242ac130003/payment", method = Method.POST)
           .withEntity(paymentReqJson())
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         verifyResponse[ErrorResponse](response, Status.Forbidden, Some(ErrorResponse("Order does not belong to this user")))
         verify(os).get(authedUser.value.id, order1Id)
@@ -235,7 +233,7 @@ class OrderControllerSpec extends ControllerSpec {
 
         val request = Request[IO](uri = uri"/orders/d09c402a-8615-11ea-bc55-0242ac130003/payment", method = Method.POST)
           .withEntity(paymentReqJson(name = "123"))
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         val expectedResponse = ErrorResponse(
           """Predicate failed: "123".matches("^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$").: DownField(name),DownField(card)"""
@@ -249,7 +247,7 @@ class OrderControllerSpec extends ControllerSpec {
 
         val request = Request[IO](uri = uri"/orders/d09c402a-8615-11ea-bc55-0242ac130003/payment", method = Method.POST)
           .withEntity(paymentReqJson(expiration = "5a"))
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         val expectedResponse = ErrorResponse("""Predicate failed: "5a".matches("^[0-9]{4}$").: DownField(expiration),DownField(card)""")
         verifyResponse[ErrorResponse](response, Status.BadRequest, Some(expectedResponse))
@@ -261,7 +259,7 @@ class OrderControllerSpec extends ControllerSpec {
 
         val request = Request[IO](uri = uri"/orders/d09c402a-8615-11ea-bc55-0242ac130003/payment", method = Method.POST)
           .withEntity(paymentReqJson(cvv = 9999))
-        val response: IO[Response[IO]] = controller.routes(authMiddleware).orNotFound.run(request)
+        val response = controller.routes(authMiddleware).orNotFound.run(request)
 
         val expectedResponse = ErrorResponse(
           """Right predicate of ((9999 > 0) && !(9999 > 999)) failed: Predicate (9999 > 999) did not fail.: DownField(cvv),DownField(card)"""

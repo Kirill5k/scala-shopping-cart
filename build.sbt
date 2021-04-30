@@ -27,7 +27,8 @@ lazy val root = project
   )
   .aggregate(core)
 
-lazy val core = (project in file("modules/core"))
+lazy val core = project
+  .in(file("modules/core"))
   .enablePlugins(DockerPlugin, AshScriptPlugin)
   .settings(dockerSettings)
   .settings(
