@@ -12,9 +12,9 @@ import squants.market.GBP
 class OrderRepositorySpec extends PostgresRepositorySpec {
 
   val orderItems: Seq[OrderItem] = List(
-    OrderItem(Item.Id(UUID.randomUUID()), GBP(BigDecimal(10)), Quantity(1)),
-    OrderItem(Item.Id(UUID.randomUUID()), GBP(BigDecimal(5.55)), Quantity(4)),
-    OrderItem(Item.Id(UUID.randomUUID()), GBP(BigDecimal(9.99)), Quantity(2))
+    OrderItem(Item.Id(UUID.randomUUID()), GBP(BigDecimal(10)), Item.Quantity(1)),
+    OrderItem(Item.Id(UUID.randomUUID()), GBP(BigDecimal(5.55)), Item.Quantity(4)),
+    OrderItem(Item.Id(UUID.randomUUID()), GBP(BigDecimal(9.99)), Item.Quantity(2))
   )
 
   "An OrderRepository" - {

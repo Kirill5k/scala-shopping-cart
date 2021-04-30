@@ -1,18 +1,13 @@
 package io.kirill.shoppingcart.common
 
 import cats.effect.Sync
-import dev.profunktor.auth.jwt.JwtToken
 import io.circe.generic.extras.decoding.UnwrappedDecoder
 import io.circe.generic.extras.encoding.UnwrappedEncoder
 import io.circe.generic.extras.semiauto._
 import io.circe.{Decoder, Encoder}
 import io.circe.refined._
 import io.estatico.newtype.Coercible
-import io.kirill.shoppingcart.auth.user.User
-import io.kirill.shoppingcart.shop.brand.Brand
-import io.kirill.shoppingcart.shop.category.Category
-import io.kirill.shoppingcart.shop.item.Item
-import io.kirill.shoppingcart.shop.order.Order
+import io.estatico.newtype.ops._
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import org.http4s.{EntityDecoder, EntityEncoder}
 import squants.market.{GBP, Money}
@@ -22,7 +17,7 @@ object json extends JsonCodecs
 trait JsonCodecs {
 
   implicit def coercibleDecoder[A: Coercible[B, *], B: Decoder]: Decoder[A] =
-    Decoder[B].map(b => Coercible[B, A].apply(b))
+    Decoder[B].map(_.coerce[A])
   implicit def coercibleEncoder[A: Coercible[B, *], B: Encoder]: Encoder[A] =
     Encoder[B].contramap(_.asInstanceOf[B])
 
