@@ -1,5 +1,6 @@
 package io.kirill.shoppingcart.shop.item
 
+import cats.Monad
 import cats.effect.Sync
 import cats.implicits._
 import eu.timepit.refined.types.string.NonEmptyString
@@ -14,11 +15,13 @@ import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.typelevel.log4cats.Logger
 import squants.Money
+import fs2.Stream
+import io.kirill.shoppingcart.common.errors.EmptyBrand
 
 final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) extends RestController[F] {
   import ItemController._
 
-  object BrandQueryParam extends OptionalQueryParamDecoderMatcher[BrandParam]("brand")
+  object BrandQueryParam extends OptionalValidatingQueryParamDecoderMatcher[BrandParam]("brand")
 
   private val prefixPath = "/items"
 
@@ -29,7 +32,12 @@ final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) exte
       }
     case GET -> Root :? BrandQueryParam(brand) =>
       withErrorHandling {
-        Ok(brand.fold(itemService.findAll.map(ItemResponse.from))(b => itemService.findBy(b.toDomain).map(ItemResponse.from)))
+        brand
+          .fold(itemService.findAll)(_.fold(_ => Stream.raiseError[F](EmptyBrand), b => itemService.findBy(b.toDomain)))
+          .map(ItemResponse.from)
+          .compile
+          .toList
+          .flatMap(items => Ok(items))
       }
   }
 
@@ -86,7 +94,10 @@ object ItemController {
       )
   }
 
-  final case class ItemUpdateRequest(price: Money)
+  final case class ItemUpdateRequest(
+      price: Money,
+      name: Option[NonEmptyString]
+  )
 
   final case class ItemCreateRequest(
       name: NonEmptyString,
@@ -99,5 +110,5 @@ object ItemController {
   final case class ItemCreateResponse(itemId: Item.Id)
 
   def make[F[_]: Sync: Logger](is: ItemService[F]): F[ItemController[F]] =
-    Sync[F].pure(new ItemController[F](is))
+    Monad[F].pure(new ItemController[F](is))
 }

@@ -16,10 +16,10 @@ class HealthCheckControllerSpec extends ControllerSpec {
   "A HealthCheckController" should {
 
     "return status of the app" in {
-      val healthCheckServiceMock = mock[HealthCheckService[IO]]
-      val controller             = new HealthCheckController[IO](healthCheckServiceMock)
+      val service    = mock[HealthCheckService[IO]]
+      val controller = new HealthCheckController[IO](service)
 
-      when(healthCheckServiceMock.status).thenReturn(IO.pure(AppStatus(AppStatus.Service(true), AppStatus.Service(false))))
+      when(service.status).thenReturn(IO.pure(AppStatus(AppStatus.Service(true), AppStatus.Service(false))))
 
       val request  = Request[IO](uri = uri"/health/status")
       val response = controller.routes.orNotFound.run(request)

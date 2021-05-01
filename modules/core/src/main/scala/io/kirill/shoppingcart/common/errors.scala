@@ -40,6 +40,10 @@ object errors {
     val message = s"Brand with name ${brandName.value} already exists"
   }
 
+  final case object EmptyBrand extends BadRequestError {
+    val message = "Brand must not be blank"
+  }
+
   final case class CategoryAlreadyExists(categoryName: Category.Name) extends BadRequestError {
     val message = s"Category with name ${categoryName.value} already exists"
   }

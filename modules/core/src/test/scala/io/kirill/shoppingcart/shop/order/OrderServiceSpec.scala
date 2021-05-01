@@ -36,9 +36,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
           order   <- service.get(userId, order1.id)
         } yield order
 
-        recoverToSucceededIf[OrderNotFound] {
-          result.unsafeToFuture()
-        }
+        result.attempt.unsafeToFuture().map(_ mustBe Left(OrderNotFound(order1.id)))
       }
 
       "should return error if order does not belong to user" in {
@@ -49,9 +47,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
           order   <- service.get(userId, order1.id)
         } yield order
 
-        recoverToSucceededIf[OrderDoesNotBelongToThisUser] {
-          result.unsafeToFuture()
-        }
+        result.attempt.unsafeToFuture().map(_ mustBe Left(OrderDoesNotBelongToThisUser(order1.id, userId)))
       }
     }
 
