@@ -29,7 +29,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
         result.asserting { order =>
           order.items must be(orderItems)
           order.totalPrice must be(GBP(BigDecimal(25.54)))
-          order.status must be(Order.AwaitingPayment)
+          order.status must be(Order.Status.AwaitingPayment)
           order.paymentId must be(None)
         }
       }
@@ -54,7 +54,7 @@ class OrderRepositorySpec extends PostgresRepositorySpec {
         } yield o.get
 
         result.asserting { order =>
-          order.status must be(Order.Processing)
+          order.status must be(Order.Status.Processing)
           order.paymentId must be(Some(paymentId))
         }
       }

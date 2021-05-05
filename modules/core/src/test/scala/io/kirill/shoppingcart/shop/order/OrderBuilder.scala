@@ -15,7 +15,7 @@ object OrderBuilder {
   ): Order =
     Order(
       id,
-      Order.AwaitingPayment,
+      Order.Status.AwaitingPayment,
       userId,
       Some(Payment.Id(UUID.randomUUID())),
       List(OrderItem(Item.Id(UUID.randomUUID()), GBP(10), Item.Quantity(2))),

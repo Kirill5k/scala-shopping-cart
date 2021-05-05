@@ -27,19 +27,21 @@ final case class OrderCheckout(
     userId: User.Id,
     items: List[OrderItem],
     totalPrice: Money,
-    status: Order.Status = Order.AwaitingPayment
+    status: Order.Status = Order.Status.AwaitingPayment
 )
 
 final case class OrderPayment(
     id: Order.Id,
     paymentId: Payment.Id,
-    status: Order.Status = Order.Processing
+    status: Order.Status = Order.Status.Processing
 )
 
 object Order {
   @newtype case class Id(value: UUID)
   @newtype case class Status(value: String)
 
-  val AwaitingPayment = Status("order received. awaiting payment")
-  val Processing      = Status("payment received. awaiting payment")
+  object Status {
+    val AwaitingPayment = Status("order received. awaiting payment")
+    val Processing      = Status("payment received. awaiting payment")
+  }
 }
