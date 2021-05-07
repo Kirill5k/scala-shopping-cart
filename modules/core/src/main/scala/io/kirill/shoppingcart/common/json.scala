@@ -1,11 +1,7 @@
 package io.kirill.shoppingcart.common
 
 import cats.effect.Sync
-import io.circe.generic.extras.decoding.UnwrappedDecoder
-import io.circe.generic.extras.encoding.UnwrappedEncoder
-import io.circe.generic.extras.semiauto._
 import io.circe.{Decoder, Encoder}
-import io.circe.refined._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
@@ -26,7 +22,4 @@ trait JsonCodecs {
 
   implicit val moneyEncoder: Encoder[Money] = Encoder[BigDecimal].contramap(_.amount)
   implicit val moneyDecoder: Decoder[Money] = Decoder[BigDecimal].map(GBP.apply)
-
-  implicit def decodeUnwrapped[A](implicit decode: UnwrappedDecoder[A]): Decoder[A] = decode
-  implicit def encodeUnwrapped[A](implicit encode: UnwrappedEncoder[A]): Encoder[A] = encode
 }

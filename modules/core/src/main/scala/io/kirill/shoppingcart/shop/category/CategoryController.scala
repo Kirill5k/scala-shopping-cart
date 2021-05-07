@@ -17,7 +17,7 @@ final class CategoryController[F[_]: Sync: Logger](categoryService: CategoryServ
 
   private val publicHttpRoutes: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root =>
     withErrorHandling {
-      Ok(categoryService.findAll)
+      Ok(categoryService.findAll.compile.toList)
     }
   }
 
