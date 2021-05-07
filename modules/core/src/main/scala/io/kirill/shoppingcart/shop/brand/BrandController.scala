@@ -18,7 +18,7 @@ final class BrandController[F[_]: Sync: Logger](brandService: BrandService[F]) e
 
   private val publicHttpRoutes: HttpRoutes[F] = HttpRoutes.of[F] { case GET -> Root =>
     withErrorHandling {
-      Ok(brandService.findAll)
+      Ok(brandService.findAll.compile.toList)
     }
   }
 

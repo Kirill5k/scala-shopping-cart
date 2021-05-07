@@ -10,10 +10,6 @@ import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 import io.kirill.shoppingcart.shop.order.Order
 
-final case class Address(
-    city: NonEmptyString
-)
-
 final case class Card(
     name: Card.Name,
     number: Card.Number,

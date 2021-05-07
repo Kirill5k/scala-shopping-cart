@@ -2,7 +2,6 @@ package io.kirill.shoppingcart.shop.order
 
 import cats.Monad
 
-import java.util.UUID
 import cats.effect.Sync
 import cats.implicits._
 import org.typelevel.log4cats.Logger
@@ -14,7 +13,7 @@ import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.shop.cart.CartService
 import io.kirill.shoppingcart.shop.item.ItemService
-import io.kirill.shoppingcart.shop.payment.{Address, Card, Payment, PaymentService}
+import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentService}
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.circe._
@@ -72,8 +71,7 @@ final class OrderController[F[_]: Sync: Logger](
 object OrderController {
 
   final case class OrderPaymentRequest(
-      card: Card,
-      billingAddress: Option[Address]
+      card: Card
   )
 
   final case class OrderCheckoutResponse(orderId: Order.Id)
