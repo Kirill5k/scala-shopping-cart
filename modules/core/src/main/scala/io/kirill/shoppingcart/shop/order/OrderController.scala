@@ -25,7 +25,6 @@ final class OrderController[F[_]: Sync: Logger](
     itemService: ItemService[F],
     paymentService: PaymentService[F]
 ) extends RestController[F] {
-  import RestController._
   import OrderController._
 
   private val prefixPath = "/orders"
@@ -55,7 +54,7 @@ final class OrderController[F[_]: Sync: Logger](
       case authedReq @ POST -> Root / UUIDVar(orderId) / "payment" as user =>
         withErrorHandling {
           for {
-            paymentReq <- authedReq.req.decodeR[OrderPaymentRequest]
+            paymentReq <- authedReq.req.as[OrderPaymentRequest]
             order      <- orderService.get(user.value.id, Order.Id(orderId))
             pid        <- paymentService.process(Payment(order, paymentReq.card))
             _          <- orderService.update(OrderPayment(order.id, pid))

@@ -62,11 +62,3 @@ trait RestController[F[_]] extends Http4sDsl[F] with JsonCodecs {
           InternalServerError(ErrorResponse(error.getMessage))
     }
 }
-
-object RestController {
-
-  implicit class RequestDecoder[F[_]: Sync](private val req: Request[F]) {
-    def decodeR[A: Decoder]: F[A] =
-      req.asJsonDecode[A]
-  }
-}
