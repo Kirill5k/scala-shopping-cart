@@ -22,4 +22,7 @@ trait JsonCodecs {
 
   implicit val moneyEncoder: Encoder[Money] = Encoder[BigDecimal].contramap(_.amount)
   implicit val moneyDecoder: Decoder[Money] = Decoder[BigDecimal].map(GBP.apply)
+
+//  implicit def decodeUnwrapped[A](implicit decode: UnwrappedDecoder[A]): Decoder[A] = decode
+//  implicit def encodeUnwrapped[A](implicit encode: UnwrappedEncoder[A]): Encoder[A] = encode
 }
