@@ -119,7 +119,7 @@ class ItemControllerSpec extends ControllerSpec {
         val request  = Request[IO](uri = uri"/items?brand=")
         val response = controller.routes(adminMiddleware).orNotFound.run(request)
 
-        verifyResponse[String](response, Status.BadRequest, Some("Brand must not be blank"))
+        verifyResponse[ErrorResponse](response, Status.BadRequest, Some(ErrorResponse("Brand must not be blank")))
         verify(itemServiceMock, never).findBy(any[Brand.Name])
         verify(itemServiceMock, never).findAll
       }
