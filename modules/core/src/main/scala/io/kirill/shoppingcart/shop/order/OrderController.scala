@@ -1,7 +1,8 @@
 package io.kirill.shoppingcart.shop.order
 
-import java.util.UUID
+import cats.Monad
 
+import java.util.UUID
 import cats.effect.Sync
 import cats.implicits._
 import org.typelevel.log4cats.Logger
@@ -13,7 +14,7 @@ import io.kirill.shoppingcart.common.json._
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.shop.cart.CartService
 import io.kirill.shoppingcart.shop.item.ItemService
-import io.kirill.shoppingcart.shop.payment.{Card, Payment, PaymentService}
+import io.kirill.shoppingcart.shop.payment.{Address, Card, Payment, PaymentService}
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.circe._
@@ -44,8 +45,8 @@ final class OrderController[F[_]: Sync: Logger](
         withErrorHandling {
           for {
             cart  <- cartService.get(user.value.id).ensure(EmptyCart)(_.items.nonEmpty)
-            items <- cart.items.map(ci => itemService.findById(ci.itemId).map((_, ci.quantity))).toList.sequence
-            orderItems = items.map { case (i, q)                       => OrderItem(i.id, i.price, q) }
+            items <- cart.items.traverse(ci => itemService.findById(ci.itemId).map((_, ci.quantity)))
+            orderItems = items.map { case (i, q) => OrderItem(i.id, i.price, q) }
             total      = items.foldLeft(GBP(0)) { case (total, (i, q)) => total + (i.price * q.value) }
             orderId <- orderService.create(OrderCheckout(user.value.id, orderItems, total))
             _       <- cartService.delete(user.value.id)
@@ -70,7 +71,10 @@ final class OrderController[F[_]: Sync: Logger](
 
 object OrderController {
 
-  final case class OrderPaymentRequest(card: Card)
+  final case class OrderPaymentRequest(
+      card: Card,
+      billingAddress: Option[Address]
+  )
 
   final case class OrderCheckoutResponse(orderId: Order.Id)
 
@@ -86,7 +90,7 @@ object OrderController {
       OrderResponse(
         order.id,
         order.status,
-        order.items.toList,
+        order.items,
         order.totalPrice
       )
   }
@@ -97,5 +101,5 @@ object OrderController {
       is: ItemService[F],
       ps: PaymentService[F]
   ): F[OrderController[F]] =
-    Sync[F].delay(new OrderController[F](os, cs, is, ps))
+    Monad[F].pure(new OrderController[F](os, cs, is, ps))
 }

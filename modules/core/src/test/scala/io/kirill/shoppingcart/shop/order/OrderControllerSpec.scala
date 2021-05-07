@@ -2,7 +2,7 @@ package io.kirill.shoppingcart.shop.order
 
 import java.util.UUID
 
-import cats.effect.{IO}
+import cats.effect.IO
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.literal._
@@ -157,7 +157,6 @@ class OrderControllerSpec extends ControllerSpec {
         )
         verify(cs).get(authedUser.value.id)
         verify(is).findById(item1Id)
-        verify(is).findById(item2.id)
       }
 
       "return empty cart error if cart is empty" in {

@@ -6,8 +6,13 @@ import eu.timepit.refined.api._
 import eu.timepit.refined.boolean.And
 import eu.timepit.refined.numeric.{LessEqual, Positive}
 import eu.timepit.refined.string.MatchesRegex
+import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 import io.kirill.shoppingcart.shop.order.Order
+
+final case class Address(
+    city: NonEmptyString
+)
 
 final case class Card(
     name: Card.Name,

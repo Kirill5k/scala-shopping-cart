@@ -21,8 +21,8 @@ trait JsonCodecs {
   implicit def coercibleEncoder[A: Coercible[B, *], B: Encoder]: Encoder[A] =
     Encoder[B].contramap(_.asInstanceOf[B])
 
-  implicit def deriveEntityEncoder[F[_], A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
-  implicit def deriveEntityDecoder[F[_]: Sync, A: Decoder]: EntityDecoder[F, A]        = jsonOf[F, A]
+  implicit def deriveEntityEncoder[F[_], A: Encoder]: EntityEncoder[F, A]       = jsonEncoderOf[F, A]
+  implicit def deriveEntityDecoder[F[_]: Sync, A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
 
   implicit val moneyEncoder: Encoder[Money] = Encoder[BigDecimal].contramap(_.amount)
   implicit val moneyDecoder: Decoder[Money] = Decoder[BigDecimal].map(GBP.apply)

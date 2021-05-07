@@ -25,7 +25,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
           order   <- service.get(userId, order1.id)
         } yield order
 
-        result.unsafeToFuture().map(_ must be(order1))
+        result.unsafeToFuture().map(_ mustBe (order1))
       }
 
       "should return order not found error if not found" in {
@@ -60,7 +60,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
           orders  <- service.findBy(userId).compile.toList
         } yield orders
 
-        result.unsafeToFuture().map(_ must be(List(order1)))
+        result.unsafeToFuture().map(_ mustBe (List(order1)))
       }
     }
 
@@ -74,7 +74,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
           id      <- service.create(checkout)
         } yield id
 
-        result.unsafeToFuture().map(_ must be(order1.id))
+        result.unsafeToFuture().map(_ mustBe (order1.id))
       }
     }
 
@@ -88,7 +88,7 @@ class OrderServiceSpec extends AsyncFreeSpec with Matchers with AsyncMockitoSuga
           res     <- service.update(paymentUpdate)
         } yield res
 
-        result.unsafeToFuture().map(_ must be(()))
+        result.unsafeToFuture().map(_ mustBe (()))
       }
     }
   }
