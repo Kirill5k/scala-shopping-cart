@@ -6,7 +6,7 @@ import io.circe.generic.auto._
 import io.circe.literal._
 import io.kirill.shoppingcart.ControllerSpec
 import io.kirill.shoppingcart.common.errors.BrandAlreadyExists
-import io.kirill.shoppingcart.common.json._
+import io.kirill.shoppingcart.common.web.json._
 import io.kirill.shoppingcart.common.web.ErrorResponse
 import io.kirill.shoppingcart.shop.brand.BrandController.BrandCreateResponse
 import org.http4s._

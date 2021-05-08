@@ -10,7 +10,7 @@ import io.circe.syntax._
 import io.circe.generic.auto._
 import io.kirill.shoppingcart.auth.{AdminUser, CommonUser}
 import io.kirill.shoppingcart.auth.user._
-import io.kirill.shoppingcart.common.json._
+import io.kirill.shoppingcart.common.web.json._
 import org.http4s.server.AuthMiddleware
 import org.http4s.{EntityDecoder, Response, Status}
 import org.mockito.ArgumentMatchersSugar

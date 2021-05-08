@@ -27,7 +27,5 @@ object TokenGenerator {
     }
 
   def make[F[_]: Sync](config: AuthConfig): F[TokenGenerator[F]] =
-    Sync[F].delay(java.time.Clock.systemUTC).map { implicit jClock =>
-      hs256TokenGenerator(config)
-    }
+    Sync[F].delay(java.time.Clock.systemUTC).map(implicit jClock => hs256TokenGenerator(config))
 }

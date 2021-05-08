@@ -5,7 +5,7 @@ import io.circe.generic.auto._
 import io.circe.literal._
 import io.kirill.shoppingcart.ControllerSpec
 import io.kirill.shoppingcart.common.errors.ItemNotFound
-import io.kirill.shoppingcart.common.json._
+import io.kirill.shoppingcart.common.web.json._
 import io.kirill.shoppingcart.common.web.ErrorResponse
 import io.kirill.shoppingcart.shop.brand.Brand
 import io.kirill.shoppingcart.shop.category.Category

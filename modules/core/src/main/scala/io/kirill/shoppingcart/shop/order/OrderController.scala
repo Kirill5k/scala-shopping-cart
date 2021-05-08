@@ -9,7 +9,7 @@ import io.circe.generic.auto._
 import io.circe.refined._
 import io.kirill.shoppingcart.auth.CommonUser
 import io.kirill.shoppingcart.common.errors.EmptyCart
-import io.kirill.shoppingcart.common.json._
+import io.kirill.shoppingcart.common.web.json._
 import io.kirill.shoppingcart.common.web.RestController
 import io.kirill.shoppingcart.shop.cart.CartService
 import io.kirill.shoppingcart.shop.item.ItemService

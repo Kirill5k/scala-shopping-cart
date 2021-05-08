@@ -8,7 +8,7 @@ import io.circe.generic.auto._
 import io.kirill.shoppingcart.auth.user.{User, UserCacheStore}
 import pdi.jwt.JwtClaim
 
-sealed trait Authenticator[F[_], U] {
+trait Authenticator[F[_], U] {
   def findUser(token: JwtToken)(claim: JwtClaim): F[Option[U]]
 }
 

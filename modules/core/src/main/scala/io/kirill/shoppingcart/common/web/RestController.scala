@@ -2,30 +2,15 @@ package io.kirill.shoppingcart.common.web
 
 import cats.effect.Sync
 import cats.implicits._
-import eu.timepit.refined.api.{Refined, Validate}
-import eu.timepit.refined.refineV
-import org.typelevel.log4cats.Logger
-import io.circe._
 import io.circe.generic.auto._
-import io.estatico.newtype.Coercible
-import io.estatico.newtype.ops._
-import io.kirill.shoppingcart.common.JsonCodecs
 import io.kirill.shoppingcart.common.errors._
-import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{Challenge, InvalidMessageBodyFailure, ParseFailure, QueryParamDecoder, Request, Response}
+import org.http4s.{Challenge, InvalidMessageBodyFailure, ParseFailure, Response}
+import org.typelevel.log4cats.Logger
 
 final case class ErrorResponse(message: String)
 
 trait RestController[F[_]] extends Http4sDsl[F] with JsonCodecs {
-
-  implicit def coercibleQueryParamDecoder[A: Coercible[B, *], B: QueryParamDecoder]: QueryParamDecoder[A] =
-    QueryParamDecoder[B].map(_.coerce[A])
-
-  implicit def refinedParamDecoder[T: QueryParamDecoder, P](implicit
-      ev: Validate[T, P]
-  ): QueryParamDecoder[T Refined P] =
-    QueryParamDecoder[T].emap(refineV[P](_).leftMap(m => ParseFailure(m, m)))
 
   protected def withErrorHandling(
       response: => F[Response[F]]

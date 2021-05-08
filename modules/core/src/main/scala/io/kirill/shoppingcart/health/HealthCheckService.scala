@@ -10,7 +10,7 @@ import skunk.codec.all._
 import skunk.implicits._
 import scala.concurrent.duration._
 
-sealed trait HealthCheckService[F[_]] {
+trait HealthCheckService[F[_]] {
   def status: F[AppStatus]
 }
 

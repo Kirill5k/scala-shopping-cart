@@ -8,7 +8,7 @@ import io.circe.generic.auto._
 import io.circe.literal._
 import io.kirill.shoppingcart.ControllerSpec
 import io.kirill.shoppingcart.auth.user.User
-import io.kirill.shoppingcart.common.json._
+import io.kirill.shoppingcart.common.web.json._
 import io.kirill.shoppingcart.shop.item.Item
 import org.http4s._
 import org.http4s.circe._

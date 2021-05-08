@@ -9,7 +9,7 @@ import io.circe.literal._
 import io.kirill.shoppingcart.ControllerSpec
 import io.kirill.shoppingcart.auth.user.User
 import io.kirill.shoppingcart.common.errors.{ItemNotFound, OrderDoesNotBelongToThisUser, OrderNotFound}
-import io.kirill.shoppingcart.common.json._
+import io.kirill.shoppingcart.common.web.json._
 import io.kirill.shoppingcart.common.web.ErrorResponse
 import io.kirill.shoppingcart.shop.cart.{Cart, CartItem, CartService}
 import io.kirill.shoppingcart.shop.item.{Item, ItemBuilder, ItemService}
