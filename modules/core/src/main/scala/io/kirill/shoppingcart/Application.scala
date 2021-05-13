@@ -17,7 +17,7 @@ object Application extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = {
     Blocker[IO].use(AppConfig.load[IO]).flatMap { config =>
-      Resources.make[IO](config).use { res =>
+      Resources.make[IO](config, ExecutionContext.global).use { res =>
         for {
           _      <- logger.info("starting scala-shopping-cart app...")
           health <- Health.make[IO](res)

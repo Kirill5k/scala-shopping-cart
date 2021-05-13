@@ -4,10 +4,11 @@ import cats.Monad
 import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.auto._
+import io.kirill.shoppingcart.common.errors.PaymentError
 import io.kirill.shoppingcart.common.web.JsonCodecs
 import io.kirill.shoppingcart.config.PaymentConfig
 import org.http4s.Method.POST
-import org.http4s.Uri
+import org.http4s.{Status, Uri}
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 
@@ -21,12 +22,14 @@ final private class LivePaymentClient[F[_]: Sync](
 ) extends PaymentClient[F] with JsonCodecs with Http4sClientDsl[F] {
 
   override def process(payment: Payment): F[Payment.Id] =
-    Uri
-      .fromString(s"${config.baseUri}/payments")
-      .liftTo[F]
-      .flatMap { uri =>
-        client.fetchAs[Payment.Id](POST(payment, uri))
+    for {
+      uri <- Uri.fromString(s"${config.baseUri}/payments").liftTo[F]
+      req <- POST(payment, uri)
+      id <- client.run(req).use { res =>
+        if (res.status == Status.Ok || res.status == Status.Forbidden) res.as[Payment.Id]
+        else PaymentError(res.status.reason).raiseError[F, Payment.Id]
       }
+    } yield id
 }
 
 object PaymentClient {

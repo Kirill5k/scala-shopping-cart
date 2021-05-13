@@ -8,7 +8,10 @@ import org.typelevel.log4cats.Logger
 import io.kirill.shoppingcart.config.AppConfig
 import natchez.Trace.Implicits.noop
 import org.http4s.client.Client
+import org.http4s.client.blaze.BlazeClientBuilder
 import skunk.Session
+
+import scala.concurrent.ExecutionContext
 
 final class Resources[F[_]] private (
     val postgres: Resource[F, Session[F]],
@@ -35,10 +38,12 @@ object Resources {
       max = config.postgres.maxConnections
     )
 
-  private def makeClient[F[_]: Sync]: Resource[F, Client[F]] = ???
+  private def makeClient[F[_]: ConcurrentEffect](ec: ExecutionContext): Resource[F, Client[F]] =
+    BlazeClientBuilder[F](ec).resource
 
   def make[F[_]: ConcurrentEffect: ContextShift: Logger](
-      config: AppConfig
+      config: AppConfig,
+      ec: ExecutionContext
   ): Resource[F, Resources[F]] =
-    (makePostgres(config), makeRedis(config), makeClient).mapN((p, r, c) => new Resources[F](p, r, c))
+    (makePostgres(config), makeRedis(config), makeClient(ec)).mapN((p, r, c) => new Resources[F](p, r, c))
 }

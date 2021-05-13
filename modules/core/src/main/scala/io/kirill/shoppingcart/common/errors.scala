@@ -6,7 +6,6 @@ import io.kirill.shoppingcart.shop.category.Category
 import io.kirill.shoppingcart.shop.item.Item
 import io.kirill.shoppingcart.shop.order.Order
 
-
 object errors {
   sealed trait AppError extends Throwable {
     def message: String
@@ -19,6 +18,7 @@ object errors {
   final case class ForeignKeyViolation(message: String) extends BadRequestError
   final case class UniqueViolation(message: String)     extends BadRequestError
   final case class ProcessingError(message: String)     extends BadRequestError
+  final case class PaymentError(message: String)        extends BadRequestError
 
   final case class ItemNotFound(itemId: Item.Id) extends NotFoundError {
     val message = s"Item with id ${itemId.value} does not exist"
