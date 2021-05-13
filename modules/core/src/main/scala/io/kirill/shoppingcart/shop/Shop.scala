@@ -51,7 +51,7 @@ object Shop {
       categoryController <- CategoryController.make(categoryService)
       itemService        <- ItemRepository.make(res.postgres).flatMap(ItemService.make[F])
       itemController     <- ItemController.make(itemService)
-      paymentClient      <- PaymentClient.make[F](config.payment)
+      paymentClient      <- PaymentClient.make[F](config.payment, res.client)
       paymentService     <- PaymentService.make[F](paymentClient)
       orderService       <- OrderRepository.make(res.postgres).flatMap(OrderService.make[F])
       orderController    <- OrderController.make(orderService, cartService, itemService, paymentService)

@@ -1,17 +1,19 @@
 package io.kirill.shoppingcart
 
-import cats.effect.{ConcurrentEffect, ContextShift, Resource}
+import cats.effect.{ConcurrentEffect, ContextShift, Resource, Sync}
 import cats.implicits._
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import dev.profunktor.redis4cats.log4cats._
 import org.typelevel.log4cats.Logger
 import io.kirill.shoppingcart.config.AppConfig
 import natchez.Trace.Implicits.noop
+import org.http4s.client.Client
 import skunk.Session
 
 final class Resources[F[_]] private (
     val postgres: Resource[F, Session[F]],
-    val redis: RedisCommands[F, String, String]
+    val redis: RedisCommands[F, String, String],
+    val client: Client[F]
 )
 
 object Resources {
@@ -33,8 +35,10 @@ object Resources {
       max = config.postgres.maxConnections
     )
 
+  private def makeClient[F[_]: Sync]: Resource[F, Client[F]] = ???
+
   def make[F[_]: ConcurrentEffect: ContextShift: Logger](
       config: AppConfig
   ): Resource[F, Resources[F]] =
-    (makePostgres(config), makeRedis(config)).mapN((p, r) => new Resources[F](p, r))
+    (makePostgres(config), makeRedis(config), makeClient).mapN((p, r, c) => new Resources[F](p, r, c))
 }
