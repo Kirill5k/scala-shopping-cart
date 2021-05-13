@@ -1,5 +1,6 @@
 package io.kirill.shoppingcart.auth
 
+import cats.Monad
 import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.AuthHeaders
@@ -62,5 +63,5 @@ object AuthController {
   final case class AuthLoginResponse(token: JwtToken)
 
   def make[F[_]: Sync: Logger](authService: AuthService[F]): F[AuthController[F]] =
-    Sync[F].delay(new AuthController[F](authService))
+    Monad[F].pure(new AuthController[F](authService))
 }

@@ -1,5 +1,6 @@
 package io.kirill.shoppingcart.shop.cart
 
+import cats.Monad
 import cats.effect.Sync
 import cats.implicits._
 import org.typelevel.log4cats.Logger
@@ -47,5 +48,5 @@ final class CartController[F[_]: Sync: Logger](cartService: CartService[F]) exte
 
 object CartController {
   def make[F[_]: Sync: Logger](cs: CartService[F]): F[CartController[F]] =
-    Sync[F].delay(new CartController[F](cs))
+    Monad[F].pure(new CartController[F](cs))
 }

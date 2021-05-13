@@ -54,8 +54,7 @@ final class ItemController[F[_]: Sync: Logger](itemService: ItemService[F]) exte
       withErrorHandling {
         for {
           r <- adminReq.req.as[ItemCreateRequest]
-          item = CreateItem(Item.Name(r.name.value), Item.Description(r.description.value), r.price, r.brandId, r.categoryId)
-          id  <- itemService.create(item)
+          id  <- itemService.create(r.toDomain)
           res <- Created(ItemCreateResponse(id))
         } yield res
       }
@@ -95,8 +94,7 @@ object ItemController {
   }
 
   final case class ItemUpdateRequest(
-      price: Money,
-      name: Option[NonEmptyString]
+      price: Money
   )
 
   final case class ItemCreateRequest(
@@ -105,7 +103,10 @@ object ItemController {
       price: Money,
       brandId: Brand.Id,
       categoryId: Category.Id
-  )
+  ) {
+    def toDomain: CreateItem =
+      CreateItem(Item.Name(name.value), Item.Description(description.value), price, brandId, categoryId)
+  }
 
   final case class ItemCreateResponse(itemId: Item.Id)
 
