@@ -1,4 +1,4 @@
-package io.kirill.shoppingcart.auth
+package io.kirill.shoppingcart.auth.utils
 
 import cats.effect.Sync
 import cats.implicits._

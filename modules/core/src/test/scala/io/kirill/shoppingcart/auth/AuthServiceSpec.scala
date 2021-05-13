@@ -3,6 +3,7 @@ package io.kirill.shoppingcart.auth
 import cats.effect.IO
 import dev.profunktor.auth.jwt.JwtToken
 import io.kirill.shoppingcart.auth.user.{User, UserBuilder, UserCacheStore, UserRepository}
+import io.kirill.shoppingcart.auth.utils.{PasswordEncryptor, TokenGenerator}
 import io.kirill.shoppingcart.common.errors._
 import org.mockito.scalatest.AsyncMockitoSugar
 import org.scalatest.freespec.AsyncFreeSpec

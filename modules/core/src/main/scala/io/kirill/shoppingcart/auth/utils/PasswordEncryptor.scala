@@ -1,10 +1,10 @@
-package io.kirill.shoppingcart.auth
+package io.kirill.shoppingcart.auth.utils
 
 import cats.effect.Sync
 import cats.implicits._
-import io.kirill.shoppingcart.auth.user.User
 import com.github.t3hnar.bcrypt._
-import io.kirill.shoppingcart.config.{AppConfig, AuthConfig}
+import io.kirill.shoppingcart.auth.user.User
+import io.kirill.shoppingcart.config.AuthConfig
 
 trait PasswordEncryptor[F[_]] {
   def hash(password: User.Password): F[User.PasswordHash]

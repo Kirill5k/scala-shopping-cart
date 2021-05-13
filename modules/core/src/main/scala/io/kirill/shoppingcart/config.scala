@@ -9,6 +9,10 @@ import pureconfig.module.catseffect.syntax._
 
 object config {
 
+  final case class PaymentConfig(
+      baseUri: String
+  )
+
   final case class ServerConfig(
       host: String,
       port: Int
@@ -46,7 +50,8 @@ object config {
   )
 
   final case class ShopConfig(
-      cartExpiration: FiniteDuration
+      cartExpiration: FiniteDuration,
+      payment: PaymentConfig
   )
 
   final case class AppConfig(

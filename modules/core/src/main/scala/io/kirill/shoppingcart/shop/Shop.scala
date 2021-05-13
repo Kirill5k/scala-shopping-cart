@@ -10,7 +10,7 @@ import io.kirill.shoppingcart.shop.cart.{CartController, CartService}
 import io.kirill.shoppingcart.shop.category.{CategoryController, CategoryRepository, CategoryService}
 import io.kirill.shoppingcart.shop.item.{ItemController, ItemRepository, ItemService}
 import io.kirill.shoppingcart.shop.order.{OrderController, OrderRepository, OrderService}
-import io.kirill.shoppingcart.shop.payment.PaymentService
+import io.kirill.shoppingcart.shop.payment.{PaymentClient, PaymentService}
 import org.http4s.HttpRoutes
 import org.http4s.server.{AuthMiddleware, Router}
 import org.typelevel.log4cats.Logger
@@ -51,7 +51,8 @@ object Shop {
       categoryController <- CategoryController.make(categoryService)
       itemService        <- ItemRepository.make(res.postgres).flatMap(ItemService.make[F])
       itemController     <- ItemController.make(itemService)
-      paymentService     <- PaymentService.make[F]()
+      paymentClient      <- PaymentClient.make[F](config.payment)
+      paymentService     <- PaymentService.make[F](paymentClient)
       orderService       <- OrderRepository.make(res.postgres).flatMap(OrderService.make[F])
       orderController    <- OrderController.make(orderService, cartService, itemService, paymentService)
     } yield new Shop[F](

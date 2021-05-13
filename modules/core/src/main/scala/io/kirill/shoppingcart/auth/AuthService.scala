@@ -4,6 +4,7 @@ import cats.implicits._
 import cats.{Monad, MonadError}
 import dev.profunktor.auth.jwt.JwtToken
 import io.kirill.shoppingcart.auth.user._
+import io.kirill.shoppingcart.auth.utils.{PasswordEncryptor, TokenGenerator}
 import io.kirill.shoppingcart.common.errors.{InvalidUsernameOrPassword, UniqueViolation, UsernameInUse}
 
 trait AuthService[F[_]] {

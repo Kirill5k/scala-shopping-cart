@@ -30,8 +30,8 @@ object Application extends IOApp {
             .serve
             .compile
             .drain
-        } yield ExitCode.Success
+        } yield ()
       }
     }
-  }
+  }.as(ExitCode.Success)
 }

@@ -1,5 +1,6 @@
 package io.kirill.shoppingcart.auth
 
+import cats.Monad
 import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.jwt._
@@ -29,7 +30,7 @@ final private class AdminUserAuthenticator[F[_]: Sync](
 
 object Authenticator {
   def commonUserAuthenticator[F[_]: Sync](userCacheStore: UserCacheStore[F]): F[Authenticator[F, CommonUser]] =
-    Sync[F].delay(new CommonUserAuthenticator[F](userCacheStore))
+    Monad[F].pure(new CommonUserAuthenticator[F](userCacheStore))
 
   def adminUserAuthenticator[F[_]: Sync](adminToken: JwtToken, adminJwtAuth: AdminJwtAuth): F[Authenticator[F, AdminUser]] =
     for {
