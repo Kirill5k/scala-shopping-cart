@@ -6,6 +6,7 @@ import dev.profunktor.auth.JwtAuthMiddleware
 import dev.profunktor.auth.jwt.{JwtAuth, JwtSymmetricAuth, JwtToken}
 import io.kirill.shoppingcart.Resources
 import io.kirill.shoppingcart.auth.user.{User, UserCacheStore, UserRepository}
+import io.kirill.shoppingcart.auth.utils.{PasswordEncryptor, TokenGenerator}
 import io.kirill.shoppingcart.config.AuthConfig
 import org.typelevel.log4cats.Logger
 import pdi.jwt.JwtAlgorithm

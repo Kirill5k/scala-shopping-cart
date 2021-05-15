@@ -1,5 +1,6 @@
 package io.kirill.shoppingcart.shop.cart
 
+import cats.Monad
 import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.redis4cats.RedisCommands
@@ -62,5 +63,5 @@ object CartService {
   def redisCartService[F[_]: Sync](
       redis: RedisCommands[F, String, String],
       config: ShopConfig
-  ): F[CartService[F]] = Sync[F].delay(new RedisCartService[F](redis, config.cartExpiration))
+  ): F[CartService[F]] = Monad[F].pure(new RedisCartService[F](redis, config.cartExpiration))
 }
