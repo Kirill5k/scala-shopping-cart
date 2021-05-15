@@ -9,8 +9,8 @@ object Dependencies {
     val refined       = "0.9.24"
     val newtype       = "0.4.4"
     val redis4cats    = "0.13.1"
-    val skunk         = "0.0.24"
-    val squants       = "1.7.4"
+    val skunk         = "0.0.26"
+    val squants       = "1.8.0"
     val logback       = "1.2.3"
     val log4cats      = "1.3.0"
     val http4sJwtAuth = "0.0.6"
@@ -19,7 +19,7 @@ object Dependencies {
     val scalaCheck     = "1.15.3"
     val scalaTest      = "3.2.8"
     val scalaTestPlus  = "3.2.2.0"
-    val testContainers = "0.39.3"
+    val testContainers = "0.39.4"
   }
 
   object Libraries {
@@ -33,7 +33,6 @@ object Dependencies {
     def testContainers(artifact: String): ModuleID = "com.dimafeng"          %% artifact % Versions.testContainers
 
     val catsTestkit = "org.typelevel"    %% "cats-testkit-scalatest" % "1.0.1"
-    val catsRetry   = "com.github.cb372" %% "cats-retry"             % "1.1.0"
 
     val pureConfigCore = pureConfig("pureconfig")
     val pureConfigCats = pureConfig("pureconfig-cats-effect")
